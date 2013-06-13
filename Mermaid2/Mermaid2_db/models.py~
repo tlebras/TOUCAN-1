@@ -14,6 +14,7 @@ class PointMeasurememt(models.Model):
 	latitude = models.FloatField()
 	longitude = models.FloatField()
 	depth = models.FloatField()
+	
 	measurement = models.ManyToManyField(MeasurementType)
 	photo = models.ForeignKey(Photo)
 	
@@ -78,10 +79,14 @@ class MeasurementType(models.Model):
     def __unicode__(self):
         return u"{0} - {1}".format(self.display_name, self.units)
         
-
-
-
-
+        
+        
+        
+        
+        
+        
+        
+        
 
 #class ScientificImageMeasurement(models.Model):
 #    """Scientific Measurement relating to an image."""
