@@ -3,26 +3,13 @@ from django.db import models
 
 # Create your models here.
 
-class PointMeasurememt(models.Model):
-	"""Class defining a basic measurememt point definided by :
-	- latitude, longitude, depth
-	- measurememt type
-	- image
-	"""
-	
-	#try to use PointField
-	latitude = models.FloatField()
-	longitude = models.FloatField()
-	depth = models.FloatField()
-	measurement = models.ManyToManyField(MeasurementType)
-	photo = models.ForeignKey(Photo)
 	
 	
 class Photo(models.Model):
-	"""Class defining a photo defined by :
-	- web location
-	- archive location
-	"""
+    """Class defining a photo defined by :
+    - web location
+    - archive location
+    """
 	
     web_location = models.CharField(max_length=255)
     archive_location = models.CharField(max_length=255)	
@@ -79,6 +66,19 @@ class MeasurementType(models.Model):
         return u"{0} - {1}".format(self.display_name, self.units)
         
 
+class PointMeasurememt(models.Model):
+    """Class defining a basic measurememt point definided by :
+    - latitude, longitude, depth
+    - measurememt type
+    - image
+    """
+	
+    #try to use PointField
+    latitude = models.FloatField()
+    longitude = models.FloatField()
+    depth = models.FloatField()
+    measurement = models.ManyToManyField(MeasurementType)
+    photo = models.ForeignKey(Photo)
 
 
 
