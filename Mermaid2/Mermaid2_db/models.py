@@ -1,9 +1,23 @@
-from django.db import models
-#from django.contrib.gis.db import models
+#from django.db import models
+from django.contrib.gis.db import models
 
 # Create your models here.
 
-	
+
+class Deploymemt(models.Model):
+    """Class defining a deploymemt
+    """
+    
+    matchup_id = models.CharField(max_length=255)
+    site = models.CharField(max_length=255)
+    principal_investigator = models.CharField(max_length=255)
+    lat_is = models.FloatField()
+    lon_is = models.FloatField()
+    time_is = models.TimeField()
+    pqc = models.CharField(max_length=255)
+    mqc = models.CharField(max_length=255)
+    thetas_is = models.FloatField()
+
 	
 class Photo(models.Model):
     """Class defining a photo defined by :
