@@ -17,7 +17,7 @@ class Deploymemt(models.Model):
     pqc = models.CharField(max_length=255)
     mqc = models.CharField(max_length=255)
     thetas_is = models.FloatField()
-
+    point = models.PointField()
 	
 class Photo(models.Model):
     """Class defining a photo defined by :
