@@ -16,6 +16,18 @@ class Measurement(models.Model):
     UNITS_CHOICES = (
         ('dl', 'dl'),
         ('mW.m-2.nm-1.sr-1', 'mW.m<sup>-2</sup>.nm<sup>-1</sup>.sr<sup>-1</sup>'),
+        ('uW.cm-2.nm.sr', 'uW.cm<sup>-2</sup>.nm.sr'),
+        ('mW.m-2.nm-1.s', 'mW.m<sup>-2</sup>.nm<sup>-1</sup>.s'),
+        ('nm', 'nm'),
+        ('m-1', 'm<sup>-1</sup>'),
+        ('W.m-2', 'W.m<sup>-2</sup>'),
+        ('m', 'm'),
+        ('mg.m-3', 'mg.m<sup>-3</sup>'),
+        ('g.m-3', 'g.m<sup>-3</sup>'),  
+        ('gC.m-3', 'gC.m<sup>-3</sup>'), 
+        ('UTC', 'UTC'),
+        ('cm', 'cm'),
+        ('deg', '&ordm;'), 
     )
     
     #normalised water reflectance
