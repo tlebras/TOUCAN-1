@@ -3,14 +3,71 @@ from django.contrib.gis.db import models
 
 # Create your models here.
 
+#v1
+#class Measurement(models.Model):
+#    """Measurements types availables :
+#    - normalised water reflectance (dl)
+#    - spectral water-leaving radiance (mW.m-2.nm-1.sr-1)
+#    - mean spectral total water leaving radiance (mW.m-2.nm-1.sr-1)
+#    - spectral sky radiance (mW.m-2.nm-1.sr-1)
+#    - water reflectance (dl)
+#    """
+    
+#    UNITS_CHOICES = (
+#        ('dl', 'dl'),
+#        ('mW.m-2.nm-1.sr-1', 'mW.m<sup>-2</sup>.nm<sup>-1</sup>.sr<sup>-1</sup>'),
+#        ('uW.cm-2.nm.sr', 'uW.cm<sup>-2</sup>.nm.sr'),
+#        ('mW.m-2.nm-1.s', 'mW.m<sup>-2</sup>.nm<sup>-1</sup>.s'),
+#        ('nm', 'nm'),
+#        ('m-1', 'm<sup>-1</sup>'),
+#        ('W.m-2', 'W.m<sup>-2</sup>'),
+#        ('m', 'm'),
+#        ('mg.m-3', 'mg.m<sup>-3</sup>'),
+#        ('g.m-3', 'g.m<sup>-3</sup>'),  
+#        ('gC.m-3', 'gC.m<sup>-3</sup>'), 
+#        ('UTC', 'UTC'),
+#        ('cm', 'cm'),
+#        ('deg', '&ordm;'), 
+#    )
+    
+    #normalised water reflectance
+#    rho_wn_is = models.FloatField()
+#    rho_wn_is_unit = models.CharField(max_length=50, choices=UNITS_CHOICES, default='dl')
+	
+    #spectral water-leaving radiance
+#    lw_is = models.FloatField()	
+#    lw_is_unit = models.CharField(max_length=50, choices=UNITS_CHOICES, default='mWm-2nm-1sr-1')
 
+    #mean spectral total water leaving radiance
+#    lt_is = models.FloatField()	
+#    lt_is_units = models.CharField(max_length=50, choices=UNITS_CHOICES, default='mWm-2nm-1sr-1')
+
+    #spectral sky radiance
+#    lsky_is = models.FloatField()    
+#    lsky_is_units = models.CharField(max_length=50, choices=UNITS_CHOICES, default='mWm-2nm-1sr-1')
+    
+    #water reflectance
+#    rho_w_is = models.FloatField()
+#    rho_w_is = models.CharField(max_length=50, choices=UNITS_CHOICES, default='dl')
+
+
+#v2
 class Measurement(models.Model):
     """Measurements types availables :
-    - normalised water reflectance (dl)
-    - spectral water-leaving radiance (mW.m-2.nm-1.sr-1)
-    - mean spectral total water leaving radiance (mW.m-2.nm-1.sr-1)
-    - spectral sky radiance (mW.m-2.nm-1.sr-1)
-    - water reflectance (dl)
+    - dl
+    - mW.m-2.nm-1.sr-1
+    - uW.cm-2.nm.sr
+    - mW.m-2.nm-1.s
+    - nm
+    - m-1
+    - W.m-2
+    - m
+    - mg.m-3
+    - g.m-3
+    - gC.m-3
+    - UTC
+    - cm
+    - deg
     """
     
     UNITS_CHOICES = (
@@ -29,28 +86,12 @@ class Measurement(models.Model):
         ('cm', 'cm'),
         ('deg', '&ordm;'), 
     )
-    
-    #normalised water reflectance
-    rho_wn_is = models.FloatField()
-    rho_wn_is_unit = models.CharField(max_length=50, choices=UNITS_CHOICES, default='dl')
+
+    parameter = models.CharField(max_length=255)
+    value = models.FloatField()
+    m_type = models.CharField(max_length=50, choices=UNITS_CHOICES)
 	
-    #spectral water-leaving radiance
-    lw_is = models.FloatField()	
-    lw_is_unit = models.CharField(max_length=50, choices=UNITS_CHOICES, default='mWm-2nm-1sr-1')
 
-    #mean spectral total water leaving radiance
-    lt_is = models.FloatField()	
-    lt_is_units = models.CharField(max_length=50, choices=UNITS_CHOICES, default='mWm-2nm-1sr-1')
-
-    #spectral sky radiance
-    lsky_is = models.FloatField()    
-    lsky_is_units = models.CharField(max_length=50, choices=UNITS_CHOICES, default='mWm-2nm-1sr-1')
-    
-    #water reflectance
-    rho_w_is = models.FloatField()
-    rho_w_is = models.CharField(max_length=50, choices=UNITS_CHOICES, default='dl')
-
-	
 class Photo(models.Model):
     """Class defining a photo defined by :
     - web location
