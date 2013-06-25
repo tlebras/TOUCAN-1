@@ -1,0 +1,5 @@
+To dump databse : 
+python manage.py dumpdata --indent=4 > dump_data.json
+
+To load data in the database :
+python manage.py loaddata dump_data.json

@@ -1,0 +1,4 @@
+django==1.4.1
+south
+django-nose
+model_mommy==0.8.1

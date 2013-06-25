@@ -6,7 +6,8 @@ from django.conf.urls import patterns, include, url
 
 urlpatterns = patterns('',
     # Examples:
-    # url(r'^$', 'Mermaid2.views.home', name='home'),
+    url(r'^$', 'Mermaid2_db.views.upload_data'),
+    #url(r'^$', 'Mermaid2_db.views.add_point'),
     # url(r'^Mermaid2/', include('Mermaid2.foo.urls')),
 
     # Uncomment the admin/doc line below to enable admin documentation:

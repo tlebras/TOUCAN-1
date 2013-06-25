@@ -1,73 +1,96 @@
+"""Django models for Mermaid2 Database"""
+
 #from django.db import models
 from django.contrib.gis.db import models
-
+import re
 # Create your models here.
 
-#v1
-#class Measurement(models.Model):
-#    """Measurements types availables :
-#    - normalised water reflectance (dl)
-#    - spectral water-leaving radiance (mW.m-2.nm-1.sr-1)
-#    - mean spectral total water leaving radiance (mW.m-2.nm-1.sr-1)
-#    - spectral sky radiance (mW.m-2.nm-1.sr-1)
-#    - water reflectance (dl)
-#    """
+class Deployment(models.Model):
+    """Class defining a deploymemt defined by :\n
+    - site
+    - pi : Principal Investigator
+    """
+     
+    site = models.CharField(max_length=255)
+    pi = models.CharField(max_length=255)
+      
     
-#    UNITS_CHOICES = (
-#        ('dl', 'dl'),
-#        ('mW.m-2.nm-1.sr-1', 'mW.m<sup>-2</sup>.nm<sup>-1</sup>.sr<sup>-1</sup>'),
-#        ('uW.cm-2.nm.sr', 'uW.cm<sup>-2</sup>.nm.sr'),
-#        ('mW.m-2.nm-1.s', 'mW.m<sup>-2</sup>.nm<sup>-1</sup>.s'),
-#        ('nm', 'nm'),
-#        ('m-1', 'm<sup>-1</sup>'),
-#        ('W.m-2', 'W.m<sup>-2</sup>'),
-#        ('m', 'm'),
-#        ('mg.m-3', 'mg.m<sup>-3</sup>'),
-#        ('g.m-3', 'g.m<sup>-3</sup>'),  
-#        ('gC.m-3', 'gC.m<sup>-3</sup>'), 
-#        ('UTC', 'UTC'),
-#        ('cm', 'cm'),
-#        ('deg', '&ordm;'), 
-#    )
+class DeploymentPoint(models.Model):
+    """Class defining a deployment point defined by :\n
+    - matchup_id : ID of in-situ point
+    - lat_is : latitude in-situ
+    - lon_is : longitude in-situ
+    - time_is : time (mermaid format)
+    - pqc : processing quality control
+    - mqc : measurement quality control
+    - land_dist_IS : distance from land
+    - thetas_is : solar zenith angled computed from time/lat/lon 
+    """
     
-    #normalised water reflectance
-#    rho_wn_is = models.FloatField()
-#    rho_wn_is_unit = models.CharField(max_length=50, choices=UNITS_CHOICES, default='dl')
+    matchup_id = models.CharField(max_length=255)
+    lat_is = models.FloatField()
+    lon_is = models.FloatField()
+    time_is = models.CharField(max_length=255)
+    pqc = models.CharField(max_length=255)
+    mqc = models.CharField(max_length=255)
+    land_dist_is = models.FloatField()
+    thetas_is = models.FloatField()
+    deployment = models.ForeignKey(Deployment)
+    
+    def lat_ok(self):
+        """Returns TRUE if latitude is between -90 and +90"""
+        
+        return (self.lat_is < 90) & (self.lat_is > -90)
+
+    def lon_ok(self):
+        """Returns TRUE if longitude is between -180 and +180"""
+            
+        return (self.lon_is < 180) & (self.lon_is > -180)
+        
+    def time_ok(self):
+        """Returns TRUE if time respects the mermaid format"""
+        
+        time_format = r"^[0-9]{8}T[0-9]{6}Z$"
+        if re.search(time_format, self.time_is) is None:      
+            return False
+        else:
+            return True 
+
+    def pqc_ok(self):
+        """Returns TRUE if pqc respects the mermaid format"""
+        
+        pqc_format = r"^P[0-9]*$"
+        if re.search(pqc_format, self.pqc) is None:      
+            return False
+        else:
+            return True 
+
+    def mqc_ok(self):
+        """Returns TRUE if mqc respects the mermaid format"""
+        
+        mqc_format = r"^M[0-9]*$"
+        if re.search(mqc_format, self.mqc) is None:      
+            return False
+        else:
+            return True                    
+    
+    
+class Photo(models.Model):
+    """Class defining a photo defined by :\n
+    - web location
+    - archive location
+    """
 	
-    #spectral water-leaving radiance
-#    lw_is = models.FloatField()	
-#    lw_is_unit = models.CharField(max_length=50, choices=UNITS_CHOICES, default='mWm-2nm-1sr-1')
-
-    #mean spectral total water leaving radiance
-#    lt_is = models.FloatField()	
-#    lt_is_units = models.CharField(max_length=50, choices=UNITS_CHOICES, default='mWm-2nm-1sr-1')
-
-    #spectral sky radiance
-#    lsky_is = models.FloatField()    
-#    lsky_is_units = models.CharField(max_length=50, choices=UNITS_CHOICES, default='mWm-2nm-1sr-1')
-    
-    #water reflectance
-#    rho_w_is = models.FloatField()
-#    rho_w_is = models.CharField(max_length=50, choices=UNITS_CHOICES, default='dl')
+    web_location = models.CharField(max_length=255)
+    archive_location = models.CharField(max_length=255)	    
+    point = models.ForeignKey(DeploymentPoint)
 
 
-#v2
 class Measurement(models.Model):
-    """Measurements types availables :
-    - dl
-    - mW.m-2.nm-1.sr-1
-    - uW.cm-2.nm.sr
-    - mW.m-2.nm-1.s
-    - nm
-    - m-1
-    - W.m-2
-    - m
-    - mg.m-3
-    - g.m-3
-    - gC.m-3
-    - UTC
-    - cm
-    - deg
+    """Class defining a measurement point defined by :\n
+    - parameter
+    - value
+    - units
     """
     
     UNITS_CHOICES = (
@@ -89,45 +112,8 @@ class Measurement(models.Model):
 
     parameter = models.CharField(max_length=255)
     value = models.FloatField()
-    m_type = models.CharField(max_length=50, choices=UNITS_CHOICES)
-	
-
-class Photo(models.Model):
-    """Class defining a photo defined by :
-    - web location
-    - archive location
-    """
-	
-    web_location = models.CharField(max_length=255)
-    archive_location = models.CharField(max_length=255)	
-
-
-class DeploymentPoint(models.Model):
-    """Class defining a deploymemt point defined by :
-    - matchup_ id : ID of in-situ point
-    - site
-    - pi : principal investigator
-    - lat_is : latitude in-situ
-    - lon_is : longitude in-situ
-    - time_is : time (mermaid format)
-    - pqc : processing quality control
-    - mqc : measurement quality control
-    - thetas_is : solr zenith angled computed from time/lat/lon 
-    - measurements   
-    """
-    
-    matchup_id = models.CharField(max_length=255)
-    site = models.CharField(max_length=255)
-    pi = models.CharField(max_length=255)
-    lat_is = models.FloatField()
-    lon_is = models.FloatField()
-    time_is = models.TimeField()
-    pqc = models.CharField(max_length=255)
-    mqc = models.CharField(max_length=255)
-    thetas_is = models.FloatField()
-    measurements = models.ManyToManyField(Measurement)
-    photo = models.ForeignKey(Photo)
-
+    units = models.CharField(max_length=50, choices=UNITS_CHOICES)
+    point = models.ForeignKey(DeploymentPoint)
 
 
 
