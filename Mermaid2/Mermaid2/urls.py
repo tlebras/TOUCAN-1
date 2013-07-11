@@ -1,13 +1,28 @@
 from django.conf.urls import patterns, include, url
-
+from Mermaid2_db.api import *
+from tastypie.api import Api
 # Uncomment the next two lines to enable the admin:
 # from django.contrib import admin
 # admin.autodiscover()
 
+v1_api = Api(api_name='v1')
+v1_api.register(DeploymentResource())
+v1_api.register(PointResource())
+v1_api.register(InstrumentResource())
+v1_api.register(MeasurementTypeResource())
+v1_api.register(MeasurementResource())
+
 urlpatterns = patterns('',
     # Examples:
-    url(r'^$', 'Mermaid2_db.views.upload_data'),
-    #url(r'^$', 'Mermaid2_db.views.add_point'),
+    #url(r'^$', 'Mermaid2_db.views.upload_data'),
+    url(r'^$', 'Mermaid2_db.views.home'),
+    #url(r'^search_data/$', 'Mermaid2_db.views.search_data'),
+    #url(r'^add_data/$', 'Mermaid2_db.views.add_data'),
+    url(r'^add_data/$', 'Mermaid2_db.views.upload_data'),
+    url(r'^add_instrument/$', 'Mermaid2_db.views.add_instrument'),
+    url(r'^add_wavelengths/(\w+)/(\d+)$', 'Mermaid2_db.views.add_wavelengths'),
+    (r'^search/', include('haystack.urls')),
+    (r'^api/', include(v1_api.urls)),
     # url(r'^Mermaid2/', include('Mermaid2.foo.urls')),
 
     # Uncomment the admin/doc line below to enable admin documentation:

@@ -6,7 +6,7 @@ Replace this with more appropriate tests for your application.
 """
 
 from django.test import TestCase
-from Mermaid2_db.models import Deployment, DeploymentPoint, Measurement, Photo
+from Mermaid2_db.models import Deployment, DeploymentPoint, Photo
 
 class SimpleTest(TestCase):
 
