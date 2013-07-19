@@ -1,0 +1,11 @@
+<h1>Search Data</h1>
+ 
+   
+<p>
+    <form method="post" enctype="multipart/form-data" action=".">
+       {% csrf_token %}
+       {{ form.as_p }}
+       <input type="submit"/>
+    </form>
+</p>
+<p><a href="{% url Mermaid2_db.views.home %}">Go Home</a>

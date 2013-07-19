@@ -1,17 +1,17 @@
 """Django views for Mermaid2 Database"""
 
 from datetime import datetime
-from Mermaid2_db.models import Deployment, Point, Instrument, Measurement, MeasurementType, InstrumentWavelength     
-from Mermaid2_db.forms import UploadForm, AddInstrumentForm, AddWavelengthForm
+from Mermaid2_db.models import Deployment, Point, Instrument, Measurement, MeasurementType, InstrumentWavelength, Image     
+from Mermaid2_db.forms import UploadForm, AddInstrumentForm, AddWavelengthForm, SearchMeasurementForm, SearchPointForm
 from django.http import HttpResponse, HttpResponseRedirect
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 import logging
 import re
 from django.core.urlresolvers import reverse
-
+import requests
+import json
 
 logger = logging.getLogger(__name__)
-
 
 def home(request):
     """Main page\n
@@ -19,6 +19,107 @@ def home(request):
     """
 
     return render(request, 'Mermaid2_db/home.html')
+
+
+def see_image(request):
+
+    resp = requests.get(url='http://0.0.0.0:8000/api/v1/image/1/?format=json')
+
+    data = json.loads(resp.text) 
+
+    location = data['archive_location']
+
+    return render(request, 'Mermaid2_db/see_image.html', locals())  
+      
+
+def add_image(request):
+
+    Image(web_location='', archive_location='http://imageshack.us/a/img114/596/dscf4109bm2.jpg', top_left_point='POINT(12 45)', bot_right_point='POINT(13 46)', instrument=Instrument.objects.get(id=1)).save()
+    
+    return render(request, 'Mermaid2_db/home.html')
+    
+ 
+def search_point(request):
+
+    if request.method == "POST":
+        form = SearchPointForm(request.POST)
+        if form.is_valid():
+            top_left_lat = form.cleaned_data.get('top_left_lat')
+            top_left_lon = form.cleaned_data.get('top_left_lon')
+            bot_right_lat = form.cleaned_data.get('bot_right_lat')
+            bot_right_lon = form.cleaned_data.get('bot_right_lon')
+            
+            url = get_point_url(top_left_lat, top_left_lon, bot_right_lat, bot_right_lon)  
+            
+            resp = requests.get(url=url)
+            data = json.loads(resp.text) 
+            objects = data['objects']
+                       
+            return render(request, 'Mermaid2_db/point_results.html', locals())
+
+    else:
+        form = SearchPointForm()    
+            
+    return render(request, 'Mermaid2_db/search_data.html', locals())    
+
+
+def get_point_url(top_left_lat, top_left_lon, bot_right_lat, bot_right_lon): 
+    url = 'http://0.0.0.0:8000/api/v1/point/?format=json&limit=0&point__within={"type":"MultiPolygon","coordinates":' + '[[[[{2},{1}],[{2},{3}],[{0},{3}],[{0},{1}],[{2},{1}]]]]'.format(top_left_lat, top_left_lon, bot_right_lat, bot_right_lon) + '}'
+    
+    return url     
+    
+   
+def search_measurement(request):
+
+    print 'ok'
+    get_choices()
+    
+    if request.method == "POST":
+        form = SearchMeasurementForm(request.POST)
+        if form.is_valid():
+            deployment = form.cleaned_data.get('deployment')
+            measurement_type = form.cleaned_data.get('measurement_type')
+            wavelengths = form.cleaned_data.get('wavelengths')
+            url = get_measurement_url(deployment, measurement_type, wavelengths)
+            resp = requests.get(url=url)
+            data = json.loads(resp.text) 
+            objects = data['objects']
+                       
+            return render(request, 'Mermaid2_db/measurement_results.html', locals())
+
+    else:
+        form = SearchMeasurementForm()    
+            
+    return render(request, 'Mermaid2_db/search_data.html', locals())
+        
+
+def get_choices():
+
+    resp = requests.get(url='http://0.0.0.0:8000/api/v1/deployment/?format=json&limit=0')
+    data = json.loads(resp.text)
+    objects = data['objects']
+    print objects
+    
+ 
+
+def get_measurement_url(deployment, measurement_type, wavelengths):
+    url = 'http://0.0.0.0:8000/api/v1/measurement/?'
+    
+    if deployment != []:
+        for dep in deployment:
+            url += 'point__deployment__site__in=' + dep + '&'
+    
+    if measurement_type != []:
+        for mes in measurement_type:
+            url += 'measurementtype__type__in=' + mes + '&'
+    
+    if wavelengths != []:
+        for wav in wavelengths:
+            url += 'wavelength__in=' + wav + '&'
+            
+    url += 'format=json&limit=0'
+    
+    return url
 
 
 def add_instrument(request): 

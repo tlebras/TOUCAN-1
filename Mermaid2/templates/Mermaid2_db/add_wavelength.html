@@ -1,0 +1,13 @@
+<h1>Add wavelengths</h1>
+ 
+{% if save %}
+    <p>Data saved.</p>
+{% endif %}
+<p>
+    <form method="post" enctype="multipart/form-data" action="./{{wavelengths}}">
+       {% csrf_token %}
+       {{ form.as_p }}
+       <input type="submit"/>
+    </form>
+</p>
+<p><a href="{% url Mermaid2_db.views.home %}">Go Home</a>

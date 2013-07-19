@@ -1,0 +1,5 @@
+<h1>Results</h1>
+
+{% for point in objects %}
+    {{ point.deployment.site }} {{ point.point.coordinates }} {{ point.time_is}}<br />
+{% endfor %}    

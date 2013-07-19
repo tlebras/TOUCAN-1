@@ -51,8 +51,60 @@ class AddWavelengthForm(forms.Form):
         for wave in range(num_wav):
             self.fields['wavelength %d' % (wave+1)] = forms.FloatField()
             
+            
+class SearchMeasurementForm(forms.Form):
 
+    LIST_DEPLOYMENTS = (
+        ('Gloria', 'Gloria'),
+        ('ChesapeakeBay', 'ChesapeakeBay'),
+    )
+    
+    LIST_MEASUREMENT_TYPES = (
+        ('Rho_wn_IS', 'Rho_wn_IS'),
+        ('LwN_IS', 'LwN_IS'),
+        ('ExactWavelength_IS', 'ExactWavelength_IS'),
+        ('AERONET_chla_IS', 'AERONET_chla_IS'),
+        ('Surf_press_IS', 'Surf_press_IS'),
+        ('Wind_speed_IS', 'Wind_speed_IS'),
+        ('O3_IS', 'O3_IS'),
+        ('Lw_IS', 'Lw_IS'),
+        ('Es_IS', 'Es_IS'),
+    )
+    
+    LIST_WAVELENGTHS = (
+        ('412', '412'),
+        ('441', '441'),
+        ('443', '443'),
+        ('491', '491'),
+        ('490', '490'),
+        ('510', '510'),
+        ('530', '530'),
+        ('555', '555'),
+        ('560', '560'),
+        ('620', '620'),
+        ('665', '665'),
+        ('675', '675'),
+        ('681', '681'),        
+        ('708', '708'),
+        ('441', '441'),       
+        ('753', '753'),        
+        ('760', '760'),
+        ('778', '778'),
+        ('870', '870'),
+        
+    )
 
+    deployment = forms.MultipleChoiceField(required=False, choices=LIST_DEPLOYMENTS)
+    measurement_type = forms.MultipleChoiceField(required=False, choices=LIST_MEASUREMENT_TYPES)
+    wavelengths = forms.MultipleChoiceField(required=False, choices=LIST_WAVELENGTHS)
+    
+    
+class SearchPointForm(forms.Form):
+
+    top_left_lat = forms.FloatField()
+    top_left_lon = forms.FloatField()
+    bot_right_lat = forms.FloatField()
+    bot_right_lon = forms.FloatField()    
 
 
 

@@ -34,8 +34,10 @@ class Point(models.Model):
     land_dist_is = models.FloatField()
     thetas_is = models.FloatField()
     deployment = models.ForeignKey(Deployment)
-       
-    
+ 
+    objects = models.GeoManager()
+     
+        
 class Instrument(models.Model):
     """Instrument model defined by :\n
     - name
@@ -66,7 +68,7 @@ class Measurement(models.Model):
     measurement_type = models.ForeignKey(MeasurementType)    
     point = models.ForeignKey(Point)
     wavelength = models.FloatField(blank=True, null=True)
-    instrument = models.ForeignKey(Instrument, blank=True, null=True)     
+    instrument = models.ForeignKey(Instrument)     
      
                    
 class InstrumentWavelength(models.Model):
@@ -91,9 +93,9 @@ class Image(models.Model):
 	
     web_location = models.CharField(max_length=255)
     archive_location = models.CharField(max_length=255)	        
-    lat_lon_min = models.PointField()
-    lat_lon_max = models.PointField() 
-    point = models.ForeignKey(Point)  
+    top_left_point = models.PointField()
+    bot_right_point = models.PointField() 
+    #point = models.ForeignKey(Point)  
     instrument = models.ForeignKey(Instrument, blank=True, null=True) 
  
     
