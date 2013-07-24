@@ -9,3 +9,5 @@
 {% for measurement in objects %}
     {{ measurement.measurementtype.type }} @ {{ measurement.wavelength }} nm : {{ measurement.value }} {{ measurement.measurementtype.units }} - {{measurement.point.point.coordinates}} {{measurement.point.time_is}}<br />
 {% endfor %}    
+
+

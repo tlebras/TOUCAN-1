@@ -52,19 +52,30 @@ class MeasurementTypeResource(ModelResource):
             'type' : ALL, 
         }
 
-             
+
+class MeasurementWavelengthResource(ModelResource):
+    class Meta:
+        queryset = MeasurementWavelength.objects.all()
+        excludes = ['id']
+        include_resource_uri = False 
+        filtering = { 
+            'wavelength' : ALL, 
+        }
+        
+                     
 class MeasurementResource(ModelResource):
 
     point = fields.ForeignKey(PointResource, 'point', full=True)
     instrument = fields.ForeignKey(InstrumentResource, 'instrument', full=True)
     measurementtype = fields.ForeignKey(MeasurementTypeResource, 'measurement_type', full=True)
+    wavelength = fields.ForeignKey(MeasurementWavelengthResource, 'measurement_wavelength', full=True)
     
     class Meta:
         queryset = Measurement.objects.all()
         excludes = ['id']
         include_resource_uri = False
         filtering = { 
-            'wavelength' : ALL,
+            'wavelength' : ALL_WITH_RELATIONS,
             'measurementtype' : ALL_WITH_RELATIONS,
             'point' : ALL_WITH_RELATIONS, 
         }

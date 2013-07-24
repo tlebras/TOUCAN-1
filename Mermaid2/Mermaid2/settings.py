@@ -16,8 +16,8 @@ DATABASES = {
         #'NAME': 'database.sql',                      # Or path to database file if using sqlite3.
         'NAME': 'mermaid2',
         # The following settings are not used with sqlite3:
-        'USER': '',
-        'PASSWORD': '',
+        'USER': 'langlois',
+        'PASSWORD': 'langloismdp',
         'HOST': '127.0.0.1',                      # Empty for localhost through domain sockets or '127.0.0.1' for localhost through TCP.
         'PORT': '',                      # Set to empty string for default.
     }
@@ -110,7 +110,7 @@ ROOT_URLCONF = 'Mermaid2.urls'
 WSGI_APPLICATION = 'Mermaid2.wsgi.application'
 
 TEMPLATE_DIRS = (
-"/home/mermaid2/mermaid2_db/Mermaid2/templates"    
+"/home/langlois/Documents/django/Mermaid2/Mermaid2/templates"    
     # Put strings here, like "/home/html/django_templates" or "C:/www/django/templates".
     # Always use forward slashes, even on Windows.
     # Don't forget to use absolute paths, not relative paths.
@@ -169,3 +169,5 @@ HAYSTACK_CONNECTIONS = {
         'URL': 'http://127.0.0.1:8983/solr',
     },
 }
+
+#API_LIMIT_PER_PAGE = 0

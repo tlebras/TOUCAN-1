@@ -55,19 +55,26 @@ class MeasurementType(models.Model):
     type = models.CharField(max_length=255)     
     units = models.CharField(max_length=255) 
  
- 
+
+class MeasurementWavelength(models.Model):
+    """Measurement wavelength model defined by :\n
+    - wavelength
+    """
+    wavelength = models.FloatField()
+    
+     
 class Measurement(models.Model):
     """Measurement model defined by :\n
     - value
     - point
-    - wavelength (optional filed)
+    - wavelength (optional)
     - instrument
     """
 
     value = models.FloatField()
     measurement_type = models.ForeignKey(MeasurementType)    
     point = models.ForeignKey(Point)
-    wavelength = models.FloatField(blank=True, null=True)
+    wavelength = models.ForeignKey(MeasurementWavelength, blank=True, null=True)
     instrument = models.ForeignKey(Instrument)     
      
                    

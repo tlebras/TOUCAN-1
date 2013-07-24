@@ -1,7 +1,7 @@
 """Django views for Mermaid2 Database"""
 
 from datetime import datetime
-from Mermaid2_db.models import Deployment, Point, Instrument, Measurement, MeasurementType, InstrumentWavelength, Image     
+from Mermaid2_db.models import *     
 from Mermaid2_db.forms import UploadForm, AddInstrumentForm, AddWavelengthForm, SearchMeasurementForm, SearchPointForm
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render, redirect
@@ -54,7 +54,7 @@ def search_point(request):
             resp = requests.get(url=url)
             data = json.loads(resp.text) 
             objects = data['objects']
-                       
+                     
             return render(request, 'Mermaid2_db/point_results.html', locals())
 
     else:
@@ -64,18 +64,19 @@ def search_point(request):
 
 
 def get_point_url(top_left_lat, top_left_lon, bot_right_lat, bot_right_lon): 
-    url = 'http://0.0.0.0:8000/api/v1/point/?format=json&limit=0&point__within={"type":"MultiPolygon","coordinates":' + '[[[[{2},{1}],[{2},{3}],[{0},{3}],[{0},{1}],[{2},{1}]]]]'.format(top_left_lat, top_left_lon, bot_right_lat, bot_right_lon) + '}'
+    url = 'http://0.0.0.0:8000/api/v1/point/?format=json&point__within={"type":"MultiPolygon","coordinates":' + '[[[[{2},{1}],[{2},{3}],[{0},{3}],[{0},{1}],[{2},{1}]]]]'.format(top_left_lat, top_left_lon, bot_right_lat, bot_right_lon) + '}'
     
     return url     
     
    
 def search_measurement(request):
 
-    print 'ok'
-    get_choices()
+    d_choices = get_deployment_choices()
+    m_choices = get_measurement_type_choices()
+    w_choices = get_wavelengths_choices()
     
     if request.method == "POST":
-        form = SearchMeasurementForm(request.POST)
+        form = SearchMeasurementForm(request.POST, deployment_choices=d_choices, measurement_type_choices=m_choices, wavelengths_choices=w_choices)
         if form.is_valid():
             deployment = form.cleaned_data.get('deployment')
             measurement_type = form.cleaned_data.get('measurement_type')
@@ -84,23 +85,67 @@ def search_measurement(request):
             resp = requests.get(url=url)
             data = json.loads(resp.text) 
             objects = data['objects']
-                       
+            
             return render(request, 'Mermaid2_db/measurement_results.html', locals())
 
     else:
-        form = SearchMeasurementForm()    
+        form = SearchMeasurementForm(deployment_choices=d_choices, measurement_type_choices=m_choices, wavelengths_choices=w_choices)    
             
     return render(request, 'Mermaid2_db/search_data.html', locals())
         
 
-def get_choices():
-
-    resp = requests.get(url='http://0.0.0.0:8000/api/v1/deployment/?format=json&limit=0')
+def get_deployment_choices():
+    
+    deployment_choices = []
+    temp_choices = []
+    resp = requests.get(url='http://0.0.0.0:8000/api/v1/deployment/?format=json')
     data = json.loads(resp.text)
     objects = data['objects']
-    print objects
     
+    for deployment in objects :
+        temp_choices.append(deployment['site']) 
+        temp_choices.append(deployment['site']) 
+        deployment_choices.append(temp_choices)
+        temp_choices = []
+    return deployment_choices
+    
+    
+def get_measurement_type_choices():
+    
+    measurement_type_choices = []
+    temp_choices = []
+    resp = requests.get(url='http://0.0.0.0:8000/api/v1/measurementtype/?format=json')
+    data = json.loads(resp.text)
+    objects = data['objects']
+    
+    for measurementtype in objects :
+        temp_choices.append(measurementtype['type']) 
+        temp_choices.append(measurementtype['type']) 
+        measurement_type_choices.append(temp_choices)
+        temp_choices = []
+    return measurement_type_choices    
  
+
+def get_wavelengths_choices():
+
+    wavelengths_choices = []
+    temp_choices = []
+    temp_choices2 = []
+    resp = requests.get(url='http://0.0.0.0:8000/api/v1/measurement/?format=json')
+    data = json.loads(resp.text)
+    objects = data['objects'] 
+    
+    for measurement in objects :
+        temp_choices.append(measurement['wavelength'])
+    temp_choices = sorted(list(set(temp_choices)))
+
+    for wavelength in temp_choices :
+        temp_choices2.append(wavelength)
+        temp_choices2.append(wavelength)
+        wavelengths_choices.append(temp_choices2)
+        temp_choices2 = []
+    return wavelengths_choices   
+
 
 def get_measurement_url(deployment, measurement_type, wavelengths):
     url = 'http://0.0.0.0:8000/api/v1/measurement/?'
@@ -117,7 +162,7 @@ def get_measurement_url(deployment, measurement_type, wavelengths):
         for wav in wavelengths:
             url += 'wavelength__in=' + wav + '&'
             
-    url += 'format=json&limit=0'
+    url += 'format=json'
     
     return url
 
@@ -362,9 +407,15 @@ def get_wavelength(string):
         if char.isdigit() or char == '.': # read only digits or point
             wavelength += char
         
-    wavelength = int(wavelength)    
-        
-    return wavelength      
+    wavelength = float(wavelength) 
+    
+    try:   
+        measurement_wavelength = MeasurementWavelength.objects.get(wavelength=wavelength)
+    except MeasurementWavelength.DoesNotExist:   
+        measurement_wavelength = MeasurementWavelength(wavelength=wavelength)
+        measurement_wavelength.save()
+         
+    return measurement_wavelength      
     
     
     

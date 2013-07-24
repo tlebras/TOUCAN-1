@@ -12,6 +12,7 @@ v1_api.register(DeploymentResource())
 v1_api.register(PointResource())
 v1_api.register(InstrumentResource())
 v1_api.register(MeasurementTypeResource())
+v1_api.register(MeasurementWavelengthResource())
 v1_api.register(MeasurementResource())
 v1_api.register(ImageResource())
 
