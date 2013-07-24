@@ -68,7 +68,7 @@ class MeasurementResource(ModelResource):
     point = fields.ForeignKey(PointResource, 'point', full=True)
     instrument = fields.ForeignKey(InstrumentResource, 'instrument', full=True)
     measurementtype = fields.ForeignKey(MeasurementTypeResource, 'measurement_type', full=True)
-    wavelength = fields.ForeignKey(MeasurementWavelengthResource, 'measurement_wavelength', full=True)
+    wavelength = fields.ForeignKey(MeasurementWavelengthResource, 'measurement_wavelength', full=True, blank=True, null=True)
     
     class Meta:
         queryset = Measurement.objects.all()
