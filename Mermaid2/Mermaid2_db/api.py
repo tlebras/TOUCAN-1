@@ -12,8 +12,8 @@ class DeploymentResource(ModelResource):
         excludes = ['id']
         include_resource_uri = False
         filtering = { 
-            'site' : ALL,
-            'pi' : ALL, 
+            'site': ALL,
+            'pi': ALL,
         }
         
 
@@ -23,8 +23,8 @@ class InstrumentResource(ModelResource):
         excludes = ['id']
         include_resource_uri = False   
         filtering = { 
-            'name' : ALL,
-            'instrumentwavelength' : ALL_WITH_RELATIONS, 
+            'name': ALL,
+            'instrumentwavelength': ALL_WITH_RELATIONS,
         }     
 
 
@@ -37,10 +37,12 @@ class PointResource(ModelResourceGeoDjango):
         excludes = ['id']
         include_resource_uri = False
         filtering = { 
-            'matchup_id' : ALL,
-            'deployment' : ALL_WITH_RELATIONS, 
-            'point' : ALL,
+            'matchup_id': ALL,
+            'deployment': ALL_WITH_RELATIONS,
+            'point': ALL,
+            'time_is': ALL,
         }
+        max_limit = None
       
          
 class MeasurementTypeResource(ModelResource):
@@ -49,7 +51,7 @@ class MeasurementTypeResource(ModelResource):
         excludes = ['id']
         include_resource_uri = False 
         filtering = { 
-            'type' : ALL, 
+            'type': ALL,
         }
 
 
@@ -59,7 +61,7 @@ class MeasurementWavelengthResource(ModelResource):
         excludes = ['id']
         include_resource_uri = False 
         filtering = { 
-            'wavelength' : ALL, 
+            'wavelength': ALL,
         }
         
                      
@@ -68,17 +70,18 @@ class MeasurementResource(ModelResource):
     point = fields.ForeignKey(PointResource, 'point', full=True)
     instrument = fields.ForeignKey(InstrumentResource, 'instrument', full=True)
     measurementtype = fields.ForeignKey(MeasurementTypeResource, 'measurement_type', full=True)
-    wavelength = fields.ForeignKey(MeasurementWavelengthResource, 'measurement_wavelength', full=True, blank=True, null=True)
+    wavelength = fields.ForeignKey(MeasurementWavelengthResource, 'wavelength', full=True, null=True)
     
     class Meta:
         queryset = Measurement.objects.all()
         excludes = ['id']
         include_resource_uri = False
         filtering = { 
-            'wavelength' : ALL_WITH_RELATIONS,
-            'measurementtype' : ALL_WITH_RELATIONS,
-            'point' : ALL_WITH_RELATIONS, 
+            'measurementtype': ALL_WITH_RELATIONS,
+            'point': ALL_WITH_RELATIONS,
+            'wavelength': ALL_WITH_RELATIONS,
         }
+        max_limit = None
 
     def dehydrate(self, bundle):
         if math.isnan(bundle.data['value']):
@@ -97,10 +100,8 @@ class ImageResource(ModelResource):
         excludes = ['id']
         include_resource_uri = False
         filtering = { 
-            'top_left_point' : ALL,
-            'bot_right_point' : ALL,
-            'instrument' : ALL_WITH_RELATIONS,
-            'point' : ALL_WITH_RELATIONS, 
+            'top_left_point': ALL,
+            'bot_right_point': ALL,
+            'instrument': ALL_WITH_RELATIONS,
+            'point': ALL_WITH_RELATIONS,
         }        
-        
-        

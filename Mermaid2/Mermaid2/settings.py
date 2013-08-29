@@ -110,7 +110,7 @@ ROOT_URLCONF = 'Mermaid2.urls'
 WSGI_APPLICATION = 'Mermaid2.wsgi.application'
 
 TEMPLATE_DIRS = (
-"/home/mermaid2/mermaid2_db/Mermaid2/templates"    
+"/home/langlois/Documents/django/Mermaid2/Mermaid2/templates"    
     # Put strings here, like "/home/html/django_templates" or "C:/www/django/templates".
     # Always use forward slashes, even on Windows.
     # Don't forget to use absolute paths, not relative paths.
@@ -126,6 +126,7 @@ INSTALLED_APPS = (
     'django.contrib.gis',
     'Mermaid2_db',
     'tastypie',
+    'south',
     # Uncomment the next line to enable the admin:
     # 'django.contrib.admin',
     # Uncomment the next line to enable admin documentation:
@@ -170,4 +171,5 @@ HAYSTACK_CONNECTIONS = {
     },
 }
 
-#API_LIMIT_PER_PAGE = 0
+API_LIMIT_PER_PAGE = 0
+TASTYPIE_DEFAULT_FORMATS = ['json']

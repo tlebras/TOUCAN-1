@@ -1,7 +1,11 @@
 """Django models for Mermaid2 Database"""
 
 from django.contrib.gis.db import models
-import re
+
+
+class Campaign(models.Model):
+
+    campaign = models.CharField(max_length=255)
 
 
 class Deployment(models.Model):
@@ -9,11 +13,12 @@ class Deployment(models.Model):
     - site
     - PI : Principal Investigator
     """
-    
+
     site = models.CharField(max_length=255)
     pi = models.CharField(max_length=255)
-    
-    
+    campaign = models.ForeignKey(Campaign)
+
+
 class Point(models.Model):
     """Point model defined by :\n
     - matchup_id : ID of in-situ point
@@ -25,44 +30,45 @@ class Point(models.Model):
     - thetas_is : Solar zenith angled computed from time/lat/lon 
     - deployment
     """
-    
+
     matchup_id = models.CharField(max_length=255)
     point = models.PointField()
-    time_is = models.CharField(max_length=255) 
+    time_is = models.CharField(max_length=255)
     pqc = models.CharField(max_length=255)
     mqc = models.CharField(max_length=255)
     land_dist_is = models.FloatField()
     thetas_is = models.FloatField()
     deployment = models.ForeignKey(Deployment)
- 
+
     objects = models.GeoManager()
-     
-        
+
+
 class Instrument(models.Model):
     """Instrument model defined by :\n
     - name
     """
 
-    name = models.CharField(max_length=255)  
- 
-              
+    name = models.CharField(max_length=255)
+
+
 class MeasurementType(models.Model):
     """Measurement type model defined by :\n
     - type
     - units
     """
-    
-    type = models.CharField(max_length=255)     
-    units = models.CharField(max_length=255) 
- 
+
+    type = models.CharField(max_length=255)
+    units = models.CharField(max_length=255)
+
 
 class MeasurementWavelength(models.Model):
     """Measurement wavelength model defined by :\n
     - wavelength
     """
+
     wavelength = models.FloatField()
-    
-     
+
+
 class Measurement(models.Model):
     """Measurement model defined by :\n
     - value
@@ -72,22 +78,22 @@ class Measurement(models.Model):
     """
 
     value = models.FloatField()
-    measurement_type = models.ForeignKey(MeasurementType)    
+    measurement_type = models.ForeignKey(MeasurementType)
     point = models.ForeignKey(Point)
     wavelength = models.ForeignKey(MeasurementWavelength, blank=True, null=True)
-    instrument = models.ForeignKey(Instrument)     
-     
-                   
+    instrument = models.ForeignKey(Instrument)
+
+
 class InstrumentWavelength(models.Model):
     """Instrument Wavelength model defined by :\n
     - value
     - instrument
-    """    
-    
-    value = models.FloatField()    
+    """
+
+    value = models.FloatField()
     instrument = models.ForeignKey(Instrument)
-    
-    
+
+
 class Image(models.Model):
     """Image model defined by :\n
     - web location
@@ -96,18 +102,11 @@ class Image(models.Model):
     - lat/lon max
     - point
     - instrument
-	"""
-	
+"""
+
     web_location = models.CharField(max_length=255)
     archive_location = models.CharField(max_length=255)	        
     top_left_point = models.PointField()
     bot_right_point = models.PointField() 
     #point = models.ForeignKey(Point)  
-    instrument = models.ForeignKey(Instrument, blank=True, null=True) 
- 
-    
-    
-    
-          
-  
-
+    instrument = models.ForeignKey(Instrument, blank=True, null=True)

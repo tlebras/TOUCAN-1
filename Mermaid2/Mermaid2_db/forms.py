@@ -6,14 +6,14 @@ def choices():
     """Fonction making the list of available instruments
     """
 
-    list_instruments = [] #create empty list
+    list_instruments = []  # create empty list
 
-    for instrument in Instrument.objects.all(): #get all instrument objects
-        list_instruments.append([instrument.id, instrument.name]) #add the object to the list
+    for instrument in Instrument.objects.all():  # get all instrument objects
+        list_instruments.append([instrument.id, instrument.name])  # add the object to the list
 
     return list_instruments
-	
-	
+
+
 class UploadForm(forms.Form):
     """Form for uploading files
     """
@@ -22,8 +22,8 @@ class UploadForm(forms.Form):
         super(UploadForm, self).__init__(*args, **kwargs)
         self.fields['data'] = forms.FileField()        
         self.fields['name'] = forms.ChoiceField(choices=choices())
-	
-	
+
+
 class AddInstrumentForm(forms.Form):
     
     name = forms.CharField(max_length=100)
@@ -71,12 +71,3 @@ class SearchPointForm(forms.Form):
     top_left_lon = forms.FloatField()
     bot_right_lat = forms.FloatField()
     bot_right_lon = forms.FloatField()    
-
-
-
-
-
-
-
-
-
