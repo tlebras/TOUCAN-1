@@ -4,9 +4,9 @@ from Mermaid2_db.models import *
 
 def read_data(file_data, instrument, filename):
     """Function reading the file and uploading the data to the database\n
-    :param file_data: file object to be read
-    :param instrument: id of the instrument used for the measurement
-    :param filename: name of the file, the name of the campaign is extracted form it 
+    :param file_data: file object to be read (file)
+    :param instrument: id of the instrument used for the measurement (int)
+    :param filename: name of the file, the name of the campaign is extracted form it (string)
     """
 
     # read the cvs file (turn the string into an array)
@@ -27,7 +27,7 @@ def read_data(file_data, instrument, filename):
 
 def read_file(file_data):
     """Creates an array (actually a list of lists) based on the uploaded data\n
-    :param file_data: file object to be read
+    :param file_data: file object to be read (file)
     """
 
     # create an empty list to store the data
@@ -50,7 +50,7 @@ def read_file(file_data):
 def file_ok(line_1):
     """check if the file is legit\n
     to be modified, this function is not enough to check the integrity of the file given\n
-    :param line_1: first line of the csv file, only the header is checked
+    :param line_1: first line of the csv file, only the header is checked (array)
     """
 
     # only check performed : the first ten elements must match the following :
@@ -64,13 +64,13 @@ def file_ok(line_1):
             line_1[7].lower() == 'mqc' and
             line_1[8].lower() == 'land_dist_is' and
             (line_1[9].lower() == 'theta_s' or line_1[
-                9].lower() == 'thetas_is'))  # found two differents values in the csv files
+                9].lower() == 'thetas_is'))  # found two different values in the csv files
 
 
 def read_campaign_name(filename):
     """
     Get the name of the campaign from the name of the file (this function may should be rewritten or completed)\n
-    :param filename: name of the file
+    :param filename: name of the file (string)
     """
     # we assume that the name of the file begins with "extraction_XXXXX_"
     # XXXXX being the name of the campaign
@@ -84,7 +84,7 @@ def read_campaign_name(filename):
     # read the name of the file
     # stop reading when underscore is found
     while filename[i] != '_':
-        campaign_name += filename[i] # add the character the the campaign name
+        campaign_name += filename[i]  # add the character the the campaign name
         i += 1
 
     return campaign_name
@@ -93,11 +93,12 @@ def read_campaign_name(filename):
 def read_deployment_data(data, campaign, instrument):
     """Read the deployment data and create a deployment object\n
     :param data: array containing the data
-    :param campaign: campaign object to be linked with the deployment(s)
-    :param instrument: database id of the instrument to be linked with the measurements
+    :param campaign: campaign object to be linked with the deployment(s) (Campaign model)
+    :param instrument: database id of the instrument to be linked with the measurements (int)
     """
 
-    # we assume (since the file has been considered legit) that the deployment elements are in columns 1 (site) and 2 (PI) of the array
+    # we assume (since the file has been considered legit) that the deployment elements are in columns 1 (site)
+    #  and 2 (PI) of the array
     i = 1
     # read the file until the end
     while i < len(data):
@@ -116,10 +117,10 @@ def read_deployment_data(data, campaign, instrument):
 def read_point_data(data, deployment, instrument, header):
     """Read the point data, create point objects, read the measurement data and create measurement objects linked to \
      the point\n
-    :param data: line of the array we read
-    :param deployment: deployment object to be linked with the points
-    :param instrument: database id of the instrument to be linked with the measurements
-    :param header: first line of the array containing the measurement types
+    :param data: line of the array we read (array)
+    :param deployment: deployment object to be linked with the points (Deployment model)
+    :param instrument: database id of the instrument to be linked with the measurements (int)
+    :param header: first line of the array containing the measurement types (array)
     """
 
     # we assume that the required elements are in the correct order   
@@ -143,14 +144,19 @@ def read_point_data(data, deployment, instrument, header):
     # go through all the measurements
     while i < len(data):
         # checks if it's a simple or radiometric measurement
-        if re.search(r"^.*_IS$", header[i]):
-            Measurement(measurement_type=get_type(header[i], False), value=data[i], point=point,
-                        instrument=Instrument.objects.get(
-                            id=instrument)).save() # create a measurement using the functions to extract the data
-        elif re.search(r"^.*_IS_.*$", header[i]):
-            Measurement(measurement_type=get_type(header[i], True), value=data[i], wavelength=get_wavelength(header[i]),
-                        point=point, instrument=Instrument.objects.get(
-                    id=instrument)).save() # create a measurement using the functions to extract the data
+        if re.search(r"^.*_IS$", header[i]):  # all simple measurements must look like XXX_IS
+            Measurement(measurement_type=get_type(header[i], False),
+                        value=data[i],
+                        point=point,
+                        instrument=Instrument.objects.get(id=instrument)
+                        ).save()  # create a measurement using the functions to extract the data
+        elif re.search(r"^.*_IS_.*$", header[i]):  # all radiometric measurements must look like XXX_IS_YYY
+            Measurement(measurement_type=get_type(header[i], True),
+                        value=data[i],
+                        wavelength=get_wavelength(header[i]),
+                        point=point,
+                        instrument=Instrument.objects.get(id=instrument)
+                        ).save()  # create a measurement using the functions to extract the data
         i += 1
 
 
@@ -180,10 +186,10 @@ def get_units(type):
     elif type.lower() == 'lu_is':
         return 'uW.cm-2.nm.sr'
     elif type.lower() == 'a_is' or type.lower() == 'ap_is' or type.lower() == 'adet_is' or type.lower() == 'ag_is' \
-        or type.lower() == 'bb_is' or type.lower() == 'kd_is':
+            or type.lower() == 'bb_is' or type.lower() == 'kd_is':
         return 'm-1'
     else:
-        return 'NA' # if the measurement type is unknown, set units to NA
+        return 'NA'  # if the measurement type is unknown, set units to NA
 
 
 def get_type(string, radiometric):
@@ -197,7 +203,7 @@ def get_type(string, radiometric):
     if radiometric:
         for char in string:  # read all the characters in the string
             if not char.isdigit() and char != '.':  # if the character if a digit or a point, it is considered part
-                                                    #  of the wavelength
+            #  of the wavelength
             # (may be modified)
                 type += char
         type = type[:-1]  # delete the underscore at the end of the string
@@ -224,7 +230,7 @@ def get_wavelength(string):
     wavelength = ''
     for char in string:
         if char.isdigit() or char == '.':  # if the character if a digit or a point, it is considered part of
-                                           # the wavelength
+        # the wavelength
         # (may be modified)
             wavelength += char
 

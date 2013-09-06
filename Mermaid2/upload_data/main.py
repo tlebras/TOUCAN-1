@@ -1,30 +1,34 @@
 from os import environ, listdir
 import sys
-sys.path.append('/home/langlois/Documents/django/Mermaid2/Mermaid2_')
+sys.path.append('/home/langlois/Documents/django/Mermaid2/Mermaid2')
+#sys.path.append('/home/mermaid2/Mermaid2/Mermaid2')
 environ['DJANGO_SETTINGS_MODULE'] = 'Mermaid2.settings'
 from Mermaid2_db.models import *
-from upload import read_data
+from upload_ import read_data
 from datetime import datetime
 
-#file_list = listdir('data')
-#print file_list
-
-# make arrays using csv reader.
-
-#for file in file_list:  
-
+file_list = listdir('data')
 
 instrument = Instrument.objects.get_or_create(name='Unknown')[0]
 
-file = 'extraction_LISCO_step1_rhow_FULLDATASET.csv'  
-  
-file_data = open('data/' + file, 'r')
+for file in file_list:
 
-print type(file_data)
+    print file
+        
+    file_data = open('data/' + file, 'r')
 
-time_1 = datetime.now()
+    time_1 = datetime.now()
 
-#read_data(file_data, instrument.id, file)
+    read_data(file_data, instrument.id, file)
 
-time_2 = datetime.now()
-print time_2 - time_1
+    time_2 = datetime.now()
+    
+    print time_2 - time_1
+
+
+#import os
+#import sys
+#sys.path.append('/path/to/the/directory/above/your/project')
+#os.environ['DJANGO_SETTINGS_MODULE'] = 'yourproject.settings'
+#from  yourproject.yourapp.models import YourModel
+
