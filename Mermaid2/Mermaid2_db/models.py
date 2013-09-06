@@ -4,14 +4,17 @@ from django.contrib.gis.db import models
 
 
 class Campaign(models.Model):
-
+    """Campaign model defined by :\n
+    - campaign : name of the campaign (CharField)
+    """
     campaign = models.CharField(max_length=255)
 
 
 class Deployment(models.Model):
     """Deployment model defined by :\n
-    - site
-    - PI : Principal Investigator
+    - site (CharField)
+    - PI : Principal Investigator (CharField)
+    - campaign (ForeignKey)
     """
 
     site = models.CharField(max_length=255)
@@ -21,14 +24,14 @@ class Deployment(models.Model):
 
 class Point(models.Model):
     """Point model defined by :\n
-    - matchup_id : ID of in-situ point
-    - point : coordinates (lat lon)
-    - time_is : time (mermaid format)
-    - PQC : Processing Quality Control
-    - MQC : Measurment Quality Control
-    - land_dist_is : land distance
-    - thetas_is : Solar zenith angled computed from time/lat/lon 
-    - deployment
+    - matchup_id : ID of in-situ point (CharField)
+    - point : coordinates (lat lon) (PointField)
+    - time_is : time (mermaid format) (CharField)
+    - PQC : Processing Quality Control (CharField)
+    - MQC : Measurement Quality Control (CharField)
+    - land_dist_is : land distance (FloatField)
+    - thetas_is : Solar zenith angled computed from time/lat/lon (FloatField)
+    - deployment (ForeignKey)
     """
 
     matchup_id = models.CharField(max_length=255)
@@ -45,7 +48,7 @@ class Point(models.Model):
 
 class Instrument(models.Model):
     """Instrument model defined by :\n
-    - name
+    - name (CharField)
     """
 
     name = models.CharField(max_length=255)
@@ -53,8 +56,8 @@ class Instrument(models.Model):
 
 class MeasurementType(models.Model):
     """Measurement type model defined by :\n
-    - type
-    - units
+    - type (CharField)
+    - units (CharField)
     """
 
     type = models.CharField(max_length=255)
@@ -63,7 +66,7 @@ class MeasurementType(models.Model):
 
 class MeasurementWavelength(models.Model):
     """Measurement wavelength model defined by :\n
-    - wavelength
+    - wavelength (FloatField)
     """
 
     wavelength = models.FloatField()
@@ -71,10 +74,11 @@ class MeasurementWavelength(models.Model):
 
 class Measurement(models.Model):
     """Measurement model defined by :\n
-    - value
-    - point
-    - wavelength (optional)
-    - instrument
+    - value (FloatField)
+    - measurement_type (ForeignKey)
+    - point (ForeignKey)
+    - wavelength (optional) (ForeignKey)
+    - instrument (ForeignKey)
     """
 
     value = models.FloatField()
@@ -86,8 +90,8 @@ class Measurement(models.Model):
 
 class InstrumentWavelength(models.Model):
     """Instrument Wavelength model defined by :\n
-    - value
-    - instrument
+    - value (FloatField)
+    - instrument (ForeignKey)
     """
 
     value = models.FloatField()
@@ -102,6 +106,8 @@ class Image(models.Model):
     - lat/lon max
     - point
     - instrument
+
+    model not finished
 """
 
     web_location = models.CharField(max_length=255)

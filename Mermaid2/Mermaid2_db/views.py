@@ -17,27 +17,38 @@ import datetime
 
 def home(request):
     """Main page\n
-    Simple html file
+    Simple html file\n
+    :param request:
     """
 
     return render(request, 'Mermaid2_db/home.html')
 
 
-def see_image(request):
-    resp = requests.get(url='http://0.0.0.0:8000/api/v1/image/1/?format=json')
+#def see_image(request):
+#    """
+#
+#    :param request:
+#    :return:
+#    """
+#    resp = requests.get(url='http://0.0.0.0:8000/api/v1/image/1/?format=json')
+#
+#    data = json.loads(resp.text)
+#
+#    location = data['archive_location']
+#
+#    return render(request, 'Mermaid2_db/see_image.html', locals())
 
-    data = json.loads(resp.text)
 
-    location = data['archive_location']
-
-    return render(request, 'Mermaid2_db/see_image.html', locals())
-
-
-def add_image(request):
-    Image(web_location='', archive_location='http://imageshack.us/a/img114/596/dscf4109bm2.jpg',
-          top_left_point='POINT(12 45)', bot_right_point='POINT(13 46)', instrument=Instrument.objects.get(id=1)).save()
-
-    return render(request, 'Mermaid2_db/home.html')
+#def add_image(request):
+#    """
+#
+#    :param request:
+#    :return:
+#    """
+#    Image(web_location='', archive_location='http://imageshack.us/a/img114/596/dscf4109bm2.jpg',
+#         top_left_point='POINT(12 45)', bot_right_point='POINT(13 46)', instrument=Instrument.objects.get(id=1)).save()
+#
+#    return render(request, 'Mermaid2_db/home.html')
 
 
 def search_point(request):

@@ -29,8 +29,8 @@ urlpatterns = patterns('',
     url(r'^search_measurement/$', 'Mermaid2_db.views.search_measurement'),
     url(r'^search_point/$', 'Mermaid2_db.views.search_point'),
     
-    url(r'^add_image/$', 'Mermaid2_db.views.add_image'),
-    url(r'^see_image/$', 'Mermaid2_db.views.see_image'),
+    #url(r'^add_image/$', 'Mermaid2_db.views.add_image'),
+    #url(r'^see_image/$', 'Mermaid2_db.views.see_image'),
     
     (r'^api/', include(v1_api.urls)),
     # url(r'^Mermaid2/', include('Mermaid2.foo.urls')),
