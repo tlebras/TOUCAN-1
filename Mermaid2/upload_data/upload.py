@@ -22,7 +22,61 @@ def read_data(file_data, instrument, filename):
     campaign.save()
 
     # create deployment object(s) linked to the campaign
-    read_deployment_data(data, campaign, instrument)
+    deployment_list = []
+    deployments_to_bulk_save = []
+    points_to_bulk_save = []
+    measurements_to_bulk_save = []
+
+    i = 1
+    j = 10
+    header = data[0]
+    dep_id = len(Deployment.objects.all())
+    point_id = len(Point.objects.all())
+
+    while i < len(data):
+        deployment = Deployment(site=data[i][1], pi=data[i][2], campaign=campaign)
+        if data[i][1] not in deployment_list:
+            deployment_list.append(data[i][1])
+            deployments_to_bulk_save.append(deployment)
+            dep_id += 1
+
+        point = Point()
+        point.matchup_id = data[i][0]
+        point.point = 'POINT({0} {1})'.format(data[i][3], data[i][4])
+        point.time_is = data[i][5]
+        point.pqc = data[i][6]
+        point.mqc = data[i][7]
+        point.land_dist_is = data[i][8]
+        point.thetas_is = data[i][9]
+        point.deployment = Deployment(id=dep_id)
+        points_to_bulk_save.append(point)
+        point_id += 1
+        
+        while j < len(data[i]):
+            if re.search(r"^.*_IS$", header[j]):  # all simple measurements must look like XXX_IS
+                measurement = Measurement(measurement_type=get_type(header[j], False),
+                                          value=data[i][j],
+                                          point=Point(id=point_id),
+                                          instrument=Instrument(id=instrument)
+                                          )  # create a measurement using the functions to extract the data
+            elif re.search(r"^.*_IS_.*$", header[j]):  # all radiometric measurements must look like XXX_IS_YYY
+                measurement = Measurement(measurement_type=get_type(header[j], True),
+                                          value=data[i][j],
+                                          wavelength=get_wavelength(header[j]),
+                                          point=Point(id=point_id),
+                                          instrument=Instrument(id=instrument)
+                                          )  # create a measurement using the functions to extract the data
+
+            measurements_to_bulk_save.append(measurement)
+            j += 1
+
+        i += 1
+        j = 10
+
+    # save everything into the database
+    Deployment.objects.bulk_create(deployments_to_bulk_save)
+    Point.objects.bulk_create(points_to_bulk_save)
+    Measurement.objects.bulk_create(measurements_to_bulk_save)
 
 
 def read_file(file_data):
@@ -90,76 +144,6 @@ def read_campaign_name(filename):
     return campaign_name
 
 
-def read_deployment_data(data, campaign, instrument):
-    """Read the deployment data and create a deployment object\n
-    :param data: array containing the data
-    :param campaign: campaign object to be linked with the deployment(s) (Campaign model)
-    :param instrument: database id of the instrument to be linked with the measurements (int)
-    """
-
-    # we assume (since the file has been considered legit) that the deployment elements are in columns 1 (site)
-    #  and 2 (PI) of the array
-    i = 1
-    # read the file until the end
-    while i < len(data):
-        # for each line, get the deployment in the database
-        try:
-            deployment = Deployment.objects.get(site=data[i][1], pi=data[i][2], campaign=campaign)
-        # if it does not exists, create it
-        except Deployment.DoesNotExist:
-            deployment = Deployment(site=data[i][1], pi=data[i][2], campaign=campaign)
-            deployment.save()
-            # then link the correct points to it
-        read_point_data(data[i], deployment, instrument, data[0])
-        i += 1
-
-
-def read_point_data(data, deployment, instrument, header):
-    """Read the point data, create point objects, read the measurement data and create measurement objects linked to \
-     the point\n
-    :param data: line of the array we read (array)
-    :param deployment: deployment object to be linked with the points (Deployment model)
-    :param instrument: database id of the instrument to be linked with the measurements (int)
-    :param header: first line of the array containing the measurement types (array)
-    """
-
-    # we assume that the required elements are in the correct order   
-    # one line in the csv file = one point (except header)
-    # create the point object
-    point = Point()
-    point.matchup_id = data[0]
-    point.point = 'POINT({0} {1})'.format(data[3], data[4])
-    point.time_is = data[5]
-    point.pqc = data[6]
-    point.mqc = data[7]
-    point.land_dist_is = data[8]
-    point.thetas_is = data[9]
-    point.deployment = deployment
-    point.save()
-
-    # then get all the measurement to be linked with this point
-
-    # iterator for the columns
-    i = 10
-    # go through all the measurements
-    while i < len(data):
-        # checks if it's a simple or radiometric measurement
-        if re.search(r"^.*_IS$", header[i]):  # all simple measurements must look like XXX_IS
-            Measurement(measurement_type=get_type(header[i], False),
-                        value=data[i],
-                        point=point,
-                        instrument=Instrument.objects.get(id=instrument)
-                        ).save()  # create a measurement using the functions to extract the data
-        elif re.search(r"^.*_IS_.*$", header[i]):  # all radiometric measurements must look like XXX_IS_YYY
-            Measurement(measurement_type=get_type(header[i], True),
-                        value=data[i],
-                        wavelength=get_wavelength(header[i]),
-                        point=point,
-                        instrument=Instrument.objects.get(id=instrument)
-                        ).save()  # create a measurement using the functions to extract the data
-        i += 1
-
-
 def get_units(type):
     """Associate a measurement type with its units, to be completed with new types\n
     :param type: measurement type (string)
@@ -186,7 +170,7 @@ def get_units(type):
     elif type.lower() == 'lu_is':
         return 'uW.cm-2.nm.sr'
     elif type.lower() == 'a_is' or type.lower() == 'ap_is' or type.lower() == 'adet_is' or type.lower() == 'ag_is' \
-            or type.lower() == 'bb_is' or type.lower() == 'kd_is':
+        or type.lower() == 'bb_is' or type.lower() == 'kd_is':
         return 'm-1'
     else:
         return 'NA'  # if the measurement type is unknown, set units to NA
