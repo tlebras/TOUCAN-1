@@ -1,0 +1,219 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Models Documentation &mdash; Mermaid2 0.0.1 documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="Mermaid2 0.0.1 documentation" href="index.html" />
+    <link rel="next" title="Upload Tools Documentation" href="upload_doc.html" />
+    <link rel="prev" title="Welcome to Mermaid2’s documentation!" href="index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="upload_doc.html" title="Upload Tools Documentation"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="Welcome to Mermaid2’s documentation!"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">Mermaid2 0.0.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="module-Mermaid2_db.models">
+<span id="models-documentation"></span><h1>Models Documentation<a class="headerlink" href="#module-Mermaid2_db.models" title="Permalink to this headline">¶</a></h1>
+<p>Django models for Mermaid2 Database</p>
+<dl class="class">
+<dt id="Mermaid2_db.models.Campaign">
+<em class="property">class </em><tt class="descclassname">Mermaid2_db.models.</tt><tt class="descname">Campaign</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#Mermaid2_db.models.Campaign" title="Permalink to this definition">¶</a></dt>
+<dd><p>Campaign model defined by :</p>
+<ul class="simple">
+<li>campaign : name of the campaign (CharField)</li>
+</ul>
+</dd></dl>
+
+<dl class="class">
+<dt id="Mermaid2_db.models.Deployment">
+<em class="property">class </em><tt class="descclassname">Mermaid2_db.models.</tt><tt class="descname">Deployment</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#Mermaid2_db.models.Deployment" title="Permalink to this definition">¶</a></dt>
+<dd><p>Deployment model defined by :</p>
+<ul class="simple">
+<li>site (CharField)</li>
+<li>PI : Principal Investigator (CharField)</li>
+<li>campaign (ForeignKey)</li>
+</ul>
+</dd></dl>
+
+<dl class="class">
+<dt id="Mermaid2_db.models.Image">
+<em class="property">class </em><tt class="descclassname">Mermaid2_db.models.</tt><tt class="descname">Image</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#Mermaid2_db.models.Image" title="Permalink to this definition">¶</a></dt>
+<dd><p>Image model defined by :</p>
+<ul class="simple">
+<li>web location</li>
+<li>archive location</li>
+<li>lat/lon min</li>
+<li>lat/lon max</li>
+<li>point</li>
+<li>instrument</li>
+</ul>
+<p>model not finished</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="Mermaid2_db.models.Instrument">
+<em class="property">class </em><tt class="descclassname">Mermaid2_db.models.</tt><tt class="descname">Instrument</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#Mermaid2_db.models.Instrument" title="Permalink to this definition">¶</a></dt>
+<dd><p>Instrument model defined by :</p>
+<ul class="simple">
+<li>name (CharField)</li>
+</ul>
+</dd></dl>
+
+<dl class="class">
+<dt id="Mermaid2_db.models.InstrumentWavelength">
+<em class="property">class </em><tt class="descclassname">Mermaid2_db.models.</tt><tt class="descname">InstrumentWavelength</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#Mermaid2_db.models.InstrumentWavelength" title="Permalink to this definition">¶</a></dt>
+<dd><p>Instrument Wavelength model defined by :</p>
+<ul class="simple">
+<li>value (FloatField)</li>
+<li>instrument (ForeignKey)</li>
+</ul>
+</dd></dl>
+
+<dl class="class">
+<dt id="Mermaid2_db.models.Measurement">
+<em class="property">class </em><tt class="descclassname">Mermaid2_db.models.</tt><tt class="descname">Measurement</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#Mermaid2_db.models.Measurement" title="Permalink to this definition">¶</a></dt>
+<dd><p>Measurement model defined by :</p>
+<ul class="simple">
+<li>value (FloatField)</li>
+<li>measurement_type (ForeignKey)</li>
+<li>point (ForeignKey)</li>
+<li>wavelength (optional) (ForeignKey)</li>
+<li>instrument (ForeignKey)</li>
+</ul>
+</dd></dl>
+
+<dl class="class">
+<dt id="Mermaid2_db.models.MeasurementType">
+<em class="property">class </em><tt class="descclassname">Mermaid2_db.models.</tt><tt class="descname">MeasurementType</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#Mermaid2_db.models.MeasurementType" title="Permalink to this definition">¶</a></dt>
+<dd><p>Measurement type model defined by :</p>
+<ul class="simple">
+<li>type (CharField)</li>
+<li>units (CharField)</li>
+</ul>
+</dd></dl>
+
+<dl class="class">
+<dt id="Mermaid2_db.models.MeasurementWavelength">
+<em class="property">class </em><tt class="descclassname">Mermaid2_db.models.</tt><tt class="descname">MeasurementWavelength</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#Mermaid2_db.models.MeasurementWavelength" title="Permalink to this definition">¶</a></dt>
+<dd><p>Measurement wavelength model defined by :</p>
+<ul class="simple">
+<li>wavelength (FloatField)</li>
+</ul>
+</dd></dl>
+
+<dl class="class">
+<dt id="Mermaid2_db.models.Point">
+<em class="property">class </em><tt class="descclassname">Mermaid2_db.models.</tt><tt class="descname">Point</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#Mermaid2_db.models.Point" title="Permalink to this definition">¶</a></dt>
+<dd><p>Point model defined by :</p>
+<ul class="simple">
+<li>matchup_id : ID of in-situ point (CharField)</li>
+<li>point : coordinates (lat lon) (PointField)</li>
+<li>time_is : time (mermaid format) (CharField)</li>
+<li>PQC : Processing Quality Control (CharField)</li>
+<li>MQC : Measurement Quality Control (CharField)</li>
+<li>land_dist_is : land distance (FloatField)</li>
+<li>thetas_is : Solar zenith angled computed from time/lat/lon (FloatField)</li>
+<li>deployment (ForeignKey)</li>
+</ul>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="index.html"
+                        title="previous chapter">Welcome to Mermaid2&#8217;s documentation!</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="upload_doc.html"
+                        title="next chapter">Upload Tools Documentation</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/models_doc.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="upload_doc.html" title="Upload Tools Documentation"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="Welcome to Mermaid2’s documentation!"
+             >previous</a> |</li>
+        <li><a href="index.html">Mermaid2 0.0.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013, Jean-Gil Langlois.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2b1.
+    </div>
+  </body>
+</html>
