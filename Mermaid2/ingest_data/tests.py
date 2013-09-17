@@ -11,7 +11,6 @@ from ingest_data.ingest import *
 class InjestToolsTest(TestCase):
 
     def setUp(self):
-        self.sampleData = open("/home/langlois/Documents/django/Mermaid2/Mermaid2/ingest_data/extraction_Test_.csv", "r")
         self.sampleData = open("/home/mermaid2/mermaid2/Mermaid2/injest_data/extraction_Test_.csv", "r")
         self.instrument = Instrument.objects.get_or_create(name='Unknown')[0]
         
