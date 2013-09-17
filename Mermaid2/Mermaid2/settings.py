@@ -125,7 +125,7 @@ INSTALLED_APPS = (
     'django.contrib.staticfiles',
     'django.contrib.gis',
     'Mermaid2_db',
-    'injest_data',
+    'ingest_data',
     'tastypie',
     'south',
     # Uncomment the next line to enable the admin:
