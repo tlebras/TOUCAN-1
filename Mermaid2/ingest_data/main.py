@@ -4,7 +4,7 @@ sys.path.append('/home/langlois/Documents/django/Mermaid2/Mermaid2')
 #sys.path.append('/home/mermaid2/Mermaid2/Mermaid2')
 environ['DJANGO_SETTINGS_MODULE'] = 'Mermaid2.settings'
 from Mermaid2_db.models import *
-from upload import read_data
+from ingest import read_data
 from datetime import datetime
 
 file_list = listdir('data')
