@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Mermaid2 demo</title>
+  <link rel="stylesheet" href="jquery-jvectormap-1.2.2.css" type="text/css" media="screen"/>
+  <script src="http://code.jquery.com/jquery-1.9.1.min.js"></script>
+  <script src="jquery-jvectormap-1.2.2.min.js"></script>
+  <script src="jquery-jvectormap-world-mill-en.js"></script>
+  <script src="jquery-jvectormap-us-aea-en.js"></script>
+  <script src="DataTables/media/js/jquery.dataTables.js"></script>
+  <style type="text/css">
+  .square {
+    border: 1px solid #FF0000;
+    position: absolute;
+  }  
+  </style>
+  <style type="text/css" title="currentStyle">
+    @import "DataTables/media/css/demo_table.css";
+  </style>  
+</head>
+<body>
+  <div id="map" style="width: 1024px; height: 768px; float: left;"></div>
+  <div id="results" style="float: left;">
+    Selected points : <span id="select-result">none</span></div>
+  <br><br>
+  
+  Select deployment :<br><select id="select-deployment" class="select-deployment" multiple></select><br><br>    
+  Select measurement :<br><select id="select-measurementtype" class="select-measurementtype" multiple></select><br>
+  
+  <br><button type="submit" onclick="getSelectedData()" style="float: left;">Get Measurements</button><br>
+  <br><div id="lat_lng" style="float: left;"></div><br>
+  <table id="result_table" class="display">
+    <thead>
+        <tr>
+            <th>Type</th>
+            <th>Value</th>
+            <th>Units</th>
+            <th>Wavelength</th>         
+            <th>Point</th>
+            <th>Date</th>
+        </tr>
+    </thead>
+    <tbody>
+    </tbody>
+  </table>
+  <script>
+    var map;
+    var initx=false; 
+    var inity=false;
+    var coord_down;
+    var coord_up;
+    var points = [];
+    var select_points = [];
+    var select_index = [];    
+    var $box = $('<div>').addClass('square');
+    var min_w = 0;
+    var max_w = 999;
+
+//function called when the 'get measurements' button is clicked     
+function getSelectedData(){
+    //basic url
+    var api_url = 'http://127.0.0.1:8000/api/v1/measurement/?limit=0';
+    //get the selected measurements
+    var select_measurements = $("#select-measurementtype option:selected").map(function(){ return this.value }).get();
+    
+    var select_deployments = $("#select-deployment option:selected").map(function(){ return this.value }).get();
+    
+    //points need to be selected to fetch measurements
+    if(select_points.length != 0 || select_deployments.length != 0){
+        //appends points ids to the url
+        for(var i=0; i<select_points.length; i++){
+            api_url += '&point__matchup_id__in=' + select_points[i].name;
+        }
+        //appends measurement types to the url
+        for(var i=0; i<select_measurements.length; i++){
+            api_url += '&measurementtype__type__in=' + select_measurements[i];
+        }
+         
+        for(var i=0; i<select_deployments.length; i++){
+            api_url += '&point__deployment__site__in=' + select_deployments[i];
+        }  
+        
+        //get data from the api         
+        $.get(
+            url=api_url,
+            success=success=function(data){
+
+                alert('Measurements found.');   
+                var tbl_row = "";
+                //add each measurement found to the table 
+                $.each(data.objects, function() {
+                    if(this.wavelength != null)               
+                        tbl_row += "<tr><td>"+this.measurementtype.type+"</td><td>"+this.value+"</td><td>"+this.measurementtype.units+"</td><td>"+this.wavelength.wavelength+"</td><td>"+this.point.matchup_id+"</td><td>"+this.point.time_is+"</td></tr>";                  
+                    else
+                        tbl_row += "<tr><td>"+this.measurementtype.type+"</td><td>"+this.value+"</td><td>"+this.measurementtype.units+"</td><td>-</td><td>"+this.point.matchup_id+"</td><td>"+this.point.time_is+"</td></tr>";
+                });
+                //erase existing datatable
+                $('#result_table').dataTable().fnDestroy();
+                //add data to the table
+                $("#result_table tbody").html(tbl_row);
+                //build the datatable with options
+                var oTable = $('#result_table').dataTable({
+                    "aLengthMenu": [[10, 25, 50, -1], [10, 25, 50, "All"]], //number of rows to show
+                    "sDom": 'lrtip', //disable search
+                    "aoColumnDefs": [
+                        { "bSortable": false, "aTargets": [ 0, 2, 3 ] } //disable sort on some columns
+                    ]
+                });
+                //add filters to measurement types and wavelengths
+                $("thead th").each( function ( i ) {
+                    //for measurement types
+                    if(i == 0){
+                        //add a select field with the available types
+                        this.innerHTML = 'Type<br>' + fnCreateSelect( oTable.fnGetColumnData(i) );
+                        $('select', this).change( function () {
+                            oTable.fnFilter( $(this).val(), i );
+                        });
+                    }
+                    //for wavelengths, add two select fields
+                    else if(i == 3){
+                        this.innerHTML = 'Wavelength<br>min :' + fnCreateSelect( oTable.fnGetColumnData(i).reverse() , 'min_wavelength') + '<br>max :' + fnCreateSelect( oTable.fnGetColumnData(i).reverse(), 'max_wavelength' );
+                        $('select', this).change( function () {
+                            //get the selected wavelengths
+                            min_w = $('#min_wavelength').val();
+                            max_w = $('#max_wavelength').val();
+                            //redraw the table
+                            oTable.fnDraw();
+                        });                        
+                    }
+                });
+                //when measurements are added to the table, display it
+                $('#result_table').show();
+            },
+            dataType='jsonp' // /!\ NOT SURE IF SAFE
+        );
+    }
+    else
+        alert('No points selected');
+};
+
+//datatable function overriden
+$.fn.dataTableExt.afnFiltering.push(
+	function( oSettings, aData, iDataIndex ) {
+		var iMin = min_w;
+		var iMax = max_w;
+		var iVersion = aData[3] == "-" ? 0 : aData[3]*1;
+		if ( iMin == "" && iMax == "" )
+		{
+			return true;
+		}
+		else if ( iMin == "" && iVersion <= iMax )
+		{
+			return true;
+		}
+		else if ( iMin <= iVersion && "" == iMax )
+		{
+			return true;
+		}
+		else if ( iMin <= iVersion && iVersion <= iMax )
+		{
+			return true;
+		}
+		return false;
+	}
+);
+
+//datatable function overriden
+$.fn.dataTableExt.oApi.fnGetColumnData = function ( oSettings, iColumn, bUnique, bFiltered, bIgnoreEmpty ) {
+    // check that we have a column id
+    if ( typeof iColumn == "undefined" ) return new Array();
+     
+    // by default we only want unique data
+    if ( typeof bUnique == "undefined" ) bUnique = true;
+     
+    // by default we do want to only look at filtered data
+    if ( typeof bFiltered == "undefined" ) bFiltered = true;
+     
+    // by default we do not want to include empty values
+    if ( typeof bIgnoreEmpty == "undefined" ) bIgnoreEmpty = true;
+     
+    // list of rows which we're going to loop through
+    var aiRows;
+     
+    // use only filtered rows
+    if (bFiltered == true) aiRows = oSettings.aiDisplay;
+    // use all rows
+    else aiRows = oSettings.aiDisplayMaster; // all row numbers
+ 
+    // set up data array   
+    var asResultData = new Array();
+     
+    for (var i=0,c=aiRows.length; i<c; i++) {
+        iRow = aiRows[i];
+        var aData = this.fnGetData(iRow);
+        var sValue = aData[iColumn];
+         
+        // ignore empty values?
+        if (bIgnoreEmpty == true && sValue.length == 0) continue;
+ 
+        // ignore unique values?
+        else if (bUnique == true && jQuery.inArray(sValue, asResultData) > -1) continue;
+         
+        // else push the value onto the result data array
+        else asResultData.push(sValue);
+    }
+     
+    return asResultData;
+};
+ 
+//create select fields with proper data    
+function fnCreateSelect( aData, id ){
+    var r='<select id="'+ id + '"><option value=""></option>', i, iLen=aData.length;
+    for ( i=0 ; i<iLen ; i++ ){
+        r += '<option value="'+aData[i]+'">'+aData[i]+'</option>';
+    }
+    return r+'</select>';
+}
+    
+          
+$(function(){
+    
+    //add table at first
+    $('#result_table').hide();
+    
+    //disable selection on the map
+    window.onload = function() {
+	    disableSelection(document.getElementById('map'))
+    }
+ 
+    function disableSelection(target){
+        if (typeof target.onselectstart!="undefined") //IE 
+	        target.onselectstart=function(){return false}
+        else if (typeof target.style.MozUserSelect!="undefined") //Firefox 
+	        target.style.MozUserSelect="none"
+        else //All other ie: Opera
+	    target.onmousedown=function(){return false}
+    target.style.cursor = "default"
+    }
+
+    //create new map
+    map = new jvm.WorldMap({
+        map: 'world_mill_en',
+        markerStyle: {
+            initial: {
+                fill: 'yellow',
+                stroke: '#383f47'
+            },
+            selected: {
+                fill: 'red',
+                stroke: '#383f47'
+            }
+        },
+        backgroundColor: '#256EB8',
+        regionStyle: {
+            initial: {
+                fill: '#59BA3A',
+            },
+        },       
+        container: $('#map'),
+        zoomMax: 500,
+        markersSelectable: true,
+        //disable some features
+        onRegionLabelShow: function(e, code){
+            e.preventDefault();
+        },
+        onRegionOver: function(e, code){
+            e.preventDefault();
+        },
+        onMarkerLabelShow: function(e, lab, code){
+            e.preventDefault();
+        },
+    });
+    
+    //erase events
+    map.container.off('mousemove');
+    map.container.off('mouseup');
+    map.container.off('mousedown');
+    map.container.on('dragstart', function(e) { e.preventDefault(); });
+    
+    //get mouse lat/lng
+    map.container.mousemove(function(e){
+        var coord_x = e.clientX - $('#map').offset().left + $(window).scrollLeft();
+        var coord_y = e.clientY - $('#map').offset().top + $(window).scrollTop();
+        coord = map.pointToLatLng(coord_x, coord_y);
+        coord.lat = Math.round(coord.lat*100)/100;//round value
+        coord.lng = Math.round(coord.lng*100)/100;
+        //fix a bug
+        if(coord.lng > 180)
+            coord.lng = coord.lng - 360;
+        //show current lat/lng
+        if(coord.lat && coord.lng )
+            $('#lat_lng').html('Latitude : ' + coord.lat + '<br>Longitude : ' + coord.lng);
+        else
+            $('#lat_lng').empty();
+    });
+                    
+    //when clicked, draw a red rectangle                
+    map.container.mousedown(function(e){
+        var click_x = e.clientX - $('#map').offset().left + $(window).scrollLeft();
+        var click_y = e.clientY - $('#map').offset().top + $(window).scrollTop();
+        coord_down = map.pointToLatLng(click_x, click_y);
+        $box.css({
+          'top':    click_y,
+          'left':   click_x,
+          'width':  0,
+          'height': 0            
+        });
+        $box.appendTo(map.container);
+        
+        //when moved, change rectangle size
+        map.container.mousemove(function(e){
+            var move_x = e.clientX - $('#map').offset().left + $(window).scrollLeft(),
+                move_y = e.clientY - $('#map').offset().top + $(window).scrollTop(),
+                width  = Math.abs(move_x - click_x),
+                height = Math.abs(move_y - click_y),
+                new_x, new_y;
+
+            new_x = (move_x < click_x) ? (click_x - width) : click_x;
+            new_y = (move_y < click_y) ? (click_y - height) : click_y;        
+                
+            $box.css({
+              'width': width,
+              'height': height,
+              'top': new_y,
+              'left': new_x
+            });        
+        });
+        //when released, get selected points
+        map.container.mouseup(function(e){
+            $box.remove();
+            var mouse_x = e.clientX - $('#map').offset().left + $(window).scrollLeft(),
+                mouse_y = e.clientY - $('#map').offset().top + $(window).scrollTop(),
+                            
+            coord_up = map.pointToLatLng(mouse_x, mouse_y);
+            map.clearSelectedMarkers();
+            if(coord_up.lat != coord_down.lat || coord_up.lng != coord_down.lng ){
+                getSelectedPoints(coord_down, coord_up);
+                map.setSelectedMarkers(select_index);
+            }          
+            var result = $( "#select-result" ).empty();
+            if(select_points.length == 0){
+                result.append('none');
+            }
+            else result.append(select_points.length + ' points selected.');
+        }); 
+    });    
+    
+    //get selected points inside a rectangle defined by two coordinates         
+    function getSelectedPoints(coord_down, coord_up){
+        select_points = [];
+        select_index = [];
+        var x1 = Math.min(coord_down.lat, coord_up.lat);  
+        var x2 = Math.max(coord_down.lat, coord_up.lat);
+        var y1 = Math.min(coord_down.lng, coord_up.lng);
+        var y2 = Math.max(coord_down.lng, coord_up.lng);
+        for(var i=0; i<points.length; i++){
+            var x = points[i].latLng[0];
+            var y = points[i].latLng[1];
+            if((x1<=x) && (x<=x2) && (y1<=y) && (y<=y2)){
+                select_points.push(points[i]);
+                select_index.push(i);
+            }
+        }
+    }; 
+    
+    //get all the points in the database and add it to the map as markers      
+    $.get(
+        url='http://127.0.0.1:8000/api/v1/point?limit=0',
+        success=function(data){
+            for(var i=0; i<data.objects.length; i++){
+                var coord = [];
+                var matchup_id = data.objects[i].matchup_id      
+                $.each(data.objects[i].point.coordinates, function(key, val) {
+                    coord.push(val);
+                }); 
+                points.push({latLng: [coord[0],coord[1]], name: matchup_id}) 
+            } 
+            map.addMarkers(points);
+        }, 
+        dataType='jsonp' // /!\ NOT SURE IF SAFE         
+    );
+    
+    $.get(
+        url='http://127.0.0.1:8000/api/v1/deployment?limit=0',
+        success=function(data){
+            for(var i=0; i<data.objects.length; i++){
+                $(".select-deployment").append($("<option>").val(data.objects[i].site).html(data.objects[i].site));
+            } 
+        }, 
+        dataType='jsonp' // /!\ NOT SURE IF SAFE         
+    );
+   
+    //get measurement types availables and add them to the select field 
+    $.get(
+        url='http://127.0.0.1:8000/api/v1/measurementtype?limit=0',
+        success=function(data){
+            for(var i=0; i<data.objects.length; i++){
+                $(".select-measurementtype").append($("<option>").val(data.objects[i].type).html(data.objects[i].type));
+            } 
+        }, 
+        dataType='jsonp' // /!\ NOT SURE IF SAFE         
+    );
+    
+    
+
+});
+
+</script>
+</body>
+</html>

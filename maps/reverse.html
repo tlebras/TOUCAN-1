@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>jVectorMap demo</title>
+  <link rel="stylesheet" href="jquery-jvectormap-1.2.2.css" type="text/css" media="screen"/>
+   <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.6.0/jquery.min.js"></script>
+  <script src="jquery-jvectormap-1.2.2.min.js"></script>
+  <script src="jquery-jvectormap-world-mill-en.js"></script>
+  <script src="jquery-jvectormap-us-aea-en.js"></script>
+  <style type="text/css">
+
+</style>  
+</head>
+<body>
+  <div id="map" style="width: 1024px; height: 768px"></div>
+  <script>
+
+$(function(){
+  var map,
+      markerIndex = 0,
+      markersCoords = {};
+
+  map = new jvm.WorldMap({
+      map: 'us_aea_en',
+      markerStyle: {
+        initial: {
+          fill: 'red'
+        }
+      },
+      container: $('#map'),
+      onMarkerLabelShow: function(e, label, code){
+        map.label.text(markersCoords[code].lat.toFixed(2)+', '+markersCoords[code].lng.toFixed(2));
+      },
+      onMarkerClick: function(e, code){
+        map.removeMarkers([code]);
+        map.label.hide();
+      }
+  });
+
+  map.container.click(function(e){
+      var latLng = map.pointToLatLng(e.clientX, e.clientY),
+          targetCls = $(e.target).attr('class');
+
+      if (latLng && (!targetCls || (targetCls && $(e.target).attr('class').indexOf('jvectormap-marker') === -1))) {
+        markersCoords[markerIndex] = latLng;
+        map.addMarker(markerIndex, {latLng: [latLng.lat, latLng.lng]});
+        markerIndex += 1;
+      }
+  });
+});
+
+</script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
