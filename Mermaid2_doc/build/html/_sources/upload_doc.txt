@@ -1,5 +1,5 @@
 Upload Tools Documentation
 ==========================
 
-.. automodule:: upload
+.. automodule:: ingest
    :members:

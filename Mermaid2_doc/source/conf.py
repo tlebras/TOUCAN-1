@@ -19,7 +19,7 @@ import sys, os
 sys.path.insert(0, os.path.abspath('.'))
 
 sys.path.append('/home/langlois/Documents/django/Mermaid2/Mermaid2')
-sys.path.append('/home/langlois/Documents/django/Mermaid2/Mermaid2/upload_data')
+sys.path.append('/home/langlois/Documents/django/Mermaid2/Mermaid2/ingest_data')
 
 #sys.path.append('/home/langlois/Documents/django/Mermaid2/Mermaid2/Mermaid2_db')
 

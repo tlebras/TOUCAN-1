@@ -24,7 +24,7 @@
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
     <link rel="top" title="Mermaid2 0.0.1 documentation" href="index.html" />
-    <link rel="next" title="Test Documentation" href="test_doc.html" />
+    <link rel="next" title="Django project presentation" href="django_project.html" />
     <link rel="prev" title="Models Documentation" href="models_doc.html" /> 
   </head>
   <body>
@@ -38,7 +38,7 @@
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="test_doc.html" title="Test Documentation"
+          <a href="django_project.html" title="Django project presentation"
              accesskey="N">next</a> |</li>
         <li class="right" >
           <a href="models_doc.html" title="Models Documentation"
@@ -52,11 +52,11 @@
         <div class="bodywrapper">
           <div class="body">
             
-  <div class="section" id="module-upload">
-<span id="upload-tools-documentation"></span><h1>Upload Tools Documentation<a class="headerlink" href="#module-upload" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="module-ingest">
+<span id="upload-tools-documentation"></span><h1>Upload Tools Documentation<a class="headerlink" href="#module-ingest" title="Permalink to this headline">¶</a></h1>
 <dl class="function">
-<dt id="upload.file_ok">
-<tt class="descclassname">upload.</tt><tt class="descname">file_ok</tt><big>(</big><em>line_1</em><big>)</big><a class="headerlink" href="#upload.file_ok" title="Permalink to this definition">¶</a></dt>
+<dt id="ingest.file_ok">
+<tt class="descclassname">ingest.</tt><tt class="descname">file_ok</tt><big>(</big><em>line_1</em><big>)</big><a class="headerlink" href="#ingest.file_ok" title="Permalink to this definition">¶</a></dt>
 <dd><p>check if the file is legit</p>
 <p>to be modified, this function is not enough to check the integrity of the file given</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -70,8 +70,8 @@
 </dd></dl>
 
 <dl class="function">
-<dt id="upload.get_type">
-<tt class="descclassname">upload.</tt><tt class="descname">get_type</tt><big>(</big><em>string</em>, <em>radiometric</em><big>)</big><a class="headerlink" href="#upload.get_type" title="Permalink to this definition">¶</a></dt>
+<dt id="ingest.get_type">
+<tt class="descclassname">ingest.</tt><tt class="descname">get_type</tt><big>(</big><em>string</em>, <em>radiometric</em><big>)</big><a class="headerlink" href="#ingest.get_type" title="Permalink to this definition">¶</a></dt>
 <dd><p>Read the measurement type from the string read, if it doesn&#8217;t exist, create it</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -88,8 +88,8 @@
 </dd></dl>
 
 <dl class="function">
-<dt id="upload.get_units">
-<tt class="descclassname">upload.</tt><tt class="descname">get_units</tt><big>(</big><em>type</em><big>)</big><a class="headerlink" href="#upload.get_units" title="Permalink to this definition">¶</a></dt>
+<dt id="ingest.get_units">
+<tt class="descclassname">ingest.</tt><tt class="descname">get_units</tt><big>(</big><em>type</em><big>)</big><a class="headerlink" href="#ingest.get_units" title="Permalink to this definition">¶</a></dt>
 <dd><p>Associate a measurement type with its units, to be completed with new types</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -102,8 +102,8 @@
 </dd></dl>
 
 <dl class="function">
-<dt id="upload.get_wavelength">
-<tt class="descclassname">upload.</tt><tt class="descname">get_wavelength</tt><big>(</big><em>string</em><big>)</big><a class="headerlink" href="#upload.get_wavelength" title="Permalink to this definition">¶</a></dt>
+<dt id="ingest.get_wavelength">
+<tt class="descclassname">ingest.</tt><tt class="descname">get_wavelength</tt><big>(</big><em>string</em><big>)</big><a class="headerlink" href="#ingest.get_wavelength" title="Permalink to this definition">¶</a></dt>
 <dd><p>Read the measurement wavelength from the string, if it doesn&#8217;t exist, create it</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -116,8 +116,8 @@
 </dd></dl>
 
 <dl class="function">
-<dt id="upload.read_campaign_name">
-<tt class="descclassname">upload.</tt><tt class="descname">read_campaign_name</tt><big>(</big><em>filename</em><big>)</big><a class="headerlink" href="#upload.read_campaign_name" title="Permalink to this definition">¶</a></dt>
+<dt id="ingest.read_campaign_name">
+<tt class="descclassname">ingest.</tt><tt class="descname">read_campaign_name</tt><big>(</big><em>filename</em><big>)</big><a class="headerlink" href="#ingest.read_campaign_name" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the name of the campaign from the name of the file (this function may should be rewritten or completed)</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -130,8 +130,8 @@
 </dd></dl>
 
 <dl class="function">
-<dt id="upload.read_data">
-<tt class="descclassname">upload.</tt><tt class="descname">read_data</tt><big>(</big><em>file_data</em>, <em>instrument</em>, <em>filename</em><big>)</big><a class="headerlink" href="#upload.read_data" title="Permalink to this definition">¶</a></dt>
+<dt id="ingest.read_data">
+<tt class="descclassname">ingest.</tt><tt class="descname">read_data</tt><big>(</big><em>file_data</em>, <em>instrument</em>, <em>filename</em><big>)</big><a class="headerlink" href="#ingest.read_data" title="Permalink to this definition">¶</a></dt>
 <dd><p>Function reading the file and uploading the data to the database</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -149,8 +149,8 @@
 </dd></dl>
 
 <dl class="function">
-<dt id="upload.read_file">
-<tt class="descclassname">upload.</tt><tt class="descname">read_file</tt><big>(</big><em>file_data</em><big>)</big><a class="headerlink" href="#upload.read_file" title="Permalink to this definition">¶</a></dt>
+<dt id="ingest.read_file">
+<tt class="descclassname">ingest.</tt><tt class="descname">read_file</tt><big>(</big><em>file_data</em><big>)</big><a class="headerlink" href="#ingest.read_file" title="Permalink to this definition">¶</a></dt>
 <dd><p>Creates an array (actually a list of lists) based on the uploaded data</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -174,8 +174,8 @@
   <p class="topless"><a href="models_doc.html"
                         title="previous chapter">Models Documentation</a></p>
   <h4>Next topic</h4>
-  <p class="topless"><a href="test_doc.html"
-                        title="next chapter">Test Documentation</a></p>
+  <p class="topless"><a href="django_project.html"
+                        title="next chapter">Django project presentation</a></p>
   <h3>This Page</h3>
   <ul class="this-page-menu">
     <li><a href="_sources/upload_doc.txt"
@@ -208,7 +208,7 @@
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="test_doc.html" title="Test Documentation"
+          <a href="django_project.html" title="Django project presentation"
              >next</a> |</li>
         <li class="right" >
           <a href="models_doc.html" title="Models Documentation"

@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Python Module Index &mdash; Mermaid2 0.0.1 documentation</title>
+    <title>Ingesting data &mdash; Mermaid2 0.0.1 documentation</title>
     
     <link rel="stylesheet" href="_static/default.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -24,9 +24,7 @@
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
     <link rel="top" title="Mermaid2 0.0.1 documentation" href="index.html" />
- 
-
-
+    <link rel="prev" title="Django project presentation" href="django_project.html" /> 
   </head>
   <body>
     <div class="related">
@@ -36,8 +34,11 @@
           <a href="genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
-          <a href="#" title="Python Module Index"
+          <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
+        <li class="right" >
+          <a href="django_project.html" title="Django project presentation"
+             accesskey="P">previous</a> |</li>
         <li><a href="index.html">Mermaid2 0.0.1 documentation</a> &raquo;</li> 
       </ul>
     </div>  
@@ -47,38 +48,17 @@
         <div class="bodywrapper">
           <div class="body">
             
-
-   <h1>Python Module Index</h1>
-
-   <div class="modindex-jumpbox">
-   <a href="#cap-i"><strong>i</strong></a> | 
-   <a href="#cap-m"><strong>m</strong></a>
-   </div>
-
-   <table class="indextable modindextable" cellspacing="0" cellpadding="2">
-     <tr class="pcap"><td></td><td>&nbsp;</td><td></td></tr>
-     <tr class="cap" id="cap-i"><td></td><td>
-       <strong>i</strong></td><td></td></tr>
-     <tr>
-       <td></td>
-       <td>
-       <a href="upload_doc.html#module-ingest"><tt class="xref">ingest</tt></a></td><td>
-       <em></em></td></tr>
-     <tr class="pcap"><td></td><td>&nbsp;</td><td></td></tr>
-     <tr class="cap" id="cap-m"><td></td><td>
-       <strong>m</strong></td><td></td></tr>
-     <tr>
-       <td><img src="_static/minus.png" class="toggler"
-              id="toggle-1" style="display: none" alt="-" /></td>
-       <td>
-       <tt class="xref">Mermaid2_db</tt></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&nbsp;&nbsp;&nbsp;
-       <a href="models_doc.html#module-Mermaid2_db.models"><tt class="xref">Mermaid2_db.models</tt></a></td><td>
-       <em></em></td></tr>
-   </table>
+  <div class="section" id="ingesting-data">
+<h1>Ingesting data<a class="headerlink" href="#ingesting-data" title="Permalink to this headline">¶</a></h1>
+<p>The tools necessary to add data to the database are in the file ingest.py in the ingest_data folder.</p>
+<p>All needed is to call the function read_data() with 3 arguments:</p>
+<ul class="simple">
+<li>The file object, obtained using the open(&lt;filename&gt;, &#8216;r&#8217;) function.</li>
+<li>The ID number for the instrument used.</li>
+<li>The name of the file (character sting).</li>
+</ul>
+<p>An example of the code used is in the file main.py.</p>
+</div>
 
 
           </div>
@@ -86,6 +66,14 @@
       </div>
       <div class="sphinxsidebar">
         <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="django_project.html"
+                        title="previous chapter">Django project presentation</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/ingesting_data.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
 <div id="searchbox" style="display: none">
   <h3>Quick search</h3>
     <form class="search" action="search.html" method="get">
@@ -110,8 +98,11 @@
           <a href="genindex.html" title="General Index"
              >index</a></li>
         <li class="right" >
-          <a href="#" title="Python Module Index"
+          <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
+        <li class="right" >
+          <a href="django_project.html" title="Django project presentation"
+             >previous</a> |</li>
         <li><a href="index.html">Mermaid2 0.0.1 documentation</a> &raquo;</li> 
       </ul>
     </div>

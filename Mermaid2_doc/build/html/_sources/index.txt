@@ -13,9 +13,8 @@ Contents:
    
    models_doc
    upload_doc
-   test_doc
    django_project
-
+   ingesting_data
 
 Indices and tables
 ==================
