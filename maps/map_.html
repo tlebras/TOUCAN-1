@@ -41,6 +41,7 @@
             <th>Units</th>
             <th>Wavelength</th>         
             <th>Point ID</th>
+            <th>PI</th>
             <th>Coordinates</th>
             <th>Date</th>
         </tr>
@@ -66,7 +67,7 @@ function getCSV(){
     var csv = $('#result_table').table2CSV({
                 separator : ';',
                 delivery: 'value',
-                header:['Type','Value','Units','Wavelength','Point', 'Coordinates','Date']
+                header:['Type','Value','Units','Wavelength','Point','PI', 'Coordinates','Date']
               });
               
     csvData = 'data:application/csv;charset=utf-8,' + encodeURIComponent(csv);
@@ -147,9 +148,9 @@ function getSelectedData(){
                 //add each measurement found to the table 
                 $.each(data.objects, function() {
                     if(this.wavelength != null)               
-                        tbl_row += "<tr><td>"+this.measurementtype.type+"</td><td>"+this.value+"</td><td>"+this.measurementtype.units+"</td><td>"+this.wavelength.wavelength+"</td><td>"+this.point.matchup_id+"</td><td>"+this.point.point.coordinates+"</td><td>"+this.point.time_is+"</td></tr>";                  
+                        tbl_row += "<tr><td>"+this.measurementtype.type+"</td><td>"+this.value+"</td><td>"+this.measurementtype.units+"</td><td>"+this.wavelength.wavelength+"</td><td>"+this.point.matchup_id+"</td><td>"+this.point.deployment.pi+"</td><td>"+this.point.point.coordinates+"</td><td>"+this.point.time_is+"</td></tr>";
                     else
-                        tbl_row += "<tr><td>"+this.measurementtype.type+"</td><td>"+this.value+"</td><td>"+this.measurementtype.units+"</td><td>-</td><td>"+this.point.matchup_id+"</td><td>"+this.point.point.coordinates+"</td><td>"+this.point.time_is+"</td></tr>";
+                        tbl_row += "<tr><td>"+this.measurementtype.type+"</td><td>"+this.value+"</td><td>"+this.measurementtype.units+"</td><td>-</td><td>"+this.point.matchup_id+"</td><td>"+this.point.deployment.pi+"</td><td>"+this.point.point.coordinates+"</td><td>"+this.point.time_is+"</td></tr>";
                 });
                 //erase existing datatable
                 $('#result_table').dataTable().fnDestroy();
@@ -160,7 +161,7 @@ function getSelectedData(){
                     "aLengthMenu": [[10, 25, 50, -1], [10, 25, 50, "All"]], //number of rows to show
                     "sDom": 'lrtip', //disable search
                     "aoColumnDefs": [
-                        { "bSortable": false, "aTargets": [ 0, 2, 3, 5 ] } //disable sort on some columns
+                        { "bSortable": false, "aTargets": [ 0, 2, 3, 5, 6 ] } //disable sort on some columns
                     ]
                 });
                 //add filters to measurement types and wavelengths
