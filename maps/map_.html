@@ -439,7 +439,7 @@ $(function(){
     );
 */    
     $.get(
-        url='http://127.0.0.1:8000/api/v1/deployment?limit=0',
+        url='http://127.0.0.1:8000/api/v1/deployment?limit=0&order_by=site',
         success=function(data){
             for(var i=0; i<data.objects.length; i++){
                 $(".select-deployment").append($("<option>").val(data.objects[i].site).html(data.objects[i].site));
@@ -450,7 +450,7 @@ $(function(){
    
     //get measurement types availables and add them to the select field 
     $.get(
-        url='http://127.0.0.1:8000/api/v1/measurementtype?limit=0',
+        url='http://127.0.0.1:8000/api/v1/measurementtype?limit=0&order_by=type',
         success=function(data){
             for(var i=0; i<data.objects.length; i++){
                 $(".select-measurementtype").append($("<option>").val(data.objects[i].type).html(data.objects[i].type));

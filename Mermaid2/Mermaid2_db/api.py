@@ -15,6 +15,9 @@ class DeploymentResource(ModelResource):
             'site': ALL,
             'pi': ALL,
         }
+        ordering = {
+            'site': ALL,
+        }
         
 
 class InstrumentResource(ModelResource):
@@ -51,6 +54,9 @@ class MeasurementTypeResource(ModelResource):
         excludes = ['id']
         include_resource_uri = False 
         filtering = { 
+            'type': ALL,
+        }
+        ordering = {
             'type': ALL,
         }
 
