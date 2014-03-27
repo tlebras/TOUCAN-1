@@ -1,6 +1,6 @@
 import re
 from Mermaid2_db.models import *
-
+import datetime
 
 def read_data(file_data, instrument, filename):
     """Function reading the file and uploading the data to the database\n
@@ -43,7 +43,7 @@ def read_data(file_data, instrument, filename):
         point = Point()
         point.matchup_id = data[i][0]
         point.point = 'POINT({0} {1})'.format(data[i][3], data[i][4])
-        point.time_is = data[i][5]
+        point.time_is = datetime.datetime.strptime(data[i][5],'%Y%m%dT%H%M%SZ')
         point.pqc = data[i][6]
         point.mqc = data[i][7]
         point.land_dist_is = data[i][8]

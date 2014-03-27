@@ -36,7 +36,7 @@ class Point(models.Model):
 
     matchup_id = models.CharField(max_length=255)
     point = models.PointField()
-    time_is = models.CharField(max_length=255)
+    time_is = models.DateTimeField()
     pqc = models.CharField(max_length=255)
     mqc = models.CharField(max_length=255)
     land_dist_is = models.FloatField()
