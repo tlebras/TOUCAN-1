@@ -6,6 +6,7 @@ environ['DJANGO_SETTINGS_MODULE'] = 'Mermaid2.settings'
 from Mermaid2_db.models import *
 from ingest import read_data
 from datetime import datetime
+import timeit
 
 file_list = listdir('data')
 
@@ -17,11 +18,11 @@ for file in file_list:
         
     file_data = open('data/' + file, 'r')
 
-    time_1 = datetime.now()
+    tic = timeit.default_timer()
 
     read_data(file_data, instrument.id, file)
 
-    time_2 = datetime.now()
+    toc = timeit.default_timer()
     
-    print time_2 - time_1
+    print toc - tic
 
