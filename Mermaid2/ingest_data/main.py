@@ -1,6 +1,7 @@
 from os import environ, listdir
 import sys
-sys.path.append('/home/langlois/Documents/django/Mermaid2/Mermaid2')
+import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__),'..')))
 #sys.path.append('/home/mermaid2/Mermaid2/Mermaid2')
 environ['DJANGO_SETTINGS_MODULE'] = 'Mermaid2.settings'
 from Mermaid2_db.models import *
