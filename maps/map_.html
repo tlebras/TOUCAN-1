@@ -131,7 +131,7 @@ function getSelectedData(){
         }
         //appends measurement types to the url
         for(var i=0; i<select_measurements.length; i++){
-            api_url += '&measurementtype__type__in=' + select_measurements[i];
+            api_url += '&measurementtype__long_name__in=' + select_measurements[i];
         }
          
         /*for(var i=0; i<select_deployments.length; i++){
@@ -450,10 +450,10 @@ $(function(){
    
     //get measurement types availables and add them to the select field 
     $.get(
-        url='http://127.0.0.1:8000/api/v1/measurementtype?limit=0&order_by=type',
+        url='http://127.0.0.1:8000/api/v1/measurementtype?limit=0&order_by=long_name',
         success=function(data){
             for(var i=0; i<data.objects.length; i++){
-                $(".select-measurementtype").append($("<option>").val(data.objects[i].type).html(data.objects[i].type));
+                $(".select-measurementtype").append($("<option>").val(data.objects[i].long_name).html(data.objects[i].long_name));
             } 
         }, 
         dataType='jsonp' // /!\ NOT SURE IF SAFE         

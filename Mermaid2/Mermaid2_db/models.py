@@ -58,11 +58,12 @@ class MeasurementType(models.Model):
     """Measurement type model defined by :\n
     - type (CharField)
     - units (CharField)
+    - long_name (CharField)
     """
 
     type = models.CharField(max_length=255)
     units = models.CharField(max_length=255)
-
+    long_name = models.CharField(max_length=255)
 
 class MeasurementWavelength(models.Model):
     """Measurement wavelength model defined by :\n

@@ -144,40 +144,53 @@ def read_campaign_name(filename):
     return campaign_name
 
 
-def get_units(type):
-    """Associate a measurement type with its units, to be completed with new types\n
-    :param type: measurement type (string)
+def units_and_name(type):
+    """Using a dictionary, return the units and long name associate with a measurement type
+    :param type: measurement type (string), as taken from the input spreadsheet headings
+    
+    Returns a dictionary with keys "units" and "long_name"
+    If the input type isn't coded, sets units = "NA" and long name = type
     """
-
-    if type.lower() == 'aeronet_chla_is':
-        return 'mg.m-3'
-    elif type.lower() == 'surf_press_is':
-        return 'hPa'
-    elif type.lower() == 'wind_speed_is':
-        return 'm.s-1'
-    elif type.lower() == 'o3_is':
-        return 'cm-atm'
-    elif type.lower() == 'rho_wn_is':
-        return 'dl'
-    elif type.lower() == 'lwn_is' or type.lower() == 'lw_is':
-        return 'mW.m-2.nm-1.sr-1'
-    elif type.lower() == 'exactwavelength_is':
-        return 'nm'
-    elif type.lower() == 'es_is' or type.lower() == 'ed_is':
-        return 'mW.m-2.nm-1.s'
-    elif type.lower() == 'thetav_is' or type.lower() == 'dphi_is':
-        return 'degrees'
-    elif type.lower() == 'lu_is':
-        return 'uW.cm-2.nm.sr'
-    elif type.lower() == 'a_is' or type.lower() == 'ap_is' or type.lower() == 'adet_is' or type.lower() == 'ag_is' \
-        or type.lower() == 'bb_is' or type.lower() == 'kd_is':
-        return 'm-1'
-    else:
-        return 'NA'  # if the measurement type is unknown, set units to NA
-
+    types={ 
+            'a_is': ('m-1', 'Total absorption coefficient'),
+            'adet_is': ('m-1', 'Detrital (non-algal) absorption coefficient'),
+            'aeronet_chla_is': ('mg.m-3', 'Chlorophyll-a (from AERONET)'),
+            'ag_is': ('m-1', 'In-situ CDOM'),
+            'alpha_nir_is': ('dl', 'AERONET aerosol Angstrom exponents'),
+            'aot_is': ('dl', 'AERONET aerosol optical thickness as band b'),
+            'ap_is': ('m-1', 'Total particulate absorption'),
+            'aph_is': ('m-1', 'Total algal pigment absorption'),
+            'bb_is': ('m-1', 'Total backscattering'),
+            'dphi_is': ('degrees', 'Viewing azimuth angle'),
+            'ed_is': ('mW.m-2.nm-1.s', 'Downwelling surface irradiance'),
+            'es_is': ('mW.m-2.nm-1.s', 'Spectral surface irradiance'),
+            'exactwavelength_is': ('nm', 'Exact wavelength of Lwn of named spectral band'),
+            'hplc_chla_total_is': ('mg.m-3', 'Chlorophyll-a (total from HPLC pigment analysis)'),
+            'kd_is': ('m-1', 'Diffuse attenuation coefficient for backscattering'),       
+            'lu_is': ('uW.cm-2.nm.sr', 'Upwelling radiance'),
+            'lw_is': ('mW.m-2.nm-1.sr-1', 'Water-leaving radiance'),
+            'lwn_is': ('mW.m-2.nm-1.sr-1', 'Water-leaving radiance (normalised)'),
+            'msm_is': ('g,m3', 'Mineral suspended matter'),
+            'o3_is': ('cm-atm', 'Ozone concentration'),
+            'osm_is': ('g.m3', 'Organic suspended matter'),
+            'rho_w_is': ('dl', 'Water reflectance (unnormalised)'),
+            'rho_wn_is': ('dl', 'Water reflectance (normalised)'),
+            'surf_press_is': ('hPa', 'Surface pressure'),
+            'spect_chla_is': ('mg.m-3', 'Chlorophyll-a (spectrophotometric)'),
+            'thetav_is': ('degrees', 'Viewing zenith angle'),
+            'time_is': ('UTC', 'AERONET measurement time'),
+            'tsm_is': ('g.m3', 'Total suspended matter (mineral + organic)'),
+            'wind_speed_is': ('m.s-1', 'Wind speed'),
+    }
+    
+    try:
+        return {'units':types[type.lower()][0], 'long_name':types[type.lower()][1]}
+    except KeyError:
+        return {'units':'NA', 'long_name': type.lower()}
 
 def get_type(string, radiometric):
     """Read the measurement type from the string read, if it doesn't exist, create it\n
+    Force the type to be lower case, so that we don't get duplicates with just differences in case
     :param string: string containing the measurement type, i.e. in "Rho_wn_IS_412" the type is "Rho_wn_IS"
     :param radiometric: boolean, true if the measurement is radiometric, meaning the string contains the wavelength
     """
@@ -197,10 +210,11 @@ def get_type(string, radiometric):
 
     # get the right measurement type object from the database
     try:
-        measurement_type = MeasurementType.objects.get(type=type)
+        measurement_type = MeasurementType.objects.get(type=type.lower())
     # if it does not exist, create it
     except MeasurementType.DoesNotExist:
-        measurement_type = MeasurementType(type=type, units=get_units(type))
+        measurement_type = MeasurementType(type=type.lower(), units=units_and_name(type)['units'],
+                                           long_name=units_and_name(type)['long_name'])
         measurement_type.save()
 
     return measurement_type

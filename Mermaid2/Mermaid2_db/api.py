@@ -55,9 +55,11 @@ class MeasurementTypeResource(ModelResource):
         include_resource_uri = False 
         filtering = { 
             'type': ALL,
+            'long_name': ALL,
         }
         ordering = {
             'type': ALL,
+            'long_name': ALL,
         }
 
 
