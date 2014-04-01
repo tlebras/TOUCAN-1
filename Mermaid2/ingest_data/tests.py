@@ -7,11 +7,13 @@ Replace this with more appropriate tests for your application.
 
 from django.test import TestCase
 from ingest_data.ingest import *
+import os
 
 class InjestToolsTest(TestCase):
 
     def setUp(self):
-        self.sampleData = open("/home/mermaid2/mermaid2/Mermaid2/ingest_data/extraction_Test_.csv", "r")
+        testfile = os.path.join('ingest_data','extraction_Test_.csv')
+        self.sampleData = open(testfile, "r")
         self.instrument = Instrument.objects.get_or_create(name='Unknown')[0]
         
     def test_read_file(self):    
