@@ -17,7 +17,7 @@ for file in file_list:
 
     print file
         
-    file_data = open('data/' + file, 'r')
+    file_data = open(os.path.join('data', file), 'r')
 
     tic = timeit.default_timer()
 
