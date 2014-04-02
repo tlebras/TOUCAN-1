@@ -34,6 +34,7 @@ class InstrumentResource(ModelResource):
 class PointResource(ModelResourceGeoDjango):
 
     deployment = fields.ForeignKey(DeploymentResource, 'deployment', full=True)
+    measurement_types = fields.ToManyField('Mermaid2_db.api.MeasurementTypeResource', 'measurement_types', full=True)
     
     class Meta:
         queryset = Point.objects.all()
@@ -44,11 +45,14 @@ class PointResource(ModelResourceGeoDjango):
             'deployment': ALL_WITH_RELATIONS,
             'point': ALL,
             'time_is': ALL,
+            'measurement_types': ALL_WITH_RELATIONS,
         }
         max_limit = None
       
          
 class MeasurementTypeResource(ModelResource):
+    points = fields.ToManyField('Mermaid2_db.api.PointResource', 'points')
+    
     class Meta:
         queryset = MeasurementType.objects.all()
         excludes = ['id']
@@ -56,6 +60,7 @@ class MeasurementTypeResource(ModelResource):
         filtering = { 
             'type': ALL,
             'long_name': ALL,
+            'points': ALL_WITH_RELATIONS,
         }
         ordering = {
             'type': ALL,

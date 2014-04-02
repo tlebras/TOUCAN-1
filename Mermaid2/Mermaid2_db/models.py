@@ -32,8 +32,9 @@ class Point(models.Model):
     - land_dist_is : land distance (FloatField)
     - thetas_is : Solar zenith angled computed from time/lat/lon (FloatField)
     - deployment (ForeignKey)
+    - measurement_types (ManyToManyField to MeasurementType, through Measurement)
     """
-
+    measurement_types = models.ManyToManyField('MeasurementType', through='Measurement', related_name='points')
     matchup_id = models.CharField(max_length=255)
     point = models.PointField()
     time_is = models.DateTimeField()

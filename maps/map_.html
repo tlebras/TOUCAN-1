@@ -83,7 +83,7 @@ function showSelectedPoints(){
 
     var api_url = 'http://127.0.0.1:8000/api/v1/point/?limit=0';
     var select_deployments = $("#select-deployment option:selected").map(function(){ return this.value }).get();
-
+    var meas_type_list = []
     if(select_deployments.length != 0){
         for(var i=0; i<select_deployments.length; i++){
                 api_url += '&deployment__site__in=' + select_deployments[i];
@@ -99,10 +99,21 @@ function showSelectedPoints(){
                         coord.push(val);
                     }); 
                     points.push({latLng: [coord[0],coord[1]], name: matchup_id})               
+                    for(var ii in data.objects[i].measurement_types){
+                        var thistype=data.objects[i].measurement_types[ii].long_name;
+                        if($.inArray(thistype, meas_type_list)<0){
+                            meas_type_list.push(thistype);
+                        }
+                    }
                 }
                 map.removeAllMarkers()
                 map.addMarkers(points);
                 alert('Points added to the map.')
+                meas_type_list.sort()
+                $(".select-measurementtype").empty(); // Clear previous list
+                for(var ii in meas_type_list){
+                    $(".select-measurementtype").append($("<option>").val(meas_type_list[ii]).html(meas_type_list[ii]));
+                }  
             }, 
             dataType='jsonp' // /!\ NOT SURE IF SAFE         
         ); 
@@ -449,15 +460,15 @@ $(function(){
     );
    
     //get measurement types availables and add them to the select field 
-    $.get(
-        url='http://127.0.0.1:8000/api/v1/measurementtype?limit=0&order_by=long_name',
-        success=function(data){
-            for(var i=0; i<data.objects.length; i++){
-                $(".select-measurementtype").append($("<option>").val(data.objects[i].long_name).html(data.objects[i].long_name));
-            } 
-        }, 
-        dataType='jsonp' // /!\ NOT SURE IF SAFE         
-    );
+    //$.get(
+    //    url='http://127.0.0.1:8000/api/v1/measurementtype?limit=0&order_by=long_name',
+    //    success=function(data){
+    //        for(var i=0; i<data.objects.length; i++){
+    //            $(".select-measurementtype").append($("<option>").val(data.objects[i].long_name).html(data.objects[i].long_name));
+    //        } 
+    //    }, 
+    //    dataType='jsonp' // /!\ NOT SURE IF SAFE         
+    //);
     
     
 
