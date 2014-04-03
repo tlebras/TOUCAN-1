@@ -10,49 +10,29 @@ def read_data(file_data, instrument, filename):
     :param filename: name of the file, the name of the campaign is extracted form it (string)
     """
 
-    # read the cvs file (turn the string into an array)
+    # Read the cvs file (turn the string into an array)
     data = read_file(file_data)
 
-    # check if the file is legit
+    # Check if the file is legit
     if not file_ok(data[0]):
         raise IOError
 
-    # create a campaign object and read the name of the campaign
-    campaign = Campaign()
-    campaign.campaign = read_campaign_name(filename)
-    campaign.save()
-
-    # create deployment object(s) linked to the campaign
-    deployment_list = []
-    deployments_to_bulk_save = []
-    points_to_bulk_save = []
+    # Create new, or get matching, campaign object
+    campaign = get_campaign(filename)
+    
+    # Create list of measurements, which will then all be saved in one go at the end
     measurements_to_bulk_save = []
 
     i = 1
-    j = 10
+    j = 10 # The first measurement column (after all the Point metadata ones)
     header = data[0]
-    dep_id = len(Deployment.objects.all())
-    point_id = len(Point.objects.all())
 
+    # Loop over all the rows in the file
     while i < len(data):
-        deployment = Deployment(site=data[i][1], pi=data[i][2], campaign=campaign)
-        if data[i][1] not in deployment_list:
-            deployment_list.append(data[i][1])
-            deployments_to_bulk_save.append(deployment)
-            dep_id += 1
+        deployment = get_deployment(site=data[i][1], pi=data[i][2], campaign=campaign)
+        point_id = get_point(data[i][:j], deployment.id)
 
-        point = Point()
-        point.matchup_id = data[i][0]
-        point.point = 'POINT({0} {1})'.format(data[i][3], data[i][4])
-        point.time_is = datetime.datetime.strptime(data[i][5],'%Y%m%dT%H%M%SZ').replace(tzinfo=pytz.utc)
-        point.pqc = data[i][6]
-        point.mqc = data[i][7]
-        point.land_dist_is = data[i][8]
-        point.thetas_is = data[i][9]
-        point.deployment = Deployment(id=dep_id)
-        points_to_bulk_save.append(point)
-        point_id += 1
-        
+        # Loop through all the measurement columns on this row
         while j < len(data[i]):
             if re.search(r"^.*_IS$", header[j]):  # all simple measurements must look like XXX_IS
                 measurement = Measurement(measurement_type=get_type(header[j], False),
@@ -74,9 +54,7 @@ def read_data(file_data, instrument, filename):
         i += 1
         j = 10
 
-    # save everything into the database
-    Deployment.objects.bulk_create(deployments_to_bulk_save)
-    Point.objects.bulk_create(points_to_bulk_save)
+    # save all the measurements into the database
     Measurement.objects.bulk_create(measurements_to_bulk_save)
 
 
@@ -143,6 +121,62 @@ def read_campaign_name(filename):
         i += 1
 
     return campaign_name
+
+def get_campaign(filename):
+    """
+    Get the campaign name, and check to see if we already have this campaign in the database
+    If we don't: Create it
+    If we do: Return this campaign
+    
+    :param filename: Name of the file, which contains the campaign name
+    
+    :return campaign: the campaign object found or created
+    
+    """
+    campaign_name = read_campaign_name(filename)
+    campaign = Campaign.objects.get_or_create(campaign=campaign_name)[0]
+    return campaign        
+
+def get_deployment(site, pi, campaign):
+    """
+    Check to see if we already have this campaign in the database
+    If we don't: Create it
+    If we do: Return this campaign
+    
+    :param site: Name of the deployment site
+    :param pi: Name of the PI
+    :param campaign: Campaign object this deployment is attached to
+    
+    :return deployment: the Deployment object found or created
+    
+    """
+    deployment = Deployment.objects.get_or_create(site=site, pi=pi, campaign=campaign)[0]       
+    return deployment
+ 
+def get_point(data, dep_id):
+    """
+    Check to see if the current point has already been created. If so, return the point id. If not, create a new point.
+    To be regarded as the same point, ALL of the model's fields (matchup_id, point, time_is, etc) must be the same.
+    
+    :param data: Data array containing the 10 field values
+    :param dep_id:   Id number of the deployment this point is attached to
+    
+    :return point_id: the point id of either the point that was found, or the new one created
+    """
+    matchup_id = data[0]
+    point = 'POINT({0} {1})'.format(data[3], data[4])
+    time_is = datetime.datetime.strptime(data[5],'%Y%m%dT%H%M%SZ').replace(tzinfo=pytz.utc)
+    pqc = data[6]
+    mqc = data[7]
+    land_dist_is = data[8]
+    thetas_is = data[9]
+    deployment = Deployment.objects.get(id=dep_id)
+        
+    thispoint = Point.objects.get_or_create(matchup_id=matchup_id, point=point, time_is=time_is, pqc=pqc, mqc=mqc,
+                          land_dist_is=land_dist_is, thetas_is=thetas_is, deployment=deployment)[0]
+    point_id = thispoint.id
+
+    return point_id
 
 
 def units_and_name(type):
