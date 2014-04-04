@@ -17,35 +17,38 @@ class InjestToolsTest(TestCase):
         self.sampleData = open(self.testfile, "r")
         self.instrument = Instrument.objects.get_or_create(name='Unknown')[0]
         
-    def test_read_file(self):  
+    def test_read_file(self):
         """Check that read_data runs ok"""
-        read_data(self.sampleData, self.instrument.id, self.filename)  
-        
-    def test_point_duplication(self):
-        """Check that read_data prevents duplicate points being created"""
-        read_data(self.sampleData, self.instrument.id, self.filename)  
-        self.sampleData = open(self.testfile, "r") # Need to reopen the file
-        read_data(self.sampleData, self.instrument.id, self.filename)  
-        self.assertTrue(len(Point.objects.all())==1)  
-        
-    def test_deployment_duplication(self):
-        """Check that read_data prevents duplicate deployments being created"""
-        read_data(self.sampleData, self.instrument.id, self.filename)  
-        self.sampleData = open(self.testfile, "r") # Need to reopen the file
-        read_data(self.sampleData, self.instrument.id, self.filename)  
-        self.assertTrue(len(Deployment.objects.all())==1)  
-        
-    def test_campaign_duplication(self):
-        """Check that read_data prevents duplicate campaigns being created"""
-        read_data(self.sampleData, self.instrument.id, self.filename)  
-        self.sampleData = open(self.testfile, "r") # Need to reopen the file
-        read_data(self.sampleData, self.instrument.id, self.filename)  
-        self.assertTrue(len(Campaign.objects.all())==1)  
+        read_data(self.sampleData, self.instrument.id, self.filename)
         
     def test_units_and_name(self):
-        """Check that units_and_name returns the right format
-        (a dictionary with keys 'units' and 'long_name', which both point to strings)
+        """Check that units_and_name returns the right format:
+        a dictionary with keys 'units' and 'long_name', which both point to strings
         """
         result = units_and_name('rho_w_IS')
         self.assertTrue( isinstance(result['units'], basestring) and isinstance(result['long_name'], basestring))
+
         
+class DuplicationTests(TestCase):
+    
+    def setUp(self):
+        """Ingest same file twice"""
+        filename='extraction_Test_.csv'
+        testfile = os.path.join('ingest_data', filename)
+        instrument = Instrument.objects.get_or_create(name='Unknown')[0]
+        sampleData = open(testfile, "r")
+        read_data(sampleData, instrument.id, filename)
+        sampleData = open(testfile, "r")
+        read_data(sampleData, instrument.id, filename)
+    
+    def test_point_duplication(self):
+        """Check that read_data prevents duplicate points being created"""
+        self.assertTrue(len(Point.objects.all())==1)
+        
+    def test_deployment_duplication(self):
+        """Check that read_data prevents duplicate deployments being created"""
+        self.assertTrue(len(Deployment.objects.all())==1)
+        
+    def test_campaign_duplication(self):
+        """Check that read_data prevents duplicate campaigns being created"""
+        self.assertTrue(len(Campaign.objects.all())==1)
