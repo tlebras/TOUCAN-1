@@ -9,21 +9,13 @@ from django.test import TestCase
 from Mermaid2_db.models import Deployment, Point
 from Mermaid2_db.views import *
 import re
+import datetime
 
 
 def lat_lon_ok(point):
     return (90 >= point.x >= -90 and
             180 >= point.y >= -180
             )
-
-
-def time_ok(time):
-    exp = r"^[0-9]{8}T[0-9]{6}Z$"
-    if re.search(exp, time) is None:
-        return False
-    else:
-        return True
-
 
 def pqc_ok(pqc):
     exp = r"^P[0-9]{8}$"
@@ -55,10 +47,10 @@ class PointTest(TestCase):
     def test_time(self):
         """checks if time respects the mermaid format"""
 
-        point = Point(time_is="20060517T061844Z")
-        self.assertEqual(time_ok(point.time_is), True)
+        point = Point(time_is=datetime.datetime.strptime("20060517T061844Z",'%Y%m%dT%H%M%SZ'))
+        self.assertEqual(isinstance(point.time_is, datetime.datetime), True)
         point = Point(time_is="123456789")
-        self.assertEqual(time_ok(point.time_is), False)
+        self.assertEqual(isinstance(point.time_is, datetime.datetime), False)
 
     def test_pqc(self):
         """checks if pqc respects the mermaid format"""
