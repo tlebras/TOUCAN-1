@@ -3,21 +3,23 @@ from ingest_data.ingest_images import *
 import os
 from mock import MagicMock
 
-class InjestToolsTest(TestCase):
-
+class InjestToolsSetup(TestCase):
+    """Setup the test directory and files
+    """
     def setUp(self):
         self.testdir = "ingest_data/images/"
         self.testdata = os.path.join(self.testdir,'input/',"NPP_VMAE_L1.A2013302.1140.P1_03001.2013302210836.gscs_000500784042.hdf")
         self.testmeta = os.path.join(self.testdir,'input/',"test.json")
         self.ingest = ingest_images()
     
+class InjestToolsTest(InjestToolsSetup):
     # Program checks to see if there's any new images in the staging area
     
     # List the files and their associated metadata document (eg a JSON file)
     def test_list_files(self):
-        """Check that get_file_list returns the correct file lists
+        """Check that get_file_list returns the correct file list
         """
-        metafiles = self.ingest.get_file_list(self.testdir+'/input')
+        metafiles = self.ingest.get_file_list(self.testdir)
         self.assertEquals(len(metafiles),1)
             
     # Extract data from the JSON file
@@ -31,6 +33,19 @@ class InjestToolsTest(TestCase):
         
     # Call an appropriate reading script, based on the file type.
     # Should probably have one test per filetype coded?
+    ### Put these in a separate class below, to keep tidier
+    
+    # Read in the data that was requested in the JSON file
+        
+    # Extract a subset containing our region of interest
+    
+    # Write out to a geotiff, with an appropriate directory structure
+    
+    # Save an object to the database, storing the metadata and the location of the geotiff
+
+class FiletypeTests(InjestToolsSetup):
+    """Tests for the various file types, to check that the correct method is called for each one
+    """
     def test_call_hdf_read(self):
         """Check that read_hdf is called when filetype=="hdf"
         """
@@ -44,14 +59,10 @@ class InjestToolsTest(TestCase):
         we haven't coded in
         """
         metadata = {"filetype":"blahblahblah"}
-        self.assertRaises(IOError, self.ingest.read_data, metadata)       
-    
-    
-    # Read in the data that was requested in the JSON file
+        self.assertRaises(IOError, self.ingest.read_data, metadata)
         
-    # Extract a subset containing our region of interest
-    
-    # Write out to a geotiff, with an appropriate directory structure
-    
-    # Save an object to the database, storing the metadata and the location of the geotiff
- 
+class FunctionalTests(InjestToolsSetup):
+    """Functional test running the whole ingestion routine as the user will do it
+    """
+    def test_ingest_image(self):
+        self.ingest.ingest_images(self.testdir)
