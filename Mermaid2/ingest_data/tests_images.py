@@ -7,10 +7,11 @@ class InjestToolsSetup(TestCase):
     """Setup the test directory and files
     """
     def setUp(self):
-        self.testdir = "ingest_data/images/"
-        self.testdata = os.path.join(self.testdir,'input/',"NPP_VMAE_L1.A2013302.1140.P1_03001.2013302210836.gscs_000500784042.hdf")
-        self.testmeta = os.path.join(self.testdir,'input/',"test.json")
+        self.testdir = "/home/mermaid2/mermaid2/Mermaid2/ingest_data/images/input/"
+        self.testdata = os.path.join(self.testdir,"NPP_VMAE_L1.A2013302.1140.P1_03001.2013302210836.gscs_000500784042.hdf")
+        self.testmeta = os.path.join(self.testdir,"test.json")
         self.ingest = ingest_images()
+        self.ingest.inputdir = self.testdir
     
 class InjestToolsTest(InjestToolsSetup):
     # Program checks to see if there's any new images in the staging area
@@ -19,7 +20,7 @@ class InjestToolsTest(InjestToolsSetup):
     def test_list_files(self):
         """Check that get_file_list returns the correct file list
         """
-        metafiles = self.ingest.get_file_list(self.testdir)
+        metafiles = self.ingest.get_file_list()
         self.assertEquals(len(metafiles),1)
             
     # Extract data from the JSON file
@@ -37,9 +38,38 @@ class InjestToolsTest(InjestToolsSetup):
     
     # Read in the data that was requested in the JSON file
         
+    def test_read_data(self):
+        """
+        Check that read_data returns a dictionary with the correct keys
+        """
+        metadata = self.ingest.read_meta_file(self.testmeta)
+        data = self.ingest.read_data(metadata)
+        self.assertEquals("longitude" in data.keys(), True)
+        self.assertEquals("latitude" in data.keys(), True)
+        for var in metadata['variables']:
+            self.assertEquals(var in data.keys(), True)
+        
     # Extract a subset containing our region of interest
+    def test_get_region(self):
+        """Test extracting the region of interest
+        """
+        testlon = np.array([[1,2,3],[1.2,2.2,3.2],[1.3,2.3,3.3]])
+        testlat = np.array([[11,11.3,11.4],[12, 12.3, 12.4],[13,13.3,13.4]])
+        testregion = [11.1, 12.5, 1.5, 3.1]
+        i,j = self.ingest.extract_region(testlon, testlat, testregion)
+        self.assertEquals(i,slice(0,2))
+        self.assertEquals(j,slice(1,3))
     
     # Write out to a geotiff, with an appropriate directory structure
+    def test_save_geotiff(self):
+        metadata = self.ingest.read_meta_file(self.testmeta)
+        testdata={}
+        testdata['longitude'] = np.ones(10)
+        testdata['latitude'] = np.ones(10)
+        testdata['reflectance'] = np.ones(10)
+        testoutdir = ''
+        self.write_geotiff(testoutdir, metadata, testdata)
+        
     
     # Save an object to the database, storing the metadata and the location of the geotiff
 
