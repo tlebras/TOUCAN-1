@@ -51,7 +51,8 @@ class InjestToolsTest(InjestToolsSetup):
         
     # Extract a subset containing our region of interest
     def test_get_region(self):
-        """Test extracting the region of interest
+        """
+        Test extracting the region of interest, as given by lon/lat corners
         """
         testlon = np.array([[1,2,3],[1.2,2.2,3.2],[1.3,2.3,3.3]])
         testlat = np.array([[11,11.3,11.4],[12, 12.3, 12.4],[13,13.3,13.4]])
@@ -62,14 +63,16 @@ class InjestToolsTest(InjestToolsSetup):
     
     # Write out to a geotiff, with an appropriate directory structure
     def test_save_geotiff(self):
+        """
+        Check that geotiff file is created and saved to correct place
+        """
         metadata = self.ingest.read_meta_file(self.testmeta)
-        testdata={}
-        testdata['longitude'] = np.ones(10)
-        testdata['latitude'] = np.ones(10)
-        testdata['reflectance'] = np.ones(10)
-        testoutdir = ''
-        self.write_geotiff(testoutdir, metadata, testdata)
+        testdata = self.ingest.read_data(metadata)
+        testoutdir = self.testdir+'../output'
         
+        self.ingest.save_geotiff(str(testoutdir), metadata, testdata)
+        self.assertEquals(os.path.isdir(os.path.join(testoutdir, metadata['region_name'],
+                                                     metadata['instrument'], str(metadata['year']))), True)
     
     # Save an object to the database, storing the metadata and the location of the geotiff
 
@@ -79,10 +82,10 @@ class FiletypeTests(InjestToolsSetup):
     def test_call_hdf_read(self):
         """Check that read_hdf is called when filetype=="hdf"
         """
-        self.ingest.read_hdf = MagicMock(return_value=3)
+        self.ingest.read_hdf_pyhdf = MagicMock(return_value=3)
         metadata = {"filetype":"hdf"}
         self.ingest.read_data(metadata)
-        self.ingest.read_hdf.assert_called_with(metadata)
+        self.ingest.read_hdf_pyhdf.assert_called_with(metadata)
     
     def test_filetype_not_coded(self):
         """Check that IOError is thrown if user tries to ingest a filetype that
@@ -95,4 +98,4 @@ class FunctionalTests(InjestToolsSetup):
     """Functional test running the whole ingestion routine as the user will do it
     """
     def test_ingest_image(self):
-        self.ingest.ingest_images(self.testdir)
+        self.ingest.ingest_images(self.testdir, self.testdir+'../output')
