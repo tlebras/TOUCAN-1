@@ -1,7 +1,11 @@
-from django.test import TestCase
-from ingest_data.ingest_images import *
 import os
-from mock import MagicMock
+from mock import *
+
+from django.test import TestCase
+
+from ingest_data.ingest_images import *
+from ingest_data.ingest_images_file_readers import *
+from ingest_data.ingest_images_geo_tools import *
 
 class InjestToolsSetup(TestCase):
     """Setup the test directory and files
@@ -10,7 +14,7 @@ class InjestToolsSetup(TestCase):
         self.testdir = "/home/mermaid2/mermaid2/Mermaid2/ingest_data/images/input/"
         self.testdata = os.path.join(self.testdir,"NPP_VMAE_L1.A2013302.1140.P1_03001.2013302210836.gscs_000500784042.hdf")
         self.testmeta = os.path.join(self.testdir,"test.json")
-        self.ingest = ingest_images()
+        self.ingest = IngestImages()
         self.ingest.inputdir = self.testdir
     
 class InjestToolsTest(InjestToolsSetup):
@@ -48,18 +52,6 @@ class InjestToolsTest(InjestToolsSetup):
         self.assertEquals("latitude" in data.keys(), True)
         for var in metadata['variables']:
             self.assertEquals(var in data.keys(), True)
-        
-    # Extract a subset containing our region of interest
-    def test_get_region(self):
-        """
-        Test extracting the region of interest, as given by lon/lat corners
-        """
-        testlon = np.array([[1,2,3],[1.2,2.2,3.2],[1.3,2.3,3.3]])
-        testlat = np.array([[11,11.3,11.4],[12, 12.3, 12.4],[13,13.3,13.4]])
-        testregion = [11.1, 12.5, 1.5, 3.1]
-        i,j = self.ingest.extract_region(testlon, testlat, testregion)
-        self.assertEquals(i,slice(0,2))
-        self.assertEquals(j,slice(1,3))
     
     # Write out to a geotiff, with an appropriate directory structure
     def test_save_geotiff(self):
@@ -75,18 +67,31 @@ class InjestToolsTest(InjestToolsSetup):
                                                      metadata['instrument'], str(metadata['year']))), True)
     
     # Save an object to the database, storing the metadata and the location of the geotiff
-
+class GeoToolsTests(InjestToolsSetup):
+            
+    def test_get_region(self):
+        """
+        Test extracting the region of interest, as given by lon/lat corners
+        """
+        testlon = np.array([[1,2,3],[1.2,2.2,3.2],[1.3,2.3,3.3]])
+        testlat = np.array([[11,11.3,11.4],[12, 12.3, 12.4],[13,13.3,13.4]])
+        testregion = [11.1, 12.5, 1.5, 3.1]
+        G = GeoTools()
+        i,j = G.extract_region(testlon, testlat, testregion)
+        self.assertEquals(i,slice(0,2))
+        self.assertEquals(j,slice(1,3))
+    
 class FiletypeTests(InjestToolsSetup):
     """Tests for the various file types, to check that the correct method is called for each one
     """
     def test_call_hdf_read(self):
         """Check that read_hdf is called when filetype=="hdf"
         """
-        self.ingest.read_hdf_pyhdf = MagicMock(return_value=3)
-        metadata = {"filetype":"hdf"}
-        self.ingest.read_data(metadata)
-        self.ingest.read_hdf_pyhdf.assert_called_with(metadata)
-    
+        metadata = {'filetype':'hdf'}
+        with patch('ingest_data.ingest_images.DataReaders.read_hdf_pyhdf') as mock:
+            self.ingest.read_data(metadata)
+        mock.assert_called_with(self.ingest.inputdir,metadata )
+        
     def test_filetype_not_coded(self):
         """Check that IOError is thrown if user tries to ingest a filetype that
         we haven't coded in
