@@ -56,16 +56,34 @@ class GeoTools():
     def get_new_lat_lon(self, old_lon, old_lat, region):
         """
         Calculate new coordinate lists to use for regridding, such that the resolution is about the same as the old grid
+        #
+        # 1A------2A------3A
+        # |       |       |
+        # 1B------2B------3B
+        # |       |       |
+        # 1C------2C------3C
+        #
+        # When we just used adjacent lon and lat values to compute dx and dy, we sometimes still got holes. So use
+        # opposite corners of squares made up from each group of four points instead:
+        # ie. Rather than take dx as difference between 1A-2A, 2A-3A etc, we use 1A-2B, 2A-3B, etc
+        # and for dy, use 2A-1B, 3A-2B etc.
         """
         min_lon = region[2]
         max_lon = region[3]
         min_lat = region[0]
         max_lat = region[1]
 
-        # Calculate resolution using the old grid - use max value of old grid, to avoid any holes
-        # nb use of np.abs is because lat/lon arrays can be 'backwards'
-        dx = np.max(np.abs(np.diff(old_lon, axis=1)))
-        dy = np.max(np.abs(np.diff(old_lat, axis=0)))
+        # Calculate resolution using the old grid - use max value of old grid, to avoid any holes. Use of np.abs() is
+        # because lon/lat arrays can be "backwards", resulting in -ve differences
+        dx = 0
+        for row in np.arange(old_lon.shape[0]-1):
+            rowdx = np.max(np.abs(old_lon[row+1,:-1]-old_lon[row,1:]))
+            dx = max(dx,rowdx)
+         
+        dy = 0
+        for col in np.arange(old_lat.shape[1]-1):
+            dycol = np.max(np.abs(old_lat[:-1,col]-old_lat[1:,col+1]))
+            dy=max(dy,dycol)
 
         # So how many points do we need in new grid?
         nx = np.floor((max_lon - min_lon)/dx)
