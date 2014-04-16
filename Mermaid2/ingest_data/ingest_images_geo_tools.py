@@ -16,9 +16,8 @@ class GeoTools():
         :param variables: list of which keys from the dictionary to output
         :param rotate: Optional rotation angle (in radians)
         '''
-        array = data[data.keys()[0]]
-        cols = array.shape[1]
-        rows = array.shape[0]
+        cols = len(data['longitude'])
+        rows = len(data['latitude'])
         originX = rasterOrigin[0]
         originY = rasterOrigin[1]
     
@@ -33,6 +32,7 @@ class GeoTools():
         outRaster.SetGeoTransform((originX, we_res, rotX, originY, rotY, ns_res))
         for band,key in enumerate(variables, 1):
             outband = outRaster.GetRasterBand(band)
+            outband.SetNoDataValue(0)
             outband.WriteArray(data[key])
             outband.FlushCache()
         outRasterSRS = osr.SpatialReference()
@@ -52,6 +52,64 @@ class GeoTools():
         islice = slice(i.min(),i.max()+1)
         jslice = slice(j.min(),j.max()+1)
         return islice, jslice        
+    
+    def get_new_lat_lon(self, old_lon, old_lat, region):
+        """
+        Calculate new coordinate lists to use for regridding, such that the resolution is about the same as the old grid
+        """
+        min_lon = region[2]
+        max_lon = region[3]
+        min_lat = region[0]
+        max_lat = region[1]
+
+        # Calculate resolution using the old grid - use max value of old grid, to avoid any holes
+        # nb use of np.abs is because lat/lon arrays can be 'backwards'
+        dx = np.max(np.abs(np.diff(old_lon, axis=1)))
+        dy = np.max(np.abs(np.diff(old_lat, axis=0)))
+
+        # So how many points do we need in new grid?
+        nx = np.floor((max_lon - min_lon)/dx)
+        ny = np.floor((max_lat - min_lat)/dy)
+
+        new_lon = np.linspace(min_lon, max_lon, nx)
+        new_lat = np.linspace(min_lat, max_lat, ny)
+        return new_lon, new_lat
+
+    
+    def extract_region_and_regrid(self, old_lon, old_lat, new_lon, new_lat, data):
+        """
+        Re-grid data to a regular grid, at the same time as extracting the region of interest
+        
+        Go through each point of the original grid, check if it is in the new grid, and if so append the 
+        data value to the closest grid point in the new grid. 
+        Returns the mean value for each new grid point.
+        
+        :param old_lon: Longitude for the original grid (2d)
+        :param old_lat: Latitude for the original grid (2d)
+        :param new_lon: Longitude for the new grid (1d)
+        :param new_lat: Latitude for the new grid (1d)
+        """
+        dx = np.diff(new_lon)[0]
+        dy = np.diff(new_lat)[0]
+        
+        new_data = np.zeros((len(new_lat), len(new_lon)))
+        count = np.zeros((len(new_lat), len(new_lon)))
+        
+        # loop over all points in the OLD grid
+        for j in np.arange(old_lon.shape[0]):
+            for i in np.arange(old_lon.shape[1]):
+                # Ignore points that aren't within the region of interest
+                if ((np.min(new_lon) <= old_lon[j,i] <= np.max(new_lon)) &
+                    (np.min(new_lat) <= old_lat[j,i] <= np.max(new_lat)) ):
+            
+                    # Find which point this corresponds to on the new grid, and add the data value
+                    new_i = int((old_lon[j,i] - np.min(new_lon)) / dx)
+                    new_j = int((old_lat[j,i] - np.min(new_lat)) / dy)
+                    new_data[new_j, new_i] += data[j,i]
+                    count[new_j, new_i] += 1
+        count[count==0] = np.nan # Prevent division by zero warnings
+        return new_data/count # Return the mean
+                
 
     def latlon_distance_meters(self, lat, lon):
         """Calculate the great circle distance between two points on the earth using the Haversine equation

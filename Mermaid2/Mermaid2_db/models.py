@@ -98,6 +98,13 @@ class InstrumentWavelength(models.Model):
     value = models.FloatField()
     instrument = models.ForeignKey(Instrument)
 
+class ImageRegion(models.Model):
+    """
+    Image region model, defined by:
+    - site (text field)
+    """
+    region = models.TextField()
+    
 
 class Image(models.Model):
     """Image model defined by :\n
@@ -105,15 +112,18 @@ class Image(models.Model):
     - archive location
     - lat/lon min
     - lat/lon max
-    - point
-    - instrument
+    - version (TextField)
+    - instrument (ForeignKey)
+    - region (ForeignKey)
 
     model not finished
 """
 
     web_location = models.CharField(max_length=255)
-    archive_location = models.CharField(max_length=255)	        
+    archive_location = models.CharField(max_length=255)
     top_left_point = models.PointField()
     bot_right_point = models.PointField() 
-    #point = models.ForeignKey(Point)  
-    instrument = models.ForeignKey(Instrument, blank=True, null=True)
+    time = models.DateTimeField()
+    version = models.TextField(blank=True, null=True)
+    instrument = models.ForeignKey(Instrument)
+    region = models.ForeignKey(ImageRegion)

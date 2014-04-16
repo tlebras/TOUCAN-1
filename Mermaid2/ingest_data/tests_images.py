@@ -64,11 +64,35 @@ class InjestToolsTest(InjestToolsSetup):
         
         self.ingest.save_geotiff(str(testoutdir), metadata, testdata)
         self.assertEquals(os.path.isdir(os.path.join(testoutdir, metadata['region_name'],
-                                                     metadata['instrument'], str(metadata['year']))), True)
+                                                     metadata['instrument'], str(metadata['datetime'].year))), True)
     
     # Save an object to the database, storing the metadata and the location of the geotiff
 class GeoToolsTests(InjestToolsSetup):
-            
+        
+    def test_get_new_latlon(self):
+        """
+        Test calculation of new lat/lon coords in preparation for regridding and extracting
+        """
+        testlon = np.tile(np.arange(10),(10,1))
+        testlat = np.tile(np.arange(10),(10,1)).T
+        testregion = (4.5,7.5,3.5,6.5)
+        G = GeoTools()
+        new_lon, new_lat = G.get_new_lat_lon(testlon, testlat, testregion)
+        self.assertTrue(np.allclose(new_lon, [3.5,5,6.5]))
+        self.assertTrue(np.allclose(new_lat, [4.5,6,7.5]))
+        
+    def test_regrid(self):
+        """
+        Test the regridding/extraction
+        """
+        old_lon = np.tile(np.arange(10),(10,1))
+        old_lat = np.tile(np.arange(10),(10,1)).T
+        new_lon = [4.5,6,7.5]
+        new_lat = [3.5,5,6.5]
+        G = GeoTools()
+        data = G.extract_region_and_regrid(old_lon, old_lat, new_lon, new_lat, np.ones(old_lon.shape))
+        self.assertEqual(data.shape,(len(new_lon), len(new_lat)))
+        
     def test_get_region(self):
         """
         Test extracting the region of interest, as given by lon/lat corners

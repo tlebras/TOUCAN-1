@@ -86,5 +86,8 @@ class DeploymentTest(TestCase):
         deployment = Deployment(site="Helsinki Lighthouse")
         self.assertEqual(deployment.site.isalnum(), False)  
 
-
+class ImageTests(TestCase):
+    def test_imageregion(self):
+        image_region = ImageRegion(region="testregion")
+        self.assertTrue(image_region.region.isalnum())
              
