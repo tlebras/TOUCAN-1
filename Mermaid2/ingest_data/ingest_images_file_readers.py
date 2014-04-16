@@ -79,3 +79,33 @@ class DataReaders():
             data[variable] = G.extract_region_and_regrid(longitude, latitude, new_lon, new_lat, array)
         del ds, hdf
         return data
+    
+    def read_n1(self, inputdir, metadata):
+        """
+        Read N1 file (eg MERIS or AATSR)
+        """
+        import epr
+        data = {}
+        
+        image = epr.open(os.path.join(inputdir,str(metadata['filename'])))
+        longitude = image.get_band('longitude').read_as_array()
+        latitude = image.get_band('latitude').read_as_array()
+
+        # Get date/time (is a string like '06-APR-2012 09:00:56.832999')
+        datestr = image.get_sph().get_field('FIRST_LINE_TIME').get_elem()
+        metadata['datetime'] = datetime.datetime.strptime(datestr,'%d-%b-%Y %H:%M:%S.%f').replace(tzinfo=pytz.UTC)
+    
+        # Regrid and extract region of interest
+        G = GeoTools()
+
+        # Get new coordinates
+        new_lon, new_lat = G.get_new_lat_lon(longitude, latitude, metadata['region_coords'])
+        data['longitude'] = new_lon
+        data['latitude'] = new_lat
+        
+        # Get the variables that were specified in the metadata file
+        for variable in metadata['variables']:
+            array = image.get_band(str(variable)).read_as_array()
+            data[variable] = G.extract_region_and_regrid(longitude, latitude, new_lon, new_lat, array)
+
+        return data

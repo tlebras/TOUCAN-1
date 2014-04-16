@@ -52,9 +52,11 @@ class IngestImages():
         Returns a dictionary "data" holding all the data
         """
         reader = DataReaders()
-        filetype = metadata["filetype"]
-        if filetype=="hdf":
+        instrument = metadata["instrument"].lower()
+        if instrument=="viirs":
             data = reader.read_hdf_pyhdf(self.inputdir,metadata)
+        elif (instrument=='meris')|(instrument=='aatsr'):
+            data = reader.read_n1(self.inputdir,metadata)
         else:
             raise IOError("That filetype is not coded")
         

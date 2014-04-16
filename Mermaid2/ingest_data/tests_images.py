@@ -108,19 +108,34 @@ class GeoToolsTests(InjestToolsSetup):
 class FiletypeTests(InjestToolsSetup):
     """Tests for the various file types, to check that the correct method is called for each one
     """
-    def test_call_hdf_read(self):
-        """Check that read_hdf is called when filetype=="hdf"
+    def test_call_aatsr_read(self):
+        """Check that read_n1 is called when instrument type is AATSR
         """
-        metadata = {'filetype':'hdf'}
+        metadata = {'instrument':'AATSR'}
+        with patch('ingest_data.ingest_images.DataReaders.read_n1') as mock:
+            self.ingest.read_data(metadata)
+        mock.assert_called_with(self.ingest.inputdir,metadata)
+        
+    def test_call_meris_read(self):
+        """Check that read_n1 is called when instrument type is MERIS
+        """
+        metadata = {'instrument':'MERIS'}
+        with patch('ingest_data.ingest_images.DataReaders.read_n1') as mock:
+            self.ingest.read_data(metadata)
+        mock.assert_called_with(self.ingest.inputdir,metadata)
+        
+    def test_call_viirs_read(self):
+        """Check that read_hdf is called when instrument type is VIIRS
+        """
+        metadata = {'instrument':'VIIRS'}
         with patch('ingest_data.ingest_images.DataReaders.read_hdf_pyhdf') as mock:
             self.ingest.read_data(metadata)
         mock.assert_called_with(self.ingest.inputdir,metadata )
         
     def test_filetype_not_coded(self):
-        """Check that IOError is thrown if user tries to ingest a filetype that
-        we haven't coded in
+        """Check that IOError is thrown if user tries to ingest an instrument that we haven't coded in
         """
-        metadata = {"filetype":"blahblahblah"}
+        metadata = {"instrument":"blahblahblah"}
         self.assertRaises(IOError, self.ingest.read_data, metadata)
         
 class FunctionalTests(InjestToolsSetup):
