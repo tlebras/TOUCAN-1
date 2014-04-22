@@ -128,7 +128,7 @@ class FiletypeTests(InjestToolsSetup):
         """Check that read_hdf is called when instrument type is VIIRS
         """
         metadata = {'instrument':'VIIRS'}
-        with patch('ingest_data.ingest_images.DataReaders.read_hdf_pyhdf') as mock:
+        with patch('ingest_data.ingest_images.DataReaders.read_hdf_gdal') as mock:
             self.ingest.read_data(metadata)
         mock.assert_called_with(self.ingest.inputdir,metadata )
         

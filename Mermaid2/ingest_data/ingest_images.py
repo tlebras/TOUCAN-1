@@ -54,7 +54,7 @@ class IngestImages():
         reader = DataReaders()
         instrument = metadata["instrument"].lower()
         if instrument=="viirs":
-            data = reader.read_hdf_pyhdf(self.inputdir,metadata)
+            data = reader.read_hdf_gdal(self.inputdir,metadata)
         elif (instrument=='meris')|(instrument=='aatsr'):
             data = reader.read_n1(self.inputdir,metadata)
         else:
