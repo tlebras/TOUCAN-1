@@ -1,6 +1,7 @@
 import glob
 import json
 import os
+import numpy as np
 
 from Mermaid2_db.models import *
 from ingest_images_file_readers import DataReaders
@@ -24,7 +25,7 @@ class IngestImages():
             metadata = self.read_meta_file(file)
             data = self.read_data(metadata)
             self.save_geotiff(outdir, metadata, data)
-            self.add_to_database(metadata)
+            self.add_to_database(metadata, data)
         
     def get_file_list(self):
         """Get a list of all the metadata files in the specified directory
@@ -58,7 +59,7 @@ class IngestImages():
         elif (instrument=='meris')|(instrument=='aatsr'):
             data = reader.read_n1(self.inputdir,metadata)
         else:
-            raise IOError("That filetype is not coded")
+            raise IOError("That instrument is not coded")
         
         return data
     
@@ -73,15 +74,14 @@ class IngestImages():
         savedir = os.path.join(outdir,metadata['region_name'],metadata['instrument'],str(metadata['datetime'].year))
         if not os.path.exists(savedir):
             os.makedirs(savedir)
-        outfile = os.path.join(savedir,os.path.splitext(metadata['filename'])[0]+'.tif')
+        outfile = os.path.join(savedir, os.path.splitext(metadata['filename'])[0]+'.tif')
         metadata['archive_location'] = outfile # Save for later when we add to database
         
         # We give the origin as bottom left corner, then treat both dx and dy as +ve.
         rasterOrigin=(data['longitude'].min(), data['latitude'].min())
         dx = data['longitude'][1]-data['longitude'][0]
         dy = data['latitude'][1]-data['latitude'][0]
-        G = GeoTools()
-        G.array2raster(outfile, rasterOrigin, dx, dy, data, metadata['variables'])
+        GeoTools.array2raster(outfile, rasterOrigin, dx, dy, data, metadata['variables'])
 
     def add_to_database(self, metadata):
         """
@@ -97,9 +97,9 @@ class IngestImages():
         
         image = Image(region=image_region, instrument=instrument, 
                       archive_location=os.path.join(metadata['archive_location']),
-                      web_location = 'web_location',
-                      top_left_point = 'POINT({0} {1})'.format(metadata['region_coords'][2], metadata['region_coords'][1]),
-                      bot_right_point = 'POINT({0} {1})'.format(metadata['region_coords'][3], metadata['region_coords'][0]),
+                      web_location='web_location',
+                      top_left_point='POINT({0} {1})'.format(metadata['region_coords'][2], metadata['region_coords'][1]),
+                      bot_right_point='POINT({0} {1})'.format(metadata['region_coords'][3], metadata['region_coords'][0]),
                       time=metadata['datetime'],
                       )
         image.save()
