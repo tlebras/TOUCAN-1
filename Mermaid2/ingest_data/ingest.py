@@ -48,7 +48,14 @@ def read_data(file_data, instrument, filename):
                                           instrument=Instrument(id=instrument)
                                           )  # create a measurement using the functions to extract the data
 
-            measurements_to_bulk_save.append(measurement)
+            # Ignore missing values, which are empty cells in the csv file
+            try:
+                float(measurement.value)
+                measurements_to_bulk_save.append(measurement)
+            except:
+                #do nothing
+                pass
+            
             j += 1
 
         i += 1
@@ -168,8 +175,17 @@ def get_point(data, dep_id):
     time_is = datetime.datetime.strptime(data[5],'%Y%m%dT%H%M%SZ').replace(tzinfo=pytz.utc)
     pqc = data[6]
     mqc = data[7]
-    land_dist_is = data[8]
-    thetas_is = data[9]
+    try:
+        float(data[8])
+        land_dist_is = data[8]
+    except:
+        land_dist_is = '-999'
+    try:
+        float(data[9])        
+        thetas_is = data[9]
+    except:
+        thetas_is = '-999'
+        
     deployment = Deployment.objects.get(id=dep_id)
         
     thispoint = Point.objects.get_or_create(matchup_id=matchup_id, point=point, time_is=time_is, pqc=pqc, mqc=mqc,
