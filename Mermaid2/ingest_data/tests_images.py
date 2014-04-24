@@ -1,5 +1,6 @@
 import os
 from mock import *
+import numpy as np
 
 from django.test import TestCase
 
@@ -13,7 +14,7 @@ class InjestToolsSetup(TestCase):
     def setUp(self):
         self.testdir = "/home/mermaid2/mermaid2/Mermaid2/ingest_data/images/input/"
         self.testdata = os.path.join(self.testdir,"NPP_VMAE_L1.A2013302.1140.P1_03001.2013302210836.gscs_000500784042.hdf")
-        self.testmeta = os.path.join(self.testdir,"test.json")
+        self.testmeta = os.path.join(self.testdir,"viirs.json")
         self.ingest = IngestImages()
         self.ingest.inputdir = self.testdir
     
@@ -26,7 +27,7 @@ class InjestToolsTest(InjestToolsSetup):
         """Check that get_file_list returns the correct file list
         """
         metafiles = self.ingest.get_file_list()
-        self.assertEquals(len(metafiles),1)
+        self.assertEquals(len(metafiles),3)
             
     # Extract data from the JSON file
     # File type (hdf etc), coordinates of ROI, the variables to pull out, the bands
@@ -34,8 +35,8 @@ class InjestToolsTest(InjestToolsSetup):
         """Check that read_meta_file returns a dictionary with the correct values
         """
         testdict = eval(open(self.testmeta).read()) # Read json file directly as a python dictionary
-        metadata = self.ingest.read_meta_file(self.testmeta)
-        self.assertDictEqual(metadata, testdict)
+        self.ingest.read_meta_file(self.testmeta)
+        self.assertDictEqual(self.ingest.metadata, testdict)
         
     # Call an appropriate reading script, based on the file type.
     # Should probably have one test per filetype coded?
@@ -47,11 +48,11 @@ class InjestToolsTest(InjestToolsSetup):
         """
         Check that read_data returns a dictionary with the correct keys
         """
-        metadata = eval(open(self.testmeta).read())
-        data = self.ingest.read_data(metadata)
+        self.ingest.metadata = eval(open(self.testmeta).read())
+        data = self.ingest.read_data()
         self.assertEquals("longitude" in data.keys(), True)
         self.assertEquals("latitude" in data.keys(), True)
-        for var in metadata['variables']:
+        for var in self.ingest.metadata['variables']:
             self.assertEquals(var in data.keys(), True)
     
     # Write out to a geotiff, with an appropriate directory structure
@@ -59,13 +60,15 @@ class InjestToolsTest(InjestToolsSetup):
         """
         Check that geotiff file is created and saved to correct place
         """
-        metadata = eval(open(self.testmeta).read())
-        testdata = self.ingest.read_data(metadata)
-        testoutdir = self.testdir+'../output'
+        self.ingest.metadata = eval(open(self.testmeta).read())
+        testdata = self.ingest.read_data()
+        self.ingest.outdir = self.testdir+'../output'
         
-        self.ingest.save_geotiff(str(testoutdir), metadata, testdata)
-        self.assertEquals(os.path.isdir(os.path.join(testoutdir, metadata['region_name'],
-                                                     metadata['instrument'], str(metadata['datetime'].year))), True)
+        self.ingest.save_geotiff(testdata)
+        self.assertEquals(os.path.isdir(
+                          os.path.join(self.ingest.outdir, self.ingest.metadata['region_name'].upper(),
+                                       self.ingest.metadata['instrument'].upper(),str(self.ingest.metadata['datetime'].year))),
+                          True)
 
     # Save an object to the database, storing the metadata and the location of the geotiff
 class GeoToolsTests(InjestToolsSetup):
@@ -99,32 +102,32 @@ class FiletypeTests(InjestToolsSetup):
     def test_call_aatsr_read(self):
         """Check that read_n1 is called when instrument type is AATSR
         """
-        metadata = {'instrument':'AATSR'}
-        with patch('ingest_data.ingest_images.DataReaders.read_n1') as mock:
-            self.ingest.read_data(metadata)
-        mock.assert_called_with(self.ingest.inputdir, metadata)
+        self.ingest.metadata = {'instrument':'AATSR'}
+        with patch('ingest_data.ingest_images.DataReaders.read_aatsr') as mock:
+            self.ingest.read_data()
+        mock.assert_called_with(self.ingest)
 
     def test_call_meris_read(self):
         """Check that read_n1 is called when instrument type is MERIS
         """
-        metadata = {'instrument':'MERIS'}
-        with patch('ingest_data.ingest_images.DataReaders.read_n1') as mock:
-            self.ingest.read_data(metadata)
-        mock.assert_called_with(self.ingest.inputdir, metadata)
+        self.ingest.metadata = {'instrument':'MERIS'}
+        with patch('ingest_data.ingest_images.DataReaders.read_meris') as mock:
+            self.ingest.read_data()
+        mock.assert_called_with(self.ingest)
 
     def test_call_viirs_read(self):
         """Check that read_hdf is called when instrument type is VIIRS
         """
-        metadata = {'instrument':'VIIRS'}
-        with patch('ingest_data.ingest_images.DataReaders.read_hdf_gdal') as mock:
-            self.ingest.read_data(metadata)
-        mock.assert_called_with(self.ingest.inputdir, metadata )
+        self.ingest.metadata = {'instrument':'VIIRS'}
+        with patch('ingest_data.ingest_images.DataReaders.read_viirs') as mock:
+            self.ingest.read_data()
+        mock.assert_called_with(self.ingest)
 
     def test_filetype_not_coded(self):
         """Check that IOError is thrown if user tries to ingest an instrument that we haven't coded in
         """
-        metadata = {"instrument":"blahblahblah"}
-        self.assertRaises(IOError, self.ingest.read_data, metadata)
+        self.ingest.metadata = {"instrument":"blahblahblah"}
+        self.assertRaises(IOError, self.ingest.read_data)
 
 
 class FunctionalTests(InjestToolsSetup):

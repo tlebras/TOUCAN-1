@@ -104,7 +104,7 @@ class ImageRegion(models.Model):
     - site (text field)
     """
     region = models.TextField()
-    
+
 
 class Image(models.Model):
     """Image model defined by :\n
@@ -115,8 +115,11 @@ class Image(models.Model):
     - version (TextField)
     - instrument (ForeignKey)
     - region (ForeignKey)
-
-    model not finished
+    - SZA   Sun zenith angle (mean over region)
+    - SAA   Sun azimuth angle (mean over region)
+    - VZA   Viewing zenith angle (mean over region)
+    - VAA   Viewing azimuth angle (mean over region)
+    - direction (only needed for sensors with separate nadir/forward datasets, eg AATSR)
 """
 
     web_location = models.CharField(max_length=255)
@@ -127,3 +130,8 @@ class Image(models.Model):
     version = models.TextField(blank=True, null=True)
     instrument = models.ForeignKey(Instrument)
     region = models.ForeignKey(ImageRegion)
+    SZA = models.FloatField()
+    SAA = models.FloatField()
+    VZA = models.FloatField()
+    VAA = models.FloatField()
+    direction = models.TextField(null=True)
