@@ -122,8 +122,8 @@ class Image(models.Model):
     - direction (only needed for sensors with separate nadir/forward datasets, eg AATSR)
 """
 
-    web_location = models.CharField(max_length=255)
-    archive_location = models.CharField(max_length=255)
+    web_location = models.TextField()
+    archive_location = models.TextField()
     top_left_point = models.PointField()
     bot_right_point = models.PointField() 
     time = models.DateTimeField()
@@ -134,4 +134,4 @@ class Image(models.Model):
     SAA = models.FloatField()
     VZA = models.FloatField()
     VAA = models.FloatField()
-    direction = models.TextField(null=True)
+    direction = models.CharField(max_length=255, blank=True, null=True)
