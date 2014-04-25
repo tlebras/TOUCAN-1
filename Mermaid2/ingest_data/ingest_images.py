@@ -117,10 +117,10 @@ class IngestImages():
                           top_left_point='POINT({0} {1})'.format(coords[2], coords[1]),
                           bot_right_point='POINT({0} {1})'.format(coords[3], coords[0]),
                           time=self.metadata['datetime'],
-                          SZA=np.mean(data['SZA'+direction]),
-                          SAA=np.mean(data['SAA'+direction]),
-                          VZA=np.mean(data['VZA'+direction]),
-                          VAA=np.mean(data['VAA'+direction])
+                          SZA=np.nanmean(data['SZA'+direction]),
+                          SAA=np.nanmean(data['SAA'+direction]),
+                          VZA=np.nanmean(data['VZA'+direction]),
+                          VAA=np.nanmean(data['VAA'+direction])
                           )
             # For images with a direction, add this as an attribute to the Image object
             if direction.isalnum():
