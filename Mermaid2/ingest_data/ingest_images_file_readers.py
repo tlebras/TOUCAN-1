@@ -15,9 +15,11 @@ class DataReaders():
         :param ingest : An IngestImages object instance, which contains metadata and inputdir variables
         Returns data: Dictionary containing all the data arrays
         """
-        # AATSR files have two directions.
+        # AATSR files have two directions, with separate viewing angle arrays
+        ingest.aatsr_directions = ('nadir','fward')
         ingest.metadata['angle_names']={}
-        for direction in ('nadir','fward'):
+
+        for direction in ingest.aatsr_directions:
             # Define the names of the viewing angle datasets
             ingest.metadata['angle_names'].update({'VZA'+direction: 'view_elev_'+direction,
                                                    'VAA'+direction: 'view_azimuth_'+direction,

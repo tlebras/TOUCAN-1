@@ -103,8 +103,8 @@ class IngestImages():
         # If current instrument is AATSR, we have separate nadir/forward datasets
         # and need to the append direction name when retrieving angles from the dictionary
         if self.metadata['instrument'].lower() == 'aatsr':
-            directions = ('nadir', 'fward')
-        else:  # Leave direction blank
+            directions = self.aatsr_directions
+        else:  # Leave direction blank for other instruments
             directions = ('',)  # Needs to be a list so we can iterate over it
 
         # Create the image object, making separate ones for each direction if required
