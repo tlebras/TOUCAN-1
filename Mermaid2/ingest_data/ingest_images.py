@@ -99,6 +99,8 @@ class IngestImages():
         # Store region name as lower case, for consistency
         image_region,_ = ImageRegion.objects.get_or_create(region=self.metadata['region_name'].lower())
         instrument,_ = Instrument.objects.get_or_create(name=self.metadata['instrument'])
+        for band in self.metadata['wavelengths']:
+            wavelength,_ = InstrumentWavelength.objects.get_or_create(value=band, instrument=instrument)
 
         # If current instrument is AATSR, we have separate nadir/forward datasets
         # and need to the append direction name when retrieving angles from the dictionary

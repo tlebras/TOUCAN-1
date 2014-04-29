@@ -28,6 +28,17 @@ class DataReaders():
         # Define name of the time variable
         ingest.metadata['time_variable'] = 'FIRST_LINE_TIME'
 
+        # Define wavelengths
+        ingest.metadata['wavelengths'] = (550, 660, 865, 1610, 3700, 10850, 12000)
+
+        # Define the variable names to read in
+        varnames = []
+        for direction in ingest.aatsr_directions:
+            for band_name in ('reflec_dir_0550', 'reflec_dir_0670', 'reflec_dir_0870', 'reflec_dir_1600', 
+                              'btemp_dir_0370', 'btemp_dir_1100', 'btemp_dir_1200'):
+                varnames.append(band_name.replace('dir', direction.lower()))
+        ingest.metadata['variables'] = varnames
+
         # Read in the data (extracting ROI and regridding at same time)
         data, time_temp = self.read_n1(ingest)
 
@@ -52,6 +63,16 @@ class DataReaders():
         # Define name of the time variable
         ingest.metadata['time_variable'] = 'FIRST_LINE_TIME'
 
+        # Define wavelengths
+        ingest.metadata['wavelengths'] = (412, 443, 490, 510, 560, 620, 665, 681, 708, 753,
+                                          761, 778, 865, 885, 900)
+
+        # Define the variable names to read in
+        varnames = []
+        for band,_ in enumerate(ingest.metadata['wavelengths'], 1):
+            varnames.append('radiance_'+str(band))
+        ingest.metadata['variables'] = varnames
+
         # Read in the data (extracting ROI and regridding at same time)
         data, time_temp = self.read_n1(ingest)
 
@@ -74,6 +95,18 @@ class DataReaders():
                                           'SAA': 'SolarAzimuthAngle'}
         # Define name of the time variable
         ingest.metadata['time_variable'] = 'Beginning_Time_IET'
+
+        # Define wavelengths
+        ingest.metadata['wavelengths'] = (412, 445, 488, 555, 672, 746, 865, 1240, 1378, 1610, 2250, 
+                                          3700, 4050, 8550, 10763, 12013)
+
+        # Define the variable names to read in
+        varnames = []
+        for vartype in ('Reflectance','Radiance'):
+            for band,_ in enumerate(ingest.metadata['wavelengths'], 1):
+                if not ((vartype == 'Reflectance') & (band > 11)):  # Reflectance only has bands 1-11
+                    varnames.append(vartype+'_M'+str(band))
+        ingest.metadata['variables'] = varnames
 
         # Read in the data (extracting ROI and regridding at same time)
         data, time_temp = self.read_hdf_gdal(ingest)
