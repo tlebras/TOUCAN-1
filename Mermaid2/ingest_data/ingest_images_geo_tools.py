@@ -91,10 +91,14 @@ class GeoTools():
         data value to the closest grid point in the new grid. 
         Returns the mean value for each new grid point.
 
+        NB Assumes that coordinates in the original satellite files are valid for the CENTRE of the pixel, and that the
+        new coordinates are for the EDGES of the pixel (which is the GeoTiff convention).
+
         :param old_lon: Longitude for the original grid (2d)
         :param old_lat: Latitude for the original grid (2d)
         :param new_lon: Longitude for the new grid (1d)
         :param new_lat: Latitude for the new grid (1d)
+        :param data: 2d array of data to be regridded
         """
         dx = np.diff(new_lon)[0]
         dy = np.diff(new_lat)[0]
@@ -106,9 +110,10 @@ class GeoTools():
         for j in np.arange(old_lon.shape[0]):
             for i in np.arange(old_lon.shape[1]):
                 # Ignore points that aren't within the region of interest
-                if ((np.min(new_lon) <= old_lon[j,i] <= np.max(new_lon)) &
-                    (np.min(new_lat) <= old_lat[j,i] <= np.max(new_lat)) ):
-
+                # Assume our new coordinate points define the edges of the pixels, so we need to search up to
+                # a grid box beyond the max value to properly fill the grid.
+                if ((np.min(new_lon) <= old_lon[j,i] < np.max(new_lon)+dx) &
+                    (np.min(new_lat) <= old_lat[j,i] < np.max(new_lat)+dy) ):
                     # Find which point this corresponds to on the new grid, and add the data value
                     new_i = int((old_lon[j,i] - np.min(new_lon)) / dx)
                     new_j = int((old_lat[j,i] - np.min(new_lat)) / dy)
