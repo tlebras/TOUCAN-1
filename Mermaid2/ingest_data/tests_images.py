@@ -15,9 +15,7 @@ class InjestToolsSetup(TestCase):
         self.testdir = "/home/mermaid2/mermaid2/Mermaid2/ingest_data/images/input/"
         self.testdata = os.path.join(self.testdir,"NPP_VMAE_L1.A2013302.1140.P1_03001.2013302210836.gscs_000500784042.hdf")
         self.testmeta = os.path.join(self.testdir,"viirs.json")
-        self.ingest = IngestImages()
-        self.ingest.inputdir = self.testdir
-    
+        self.ingest = IngestImages(self.testdir, self.testdir+'../output')
 
 class InjestToolsTest(InjestToolsSetup):
     # Program checks to see if there's any new images in the staging area
@@ -49,11 +47,11 @@ class InjestToolsTest(InjestToolsSetup):
         Check that read_data returns a dictionary with the correct keys
         """
         self.ingest.metadata = eval(open(self.testmeta).read())
-        data = self.ingest.read_data()
-        self.assertEquals("longitude" in data.keys(), True)
-        self.assertEquals("latitude" in data.keys(), True)
+        self.ingest.read_data()
+        self.assertEquals("longitude" in self.ingest.data.keys(), True)
+        self.assertEquals("latitude" in self.ingest.data.keys(), True)
         for var in self.ingest.metadata['variables']:
-            self.assertEquals(var in data.keys(), True)
+            self.assertEquals(var in self.ingest.data.keys(), True)
     
     # Write out to a geotiff, with an appropriate directory structure
     def test_save_geotiff(self):
@@ -61,10 +59,8 @@ class InjestToolsTest(InjestToolsSetup):
         Check that geotiff file is created and saved to correct place
         """
         self.ingest.metadata = eval(open(self.testmeta).read())
-        testdata = self.ingest.read_data()
-        self.ingest.outdir = self.testdir+'../output'
-        
-        self.ingest.save_geotiff(testdata)
+        self.ingest.read_data()
+        self.ingest.save_geotiff()
         self.assertEquals(os.path.isdir(
                           os.path.join(self.ingest.outdir, self.ingest.metadata['region_name'].upper(),
                                        self.ingest.metadata['instrument'].upper(),str(self.ingest.metadata['datetime'].year))),
@@ -131,7 +127,16 @@ class FiletypeTests(InjestToolsSetup):
 
 
 class FunctionalTests(InjestToolsSetup):
-    """Functional test running the whole ingestion routine as the user will do it
+    """Functional tests running the ingestion routines as the user will
     """
-    def test_ingest_image(self):
-        self.ingest.ingest_images(self.testdir, self.testdir+'../output')
+    def test_ingest_single_image(self):
+        """Ingest all the images in the input directory
+        """
+        I = IngestImages(self.testdir, self.testdir+'../output')
+        I.ingest_image(self.testmeta)
+
+    def test_ingest_all_images(self):
+        """Ingest a single image, from the specified metadata file
+        """
+        I = IngestImages(self.testdir, self.testdir+'../output')
+        I.ingest_all()

@@ -9,25 +9,33 @@ from ingest_images_geo_tools import GeoTools
 
 class IngestImages():
     
-    def __init__(self):
-        pass
-    
-    def ingest_images(self, inputdir, outdir):
+    def __init__(self, inputdir, outdir):
         """
-        Main ingestion routine, which loops through all the files in the given input directory
-        and processes them
+        Initialise ingestion object with the input and output directory locations
         :param inputdir : Directory containing the input files
         :param outputdir : Top level archive directory to save geotiffs to
                            (region/instrument/year subdirectories will be automatically created)
         """
         self.inputdir = inputdir
         self.outdir = outdir
-        files = self.get_file_list()
-        for thisfile in files:
-            self.read_meta_file(thisfile)
-            data = self.read_data()
-            self.save_geotiff(data)
-            self.add_to_database(data)
+
+    def ingest_all(self):
+        """
+        Loop through all the files in the given input directory and ingest them
+        """
+        self.filelist = self.get_file_list()
+        for thisfile in self.filelist:
+            self.ingest_image(thisfile)
+        
+    def ingest_image(self, thisfile):
+        """
+        Ingest a single image. This method is called by ingest_all, or it can be called manually to ingest one file
+        :param thisfile : The metadata file for the image to be ingested (including full directory path)
+        """
+        self.read_meta_file(thisfile)
+        self.read_data()
+        self.save_geotiff()
+        self.add_to_database()
         
     def get_file_list(self):
         """Get a list of all the metadata files in the specified directory
@@ -38,11 +46,12 @@ class IngestImages():
         metafiles = glob.glob(self.inputdir+"/*.json")
         return metafiles
     
-    def read_meta_file(self, file):
+    def read_meta_file(self, thisfile):
         """
         Read a JSON formatted metadata file, returning a dictionary
+        :param thisfile : The name (including path) of the metadata file to read
         """
-        self.metadata = json.load(open(file))
+        self.metadata = json.load(open(thisfile))
     
     def read_data(self):
         """
@@ -61,10 +70,10 @@ class IngestImages():
             data = reader.read_viirs(self)
         else:
             raise IOError("That instrument is not coded")
-        
-        return data
+
+        self.data = data
     
-    def save_geotiff(self, data):
+    def save_geotiff(self):
         """
         Save data to a geoTiff file, after creating appropriate directory structure
 
@@ -78,17 +87,17 @@ class IngestImages():
         self.metadata['archive_location'] = outfile # Save for later when we add to database
         
         # We give the origin as bottom left corner, then treat both dx and dy as +ve.
-        rasterOrigin=(data['longitude'].min(), data['latitude'].min())
-        dx = data['longitude'][1]-data['longitude'][0]
-        dy = data['latitude'][1]-data['latitude'][0]
-        GeoTools.array2raster(outfile, rasterOrigin, dx, dy, data, self.metadata['variables'])
+        rasterOrigin=(self.data['longitude'].min(), self.data['latitude'].min())
+        dx = self.data['longitude'][1] - self.data['longitude'][0]
+        dy = self.data['latitude'][1] - self.data['latitude'][0]
+        GeoTools.array2raster(outfile, rasterOrigin, dx, dy, self.data, self.metadata['variables'])
 
         # Save the viewing angles in a separate file
         outfile = os.path.join(savedir, os.path.splitext(self.metadata['filename'])[0]+'_view_angles.tif')
-        GeoTools.array2raster(outfile, rasterOrigin, dx, dy, data, self.metadata['angle_names'].keys())
+        GeoTools.array2raster(outfile, rasterOrigin, dx, dy, self.data, self.metadata['angle_names'].keys())
 
 
-    def add_to_database(self, data):
+    def add_to_database(self):
         """
         Add this image to the database
         
@@ -119,10 +128,10 @@ class IngestImages():
                           top_left_point='POINT({0} {1})'.format(coords[2], coords[1]),
                           bot_right_point='POINT({0} {1})'.format(coords[3], coords[0]),
                           time=self.metadata['datetime'],
-                          SZA=np.nanmean(data['SZA'+direction]),
-                          SAA=np.nanmean(data['SAA'+direction]),
-                          VZA=np.nanmean(data['VZA'+direction]),
-                          VAA=np.nanmean(data['VAA'+direction])
+                          SZA=np.nanmean(self.data['SZA'+direction]),
+                          SAA=np.nanmean(self.data['SAA'+direction]),
+                          VZA=np.nanmean(self.data['VZA'+direction]),
+                          VAA=np.nanmean(self.data['VAA'+direction])
                           )
             # For images with a direction, add this as an attribute to the Image object
             if direction.isalnum():
