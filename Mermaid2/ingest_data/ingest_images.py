@@ -2,6 +2,7 @@ import glob
 import json
 import os
 import numpy as np
+import matplotlib.pyplot as plt
 
 from Mermaid2_db.models import *
 from ingest_images_file_readers import DataReaders
@@ -35,6 +36,7 @@ class IngestImages():
         self.read_meta_file(thisfile)
         self.read_data()
         self.save_geotiff()
+        self.make_quicklook()
         self.add_to_database()
         
     def get_file_list(self):
@@ -96,6 +98,39 @@ class IngestImages():
         outfile = os.path.join(savedir, os.path.splitext(self.metadata['filename'])[0]+'_view_angles.tif')
         GeoTools.array2raster(outfile, rasterOrigin, dx, dy, self.data, self.metadata['angle_names'].keys())
 
+    def make_quicklook(self):
+        """
+        Make a jpg for quick checking of the data
+
+        Define reference wavelengths for R,G,B and pick out whichever instrument bands are closest to these.
+        Pull out the relevant data arrays, then normalise values to be between 0 and 1 (which plt.imshow needs).
+        """
+        savedir = os.path.join(self.outdir, self.metadata['region_name'].upper(), self.metadata['instrument'].upper(),
+                               str(self.metadata['datetime'].year))
+        outfile = os.path.join(savedir, os.path.splitext(self.metadata['filename'])[0]+'.jpg')
+        self.metadata['web_location'] = outfile
+
+        # Define wavelengths to use as RGB bands
+        bands = {'r':665.0, 'g':560.0, 'b':480.0}
+        for i, band in enumerate(('r', 'g', 'b')):
+            # Find which instrument band is closest, and extract corresponding data array
+            # (assumes variables list is in same order as wavelengths list)
+            varidx = np.argmin(np.abs(np.array(self.metadata['wavelengths']) - bands[band]))
+            varname = self.metadata['variables'][varidx]
+
+            temp = self.data[varname]
+            if i == 0:
+                rgb = np.empty((temp.shape[0], temp.shape[1],3))
+            # Normalise the array to within 0-1, for plotting
+            temp -= np.nanmin(temp)
+            temp /= np.nanmax(temp)
+
+            rgb[..., i] = temp
+
+        plt.imshow(rgb, origin='lower', interpolation='None',
+                   extent=[self.data['longitude'].min(), self.data['longitude'].max(),
+                           self.data['latitude'].min(), self.data['latitude'].max()])
+        plt.savefig(outfile)
 
     def add_to_database(self):
         """
@@ -124,7 +159,7 @@ class IngestImages():
             image = Image(region=image_region,
                           instrument=instrument,
                           archive_location=os.path.join(self.metadata['archive_location']),
-                          web_location='web_location',
+                          web_location=os.path.join(self.metadata['web_location']),
                           top_left_point='POINT({0} {1})'.format(coords[2], coords[1]),
                           bot_right_point='POINT({0} {1})'.format(coords[3], coords[0]),
                           time=self.metadata['datetime'],

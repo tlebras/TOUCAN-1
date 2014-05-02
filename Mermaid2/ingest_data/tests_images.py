@@ -66,6 +66,29 @@ class InjestToolsTest(InjestToolsSetup):
                                        self.ingest.metadata['instrument'].upper(),str(self.ingest.metadata['datetime'].year))),
                           True)
 
+    def test_make_quicklook(self):
+        """
+        Test creation of jpeg quicklook
+        """
+        import datetime
+        self.ingest.metadata = {'region_name': 'region',
+                                'instrument': 'instrument',
+                                'filename': 'test.hdf',
+                                'variables': ('var1', 'var2', 'var3', 'longitude', 'latitude'),
+                                'datetime': datetime.datetime(2000, 1, 1),
+                                'wavelengths': [665.0, 560.0, 480.0],
+                                }
+        self.ingest.data = {}
+        for var in self.ingest.metadata['variables']:
+            self.ingest.data[var] = np.empty((2,2))
+        outfile = os.path.join(self.ingest.outdir, 'REGION/INSTRUMENT/2000/test.jpg')
+
+        with patch('ingest_data.ingest_images.plt.imshow') as mock1:
+            with patch('ingest_data.ingest_images.plt.savefig') as mock2:
+                self.ingest.make_quicklook()
+        mock1.assert_called()
+        mock2.assert_called_with(outfile)
+
     # Save an object to the database, storing the metadata and the location of the geotiff
 class GeoToolsTests(InjestToolsSetup):
 
