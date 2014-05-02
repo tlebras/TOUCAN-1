@@ -152,7 +152,16 @@ class DataReaders():
         # Helper function to read a dataset, then extract and regrid to region of interest
         def get_variable(varname):
             ds = [ds for ds,descr in datasets if ' '+varname+' ' in descr][0]
-            array = gdal.Open(ds).ReadAsArray()
+            # Not all bands have offset/scale
+            try:
+                scale_factor = float(gdal.Open(ds).GetMetadataItem('Scale'))
+            except TypeError:
+                scale_factor = 1.0
+            try:
+                offset = float(gdal.Open(ds).GetMetadataItem('Offset'))
+            except TypeError:
+                offset = 0.0
+            array = (gdal.Open(ds).ReadAsArray() - offset) * scale_factor
             array_roi = GeoTools.extract_region_and_regrid(longitude, latitude, new_lon, new_lat, array)
             return array_roi
 
@@ -196,6 +205,9 @@ class DataReaders():
         data['longitude'] = new_lon
         data['latitude'] = new_lat
 
+        # Helper function to read a dataset, then extract and regrid to region of interest
+        # NB we read using the higher level get_band, instead of get_database. This is much simpler to use, and also 
+        # means that values have already had scaling applied and are converted to floats
         def get_variable(varname):
             array = image.get_band(varname).read_as_array()
             array_roi = GeoTools.extract_region_and_regrid(longitude, latitude, new_lon, new_lat, array)
