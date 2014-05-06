@@ -153,23 +153,21 @@ class IngestImages():
         else:  # Leave direction blank for other instruments
             directions = ('',)  # Needs to be a list so we can iterate over it
 
-        # Create the image object, making separate ones for each direction if required
+        # Create the image object, making separate ones for each direction if required. Use get_or_create
+        # to prevent duplicate records being created
         coords = self.metadata['region_coords']
         for direction in directions:
-            image = Image(region=image_region,
-                          instrument=instrument,
-                          archive_location=os.path.join(self.metadata['archive_location']),
-                          web_location=os.path.join(self.metadata['web_location']),
-                          top_left_point='POINT({0} {1})'.format(coords[2], coords[1]),
-                          bot_right_point='POINT({0} {1})'.format(coords[3], coords[0]),
-                          time=self.metadata['datetime'],
-                          SZA=np.nanmean(self.data['SZA'+direction]),
-                          SAA=np.nanmean(self.data['SAA'+direction]),
-                          VZA=np.nanmean(self.data['VZA'+direction]),
-                          VAA=np.nanmean(self.data['VAA'+direction])
-                          )
-            # For images with a direction, add this as an attribute to the Image object
-            if direction.isalnum():
-                image.direction = direction
-            
-            image.save()
+            image, new = Image.objects.get_or_create(region=image_region,
+                                                     instrument=instrument,
+                                                     archive_location=os.path.join(self.metadata['archive_location']),
+                                                     web_location=os.path.join(self.metadata['web_location']),
+                                                     top_left_point='POINT({0} {1})'.format(coords[2], coords[1]),
+                                                     bot_right_point='POINT({0} {1})'.format(coords[3], coords[0]),
+                                                     time=self.metadata['datetime'],
+                                                     SZA=np.nanmean(self.data['SZA'+direction]),
+                                                     SAA=np.nanmean(self.data['SAA'+direction]),
+                                                     VZA=np.nanmean(self.data['VZA'+direction]),
+                                                     VAA=np.nanmean(self.data['VAA'+direction]),
+                                                     direction=(direction if direction.isalnum() else None))
+            if not new:
+                print "Image already ingested!"
