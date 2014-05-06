@@ -153,13 +153,13 @@ class FunctionalTests(InjestToolsSetup):
     """Functional tests running the ingestion routines as the user will
     """
     def test_ingest_single_image(self):
-        """Ingest all the images in the input directory
+        """Ingest a single image, from the specified metadata file
         """
         I = IngestImages(self.testdir, self.testdir+'../output')
         I.ingest_image(self.testmeta)
 
     def test_ingest_all_images(self):
-        """Ingest a single image, from the specified metadata file
+        """Ingest all the images in the input directory
         """
         I = IngestImages(self.testdir, self.testdir+'../output')
         I.ingest_all()
