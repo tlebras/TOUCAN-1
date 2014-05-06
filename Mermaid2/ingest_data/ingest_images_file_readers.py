@@ -2,7 +2,7 @@ from ingest_images_geo_tools import GeoTools
 import os
 import datetime
 import pytz
-
+import numpy as np
 
 class DataReaders():
     """
@@ -17,7 +17,7 @@ class DataReaders():
         """
         # AATSR files have two directions, with separate viewing angle arrays
         ingest.aatsr_directions = ('nadir','fward')
-        ingest.metadata['angle_names']={}
+
 
         for direction in ingest.aatsr_directions:
             # Define the names of the viewing angle datasets
@@ -38,6 +38,12 @@ class DataReaders():
                               'btemp_dir_0370', 'btemp_dir_1100', 'btemp_dir_1200'):
                 varnames.append(band_name.replace('dir', direction.lower()))
         ingest.metadata['variables'] = varnames
+
+        # Name of the flag array, and which bit to use
+        # TODO deal with nadir and forward arrays
+        if not 'flag_name' in ingest.metadata.keys():
+            ingest.metadata['flag_name'] = 'confid_flags_nadir'
+            ingest.metadata['flag_bit'] = 3
 
         # Read in the data (extracting ROI and regridding at same time)
         data, time_temp = self.read_n1(ingest)
@@ -72,6 +78,11 @@ class DataReaders():
         for band,_ in enumerate(ingest.metadata['wavelengths'], 1):
             varnames.append('radiance_'+str(band))
         ingest.metadata['variables'] = varnames
+
+        # Name of the flag array, and which bit to use
+        if not 'flag_name' in ingest.metadata.keys():
+            ingest.metadata['flag_name'] = 'l1_flags'
+            ingest.metadata['flag_bit'] = 7
 
         # Read in the data (extracting ROI and regridding at same time)
         data, time_temp = self.read_n1(ingest)
@@ -205,11 +216,20 @@ class DataReaders():
         data['longitude'] = new_lon
         data['latitude'] = new_lat
 
+        # Read in flag array, and extract bit for valid/invalid points to remove missing data points
+        if 'flag_name' in ingest.metadata.keys():
+            flag_array = image.get_band(ingest.metadata['flag_name']).read_as_array()
+            flag_array = flag_array >> ingest.metadata['flag_bit'] & 1
+        else:
+            flag_array = None
+
         # Helper function to read a dataset, then extract and regrid to region of interest
         # NB we read using the higher level get_band, instead of get_database. This is much simpler to use, and also 
         # means that values have already had scaling applied and are converted to floats
         def get_variable(varname):
             array = image.get_band(varname).read_as_array()
+            if flag_array is not None:
+                array[flag_array==1] = np.nan
             array_roi = GeoTools.extract_region_and_regrid(longitude, latitude, new_lon, new_lat, array)
             return array_roi
 
