@@ -17,7 +17,7 @@ class DataReaders():
         """
         # AATSR files have two directions, with separate viewing angle arrays
         ingest.aatsr_directions = ('nadir','fward')
-
+        ingest.metadata['angle_names']={}
 
         for direction in ingest.aatsr_directions:
             # Define the names of the viewing angle datasets
