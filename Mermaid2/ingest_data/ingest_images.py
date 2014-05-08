@@ -7,6 +7,8 @@ import matplotlib.pyplot as plt
 from Mermaid2_db.models import *
 from ingest_images_file_readers import DataReaders
 from ingest_images_geo_tools import GeoTools
+from ingest import units_and_name
+
 
 class IngestImages():
     
@@ -141,9 +143,12 @@ class IngestImages():
         Then add all the metadata to a new Image instance.
         :param data: the data dictionary
         """
-        # Store region name as lower case, for consistency
+        # Get foreign key objects, or create new ones if necessary
         image_region,_ = ImageRegion.objects.get_or_create(region=self.metadata['region_name'].lower())
-        instrument,_ = Instrument.objects.get_or_create(name=self.metadata['instrument'])
+        instrument,_ = Instrument.objects.get_or_create(name=self.metadata['instrument'].lower())
+        meas_type,_ = MeasurementType.objects.get_or_create(type=self.metadata['vartype'].lower(),
+                                                            units=units_and_name(self.metadata['vartype'])['units'],
+                                                            long_name=units_and_name(self.metadata['vartype'])['long_name'])
         for band in self.metadata['wavelengths']:
             wavelength,_ = InstrumentWavelength.objects.get_or_create(value=band, instrument=instrument)
 
@@ -160,6 +165,7 @@ class IngestImages():
         for direction in directions:
             image, new = Image.objects.get_or_create(region=image_region,
                                                      instrument=instrument,
+                                                     measurement_type=meas_type,
                                                      archive_location=os.path.join(self.metadata['archive_location']),
                                                      web_location=os.path.join(self.metadata['web_location']),
                                                      top_left_point='POINT({0} {1})'.format(coords[2], coords[1]),

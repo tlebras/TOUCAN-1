@@ -102,6 +102,7 @@ class ImageResource(ModelResource):
 
     #point = fields.ForeignKey(PointResource, 'point', full=True)  
     instrument = fields.ForeignKey(InstrumentResource, 'instrument', full=True, blank=True, null=True)        
+    measurement_type = fields.ForeignKey(MeasurementTypeResource, 'measurement_type', full=True, blank=True, null=True)
         
     class Meta:
         queryset = Image.objects.all()
@@ -112,4 +113,5 @@ class ImageResource(ModelResource):
             'bot_right_point': ALL,
             'instrument': ALL_WITH_RELATIONS,
             'point': ALL_WITH_RELATIONS,
+            'measurement_type': ALL_WITH_RELATIONS,
         }        

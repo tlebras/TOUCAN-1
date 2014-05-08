@@ -129,6 +129,7 @@ class Image(models.Model):
     time = models.DateTimeField()
     version = models.TextField(blank=True, null=True)
     instrument = models.ForeignKey(Instrument)
+    measurement_type = models.ForeignKey(MeasurementType)
     region = models.ForeignKey(ImageRegion)
     SZA = models.FloatField()
     SAA = models.FloatField()

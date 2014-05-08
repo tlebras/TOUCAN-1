@@ -41,6 +41,7 @@ class DataReaders():
         # Define the variable names to read in, if not overridden by metadata file
         # Default to Reflectance
         if not 'variables' in ingest.metadata.keys():
+            ingest.metadata['vartype'] = 'reflectance'
             varnames = []
             for direction in ingest.aatsr_directions:
                 for band_name in ('reflec_dir_0550', 'reflec_dir_0670', 'reflec_dir_0870', 'reflec_dir_1600', 
@@ -91,6 +92,7 @@ class DataReaders():
         # Define the variable names to read in, if not overridden by metadata file
         # Default to Radiance
         if not 'variables' in ingest.metadata.keys():
+            ingest.metadata['vartype'] = 'radiance'
             varnames = []
             for band,_ in enumerate(ingest.metadata['wavelengths'], 1):
                 varnames.append('radiance_'+str(band))
@@ -139,6 +141,7 @@ class DataReaders():
         if not 'variables' in ingest.metadata.keys():
             varnames = []
             vartype = 'Reflectance'
+            ingest.metadata['vartype'] = vartype
             for band,_ in enumerate(ingest.metadata['wavelengths'], 1):
                 if not ((vartype == 'Reflectance') & (band > 11)):  # Reflectance only has bands 1-11
                     varnames.append(vartype+'_M'+str(band))
