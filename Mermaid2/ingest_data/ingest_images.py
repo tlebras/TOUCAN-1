@@ -184,9 +184,8 @@ class IngestImages():
 
         # Make sure the geotiff was created before moving files
         if os.path.isfile(self.metadata['archive_location']):
-            # Metadata file
-            os.rename(os.path.join(self.inputdir,self.metafile),
-                      os.path.join(ingested_dir,self.metafile))
-            # Data file
+            # Metadata file (contains path)
+            os.rename(self.metafile, os.path.join(ingested_dir,os.path.basename(self.metafile)))
+            # Data file (contains filename only)
             os.rename(os.path.join(self.inputdir,self.metadata['filename']),
                       os.path.join(ingested_dir,self.metadata['filename']))
