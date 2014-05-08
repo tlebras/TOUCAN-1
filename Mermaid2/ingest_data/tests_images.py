@@ -33,7 +33,8 @@ class InjestToolsTest(InjestToolsSetup):
         """Check that read_meta_file returns a dictionary with the correct values
         """
         testdict = eval(open(self.testmeta).read()) # Read json file directly as a python dictionary
-        self.ingest.read_meta_file(self.testmeta)
+        self.ingest.metafile = self.testmeta
+        self.ingest.read_meta_file()
         self.assertDictEqual(self.ingest.metadata, testdict)
         
     # Call an appropriate reading script, based on the file type.
@@ -90,6 +91,25 @@ class InjestToolsTest(InjestToolsSetup):
         mock2.assert_called_with(outfile)
 
     # Save an object to the database, storing the metadata and the location of the geotiff
+
+    # Remove ingested file to a temporary folder, which we will clear up offline (eg once a week)
+    def test_tidy_up(self):
+        """
+        Test tidy up moves correct file
+        """
+        with patch('os.rename') as mock:
+            self.ingest.metafile = 'test.json'
+            self.ingest.metadata = {'filename': 'test.hdf',
+                                    'archive_location': __file__,  # File that must exist
+                                    }
+            self.ingest.tidy_up()
+        print self.ingest.metadata['archive_location']
+        mock.assert_any_call(os.path.join(self.ingest.inputdir, self.ingest.metafile),
+                                os.path.join(self.ingest.inputdir, 'ingested', self.ingest.metafile))
+        mock.assert_any_call(os.path.join(self.ingest.inputdir, self.ingest.metadata['filename']),
+                                os.path.join(self.ingest.inputdir, 'ingested', self.ingest.metadata['filename']))
+
+
 class GeoToolsTests(InjestToolsSetup):
 
     def test_get_new_latlon(self):
@@ -156,10 +176,12 @@ class FunctionalTests(InjestToolsSetup):
         """Ingest a single image, from the specified metadata file
         """
         I = IngestImages(self.testdir, self.testdir+'../output')
-        I.ingest_image(self.testmeta)
+        with patch('os.rename') as mock:  # don't actually move the data file at the end
+            I.ingest_image(self.testmeta)
 
     def test_ingest_all_images(self):
         """Ingest all the images in the input directory
         """
         I = IngestImages(self.testdir, self.testdir+'../output')
-        I.ingest_all()
+        with patch('os.rename') as mock:  # don't actually move the data file at the end
+            I.ingest_all()

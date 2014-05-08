@@ -33,11 +33,13 @@ class IngestImages():
         Ingest a single image. This method is called by ingest_all, or it can be called manually to ingest one file
         :param thisfile : The metadata file for the image to be ingested (including full directory path)
         """
-        self.read_meta_file(thisfile)
+        self.metafile = thisfile
+        self.read_meta_file()
         self.read_data()
         self.save_geotiff()
         self.make_quicklook()
         self.add_to_database()
+        self.tidy_up()
         
     def get_file_list(self):
         """Get a list of all the metadata files in the specified directory
@@ -48,12 +50,11 @@ class IngestImages():
         metafiles = glob.glob(self.inputdir+"/*.json")
         return metafiles
     
-    def read_meta_file(self, thisfile):
+    def read_meta_file(self):
         """
-        Read a JSON formatted metadata file, returning a dictionary
-        :param thisfile : The name (including path) of the metadata file to read
+        Read a JSON formatted metadata file (name in self.metafile), returning a dictionary
         """
-        self.metadata = json.load(open(thisfile))
+        self.metadata = json.load(open(self.metafile))
     
     def read_data(self):
         """
@@ -171,3 +172,21 @@ class IngestImages():
                                                      direction=(direction if direction.isalnum() else None))
             if not new:
                 print "Image already ingested!"
+
+    def tidy_up(self):
+        """
+        Move files to an "ingested" folder once they are processed, ready to be deleted later
+        """
+        # Create the ingested folder if necessary
+        ingested_dir = os.path.join(self.inputdir,'ingested')
+        if not os.path.isdir(ingested_dir):
+            os.mkdir(ingested_dir)
+
+        # Make sure the geotiff was created before moving files
+        if os.path.isfile(self.metadata['archive_location']):
+            # Metadata file
+            os.rename(os.path.join(self.inputdir,self.metafile),
+                      os.path.join(ingested_dir,self.metafile))
+            # Data file
+            os.rename(os.path.join(self.inputdir,self.metadata['filename']),
+                      os.path.join(ingested_dir,self.metadata['filename']))
