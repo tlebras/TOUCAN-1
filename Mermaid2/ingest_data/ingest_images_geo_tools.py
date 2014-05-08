@@ -106,14 +106,17 @@ class GeoTools():
         new_data = np.zeros((len(new_lat), len(new_lon)))
         count = np.zeros((len(new_lat), len(new_lon)))
 
+        # Generate array of which points are inside the region of interest
+        # Assume our new coordinate points define the edges of the pixels, so we need to search up to
+        # a grid box beyond the max value to properly fill the grid.
+        in_region = (np.min(new_lon) <= old_lon) & (old_lon < np.max(new_lon)+dx) & \
+                    (np.min(new_lat) <= old_lat) & (old_lat < np.max(new_lat)+dy)
+
         # loop over all points in the OLD grid
         for j in np.arange(old_lon.shape[0]):
             for i in np.arange(old_lon.shape[1]):
                 # Ignore points that aren't within the region of interest
-                # Assume our new coordinate points define the edges of the pixels, so we need to search up to
-                # a grid box beyond the max value to properly fill the grid.
-                if ((np.min(new_lon) <= old_lon[j,i] < np.max(new_lon)+dx) &
-                    (np.min(new_lat) <= old_lat[j,i] < np.max(new_lat)+dy) ):
+                if in_region[j,i]:
                     # Find which point this corresponds to on the new grid, and add the data value
                     new_i = int((old_lon[j,i] - np.min(new_lon)) / dx)
                     new_j = int((old_lat[j,i] - np.min(new_lat)) / dy)
