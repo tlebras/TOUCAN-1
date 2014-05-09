@@ -98,6 +98,13 @@ class InstrumentWavelength(models.Model):
     value = models.FloatField()
     instrument = models.ForeignKey(Instrument)
 
+class ImageRegion(models.Model):
+    """
+    Image region model, defined by:
+    - site (text field)
+    """
+    region = models.TextField()
+
 
 class Image(models.Model):
     """Image model defined by :\n
@@ -105,15 +112,27 @@ class Image(models.Model):
     - archive location
     - lat/lon min
     - lat/lon max
-    - point
-    - instrument
-
-    model not finished
+    - version (TextField)
+    - instrument (ForeignKey)
+    - region (ForeignKey)
+    - SZA   Sun zenith angle (mean over region)
+    - SAA   Sun azimuth angle (mean over region)
+    - VZA   Viewing zenith angle (mean over region)
+    - VAA   Viewing azimuth angle (mean over region)
+    - direction (only needed for sensors with separate nadir/forward datasets, eg AATSR)
 """
 
-    web_location = models.CharField(max_length=255)
-    archive_location = models.CharField(max_length=255)	        
+    web_location = models.TextField()
+    archive_location = models.TextField()
     top_left_point = models.PointField()
     bot_right_point = models.PointField() 
-    #point = models.ForeignKey(Point)  
-    instrument = models.ForeignKey(Instrument, blank=True, null=True)
+    time = models.DateTimeField()
+    version = models.TextField(blank=True, null=True)
+    instrument = models.ForeignKey(Instrument)
+    measurement_type = models.ForeignKey(MeasurementType)
+    region = models.ForeignKey(ImageRegion)
+    SZA = models.FloatField()
+    SAA = models.FloatField()
+    VZA = models.FloatField()
+    VAA = models.FloatField()
+    direction = models.CharField(max_length=255, blank=True, null=True)
