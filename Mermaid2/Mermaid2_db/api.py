@@ -96,22 +96,35 @@ class MeasurementResource(ModelResource):
             bundle.data['value'] = -999
 
         return bundle       
-        
-        
+
+
+class ImageRegionResource(ModelResource):
+
+    class Meta:
+        queryset = ImageRegion.objects.all()
+        excludes = ['id']
+        include_resource_uri = False
+        filtering = {
+            'region': ALL,
+        }
+
+
 class ImageResource(ModelResource):
 
     #point = fields.ForeignKey(PointResource, 'point', full=True)  
-    instrument = fields.ForeignKey(InstrumentResource, 'instrument', full=True, blank=True, null=True)        
+    instrument = fields.ForeignKey(InstrumentResource, 'instrument', full=True, blank=True, null=True)
+    region = fields.ForeignKey(ImageRegionResource, 'region', full=True, blank=True, null=True)
     measurement_type = fields.ForeignKey(MeasurementTypeResource, 'measurement_type', full=True, blank=True, null=True)
-        
+
     class Meta:
         queryset = Image.objects.all()
         excludes = ['id']
         include_resource_uri = False
-        filtering = { 
+        filtering = {
             'top_left_point': ALL,
             'bot_right_point': ALL,
             'instrument': ALL_WITH_RELATIONS,
             'point': ALL_WITH_RELATIONS,
             'measurement_type': ALL_WITH_RELATIONS,
-        }        
+            'region': ALL_WITH_RELATIONS,
+        }
