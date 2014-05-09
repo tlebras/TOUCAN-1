@@ -139,7 +139,7 @@ class FiletypeTests(InjestToolsSetup):
     """Tests for the various file types, to check that the correct method is called for each one
     """
     def test_call_aatsr_read(self):
-        """Check that read_n1 is called when instrument type is AATSR
+        """Check that read_aatsr is called when instrument type is AATSR
         """
         self.ingest.metadata = {'instrument':'AATSR'}
         with patch('ingest_data.ingest_images.DataReaders.read_aatsr') as mock:
@@ -147,7 +147,7 @@ class FiletypeTests(InjestToolsSetup):
         mock.assert_called_with(self.ingest)
 
     def test_call_meris_read(self):
-        """Check that read_n1 is called when instrument type is MERIS
+        """Check that read_meris is called when instrument type is MERIS
         """
         self.ingest.metadata = {'instrument':'MERIS'}
         with patch('ingest_data.ingest_images.DataReaders.read_meris') as mock:
@@ -155,7 +155,7 @@ class FiletypeTests(InjestToolsSetup):
         mock.assert_called_with(self.ingest)
 
     def test_call_viirs_read(self):
-        """Check that read_hdf is called when instrument type is VIIRS
+        """Check that read_viirs is called when instrument type is VIIRS
         """
         self.ingest.metadata = {'instrument':'VIIRS'}
         with patch('ingest_data.ingest_images.DataReaders.read_viirs') as mock:
