@@ -18,10 +18,8 @@ import sys, os
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 sys.path.insert(0, os.path.abspath('.'))
 
-sys.path.append('/home/langlois/Documents/django/Mermaid2/Mermaid2')
-sys.path.append('/home/langlois/Documents/django/Mermaid2/Mermaid2/ingest_data')
-
-#sys.path.append('/home/langlois/Documents/django/Mermaid2/Mermaid2/Mermaid2_db')
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__),'../../Mermaid2')))
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__),'../../Mermaid2/ingest_data')))
 
 os.environ['DJANGO_SETTINGS_MODULE'] = 'Mermaid2.settings'
 
@@ -48,8 +46,8 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'Mermaid2'
-copyright = u'2013, Jean-Gil Langlois'
+project = u'TOUCAN'
+copyright = u'2014, ARGANS Ltd'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the

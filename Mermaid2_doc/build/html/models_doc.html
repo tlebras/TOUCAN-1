@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Models Documentation &mdash; Mermaid2 0.0.1 documentation</title>
+    <title>Models Documentation &mdash; TOUCAN 0.0.1 documentation</title>
     
     <link rel="stylesheet" href="_static/default.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -23,9 +23,9 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="top" title="Mermaid2 0.0.1 documentation" href="index.html" />
+    <link rel="top" title="TOUCAN 0.0.1 documentation" href="index.html" />
     <link rel="next" title="Upload Tools Documentation" href="upload_doc.html" />
-    <link rel="prev" title="Welcome to Mermaid2’s documentation!" href="index.html" /> 
+    <link rel="prev" title="Welcome to the TOUCAN documentation" href="index.html" /> 
   </head>
   <body>
     <div class="related">
@@ -41,9 +41,9 @@
           <a href="upload_doc.html" title="Upload Tools Documentation"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="index.html" title="Welcome to Mermaid2’s documentation!"
+          <a href="index.html" title="Welcome to the TOUCAN documentation"
              accesskey="P">previous</a> |</li>
-        <li><a href="index.html">Mermaid2 0.0.1 documentation</a> &raquo;</li> 
+        <li><a href="index.html">TOUCAN 0.0.1 documentation</a> &raquo;</li> 
       </ul>
     </div>  
 
@@ -84,10 +84,22 @@
 <li>archive location</li>
 <li>lat/lon min</li>
 <li>lat/lon max</li>
-<li>point</li>
-<li>instrument</li>
+<li>version (TextField)</li>
+<li>instrument (ForeignKey)</li>
+<li>region (ForeignKey)</li>
+<li>SZA   Sun zenith angle (mean over region)</li>
+<li>SAA   Sun azimuth angle (mean over region)</li>
+<li>VZA   Viewing zenith angle (mean over region)</li>
+<li>VAA   Viewing azimuth angle (mean over region)</li>
+<li>direction (only needed for sensors with separate nadir/forward datasets, eg AATSR)</li>
 </ul>
-<p>model not finished</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="Mermaid2_db.models.ImageRegion">
+<em class="property">class </em><tt class="descclassname">Mermaid2_db.models.</tt><tt class="descname">ImageRegion</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#Mermaid2_db.models.ImageRegion" title="Permalink to this definition">¶</a></dt>
+<dd><p>Image region model, defined by:
+- site (text field)</p>
 </dd></dl>
 
 <dl class="class">
@@ -129,6 +141,7 @@
 <ul class="simple">
 <li>type (CharField)</li>
 <li>units (CharField)</li>
+<li>long_name (CharField)</li>
 </ul>
 </dd></dl>
 
@@ -167,7 +180,7 @@
         <div class="sphinxsidebarwrapper">
   <h4>Previous topic</h4>
   <p class="topless"><a href="index.html"
-                        title="previous chapter">Welcome to Mermaid2&#8217;s documentation!</a></p>
+                        title="previous chapter">Welcome to the TOUCAN documentation</a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="upload_doc.html"
                         title="next chapter">Upload Tools Documentation</a></p>
@@ -206,14 +219,14 @@
           <a href="upload_doc.html" title="Upload Tools Documentation"
              >next</a> |</li>
         <li class="right" >
-          <a href="index.html" title="Welcome to Mermaid2’s documentation!"
+          <a href="index.html" title="Welcome to the TOUCAN documentation"
              >previous</a> |</li>
-        <li><a href="index.html">Mermaid2 0.0.1 documentation</a> &raquo;</li> 
+        <li><a href="index.html">TOUCAN 0.0.1 documentation</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">
-        &copy; Copyright 2013, Jean-Gil Langlois.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2b1.
+        &copy; Copyright 2014, ARGANS Ltd.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
     </div>
   </body>
 </html>

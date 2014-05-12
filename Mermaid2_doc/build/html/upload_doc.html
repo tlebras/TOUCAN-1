@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Upload Tools Documentation &mdash; Mermaid2 0.0.1 documentation</title>
+    <title>Upload Tools Documentation &mdash; TOUCAN 0.0.1 documentation</title>
     
     <link rel="stylesheet" href="_static/default.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -23,7 +23,7 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="top" title="Mermaid2 0.0.1 documentation" href="index.html" />
+    <link rel="top" title="TOUCAN 0.0.1 documentation" href="index.html" />
     <link rel="next" title="Django project presentation" href="django_project.html" />
     <link rel="prev" title="Models Documentation" href="models_doc.html" /> 
   </head>
@@ -43,7 +43,7 @@
         <li class="right" >
           <a href="models_doc.html" title="Models Documentation"
              accesskey="P">previous</a> |</li>
-        <li><a href="index.html">Mermaid2 0.0.1 documentation</a> &raquo;</li> 
+        <li><a href="index.html">TOUCAN 0.0.1 documentation</a> &raquo;</li> 
       </ul>
     </div>  
 
@@ -70,17 +70,43 @@
 </dd></dl>
 
 <dl class="function">
-<dt id="ingest.get_type">
-<tt class="descclassname">ingest.</tt><tt class="descname">get_type</tt><big>(</big><em>string</em>, <em>radiometric</em><big>)</big><a class="headerlink" href="#ingest.get_type" title="Permalink to this definition">¶</a></dt>
-<dd><p>Read the measurement type from the string read, if it doesn&#8217;t exist, create it</p>
+<dt id="ingest.get_campaign">
+<tt class="descclassname">ingest.</tt><tt class="descname">get_campaign</tt><big>(</big><em>filename</em><big>)</big><a class="headerlink" href="#ingest.get_campaign" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the campaign name, and check to see if we already have this campaign in the database
+If we don&#8217;t: Create it
+If we do: Return this campaign</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>string</strong> &#8211; string containing the measurement type, i.e. in &#8220;Rho_wn_IS_412&#8221; the type is &#8220;Rho_wn_IS&#8221;</li>
-<li><strong>radiometric</strong> &#8211; boolean, true if the measurement is radiometric, meaning the string contains the wavelength</li>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>filename</strong> &#8211; Name of the file, which contains the campaign name</td>
+</tr>
+<tr class="field-even field"><th class="field-name" colspan="2">Return campaign:</th></tr>
+<tr class="field-even field"><td>&nbsp;</td><td class="field-body">the campaign object found or created</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="ingest.get_deployment">
+<tt class="descclassname">ingest.</tt><tt class="descname">get_deployment</tt><big>(</big><em>site</em>, <em>pi</em>, <em>campaign</em><big>)</big><a class="headerlink" href="#ingest.get_deployment" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check to see if we already have this campaign in the database
+If we don&#8217;t: Create it
+If we do: Return this campaign</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>site</strong> &#8211; Name of the deployment site</li>
+<li><strong>pi</strong> &#8211; Name of the PI</li>
+<li><strong>campaign</strong> &#8211; Campaign object this deployment is attached to</li>
 </ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name" colspan="2">Return deployment:</th></tr>
+<tr class="field-even field"><td>&nbsp;</td><td class="field-body"><p class="first last">the Deployment object found or created</p>
 </td>
 </tr>
 </tbody>
@@ -88,17 +114,35 @@
 </dd></dl>
 
 <dl class="function">
-<dt id="ingest.get_units">
-<tt class="descclassname">ingest.</tt><tt class="descname">get_units</tt><big>(</big><em>type</em><big>)</big><a class="headerlink" href="#ingest.get_units" title="Permalink to this definition">¶</a></dt>
-<dd><p>Associate a measurement type with its units, to be completed with new types</p>
+<dt id="ingest.get_point">
+<tt class="descclassname">ingest.</tt><tt class="descname">get_point</tt><big>(</big><em>data</em>, <em>dep_id</em><big>)</big><a class="headerlink" href="#ingest.get_point" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check to see if the current point has already been created. If so, return the point id. If not, create a new point.
+To be regarded as the same point, ALL of the model&#8217;s fields (matchup_id, point, time_is, etc) must be the same.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>type</strong> &#8211; measurement type (string)</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>data</strong> &#8211; Data array containing the 10 field values</li>
+<li><strong>dep_id</strong> &#8211; Id number of the deployment this point is attached to</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name" colspan="2">Return point_id:</th></tr>
+<tr class="field-even field"><td>&nbsp;</td><td class="field-body"><p class="first last">the point id of either the point that was found, or the new one created</p>
+</td>
 </tr>
 </tbody>
 </table>
+</dd></dl>
+
+<dl class="function">
+<dt id="ingest.get_type">
+<tt class="descclassname">ingest.</tt><tt class="descname">get_type</tt><big>(</big><em>string</em>, <em>radiometric</em><big>)</big><a class="headerlink" href="#ingest.get_type" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read the measurement type from the string read, if it doesn&#8217;t exist, create it</p>
+<p>Force the type to be lower case, so that we don&#8217;t get duplicates with just differences in case
+:param string: string containing the measurement type, i.e. in &#8220;Rho_wn_IS_412&#8221; the type is &#8220;Rho_wn_IS&#8221;
+:param radiometric: boolean, true if the measurement is radiometric, meaning the string contains the wavelength</p>
 </dd></dl>
 
 <dl class="function">
@@ -162,6 +206,15 @@
 </table>
 </dd></dl>
 
+<dl class="function">
+<dt id="ingest.units_and_name">
+<tt class="descclassname">ingest.</tt><tt class="descname">units_and_name</tt><big>(</big><em>type</em><big>)</big><a class="headerlink" href="#ingest.units_and_name" title="Permalink to this definition">¶</a></dt>
+<dd><p>Using a dictionary, return the units and long name associate with a measurement type
+:param type: measurement type (string), as taken from the input spreadsheet headings</p>
+<p>Returns a dictionary with keys &#8220;units&#8221; and &#8220;long_name&#8221;
+If the input type isn&#8217;t coded, sets units = &#8220;NA&#8221; and long name = type</p>
+</dd></dl>
+
 </div>
 
 
@@ -213,12 +266,12 @@
         <li class="right" >
           <a href="models_doc.html" title="Models Documentation"
              >previous</a> |</li>
-        <li><a href="index.html">Mermaid2 0.0.1 documentation</a> &raquo;</li> 
+        <li><a href="index.html">TOUCAN 0.0.1 documentation</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">
-        &copy; Copyright 2013, Jean-Gil Langlois.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2b1.
+        &copy; Copyright 2014, ARGANS Ltd.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
     </div>
   </body>
 </html>
