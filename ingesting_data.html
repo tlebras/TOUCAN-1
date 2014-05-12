@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Welcome to the TOUCAN documentation &mdash; TOUCAN 0.0.1 documentation</title>
+    <title>Ingesting data &mdash; TOUCAN 0.0.1 documentation</title>
     
     <link rel="stylesheet" href="_static/default.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -23,8 +23,8 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="top" title="TOUCAN 0.0.1 documentation" href="#" />
-    <link rel="next" title="Models Documentation" href="models_doc.html" /> 
+    <link rel="top" title="TOUCAN 0.0.1 documentation" href="index.html" />
+    <link rel="prev" title="Django project presentation" href="django_project.html" /> 
   </head>
   <body>
     <div class="related">
@@ -37,9 +37,9 @@
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="models_doc.html" title="Models Documentation"
-             accesskey="N">next</a> |</li>
-        <li><a href="#">TOUCAN 0.0.1 documentation</a> &raquo;</li> 
+          <a href="django_project.html" title="Django project presentation"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">TOUCAN 0.0.1 documentation</a> &raquo;</li> 
       </ul>
     </div>  
 
@@ -48,25 +48,16 @@
         <div class="bodywrapper">
           <div class="body">
             
-  <div class="section" id="welcome-to-the-toucan-documentation">
-<h1>Welcome to the TOUCAN documentation<a class="headerlink" href="#welcome-to-the-toucan-documentation" title="Permalink to this headline">¶</a></h1>
-<p>Contents:</p>
-<div class="toctree-wrapper compound">
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="models_doc.html">Models Documentation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="upload_doc.html">Upload Tools Documentation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="django_project.html">Django project presentation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="ingesting_data.html">Ingesting data</a></li>
-</ul>
-</div>
-</div>
-<div class="section" id="indices-and-tables">
-<h1>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="ingesting-data">
+<h1>Ingesting data<a class="headerlink" href="#ingesting-data" title="Permalink to this headline">¶</a></h1>
+<p>The tools necessary to add data to the database are in the file ingest.py in the ingest_data folder.</p>
+<p>All needed is to call the function read_data() with 3 arguments:</p>
 <ul class="simple">
-<li><a class="reference internal" href="genindex.html"><em>Index</em></a></li>
-<li><a class="reference internal" href="py-modindex.html"><em>Module Index</em></a></li>
-<li><a class="reference internal" href="search.html"><em>Search Page</em></a></li>
+<li>The file object, obtained using the open(&lt;filename&gt;, &#8216;r&#8217;) function.</li>
+<li>The ID number for the instrument used.</li>
+<li>The name of the file (character sting).</li>
 </ul>
+<p>An example of the code used is in the file main.py.</p>
 </div>
 
 
@@ -75,18 +66,12 @@
       </div>
       <div class="sphinxsidebar">
         <div class="sphinxsidebarwrapper">
-  <h3><a href="#">Table Of Contents</a></h3>
-  <ul>
-<li><a class="reference internal" href="#">Welcome to the TOUCAN documentation</a></li>
-<li><a class="reference internal" href="#indices-and-tables">Indices and tables</a></li>
-</ul>
-
-  <h4>Next topic</h4>
-  <p class="topless"><a href="models_doc.html"
-                        title="next chapter">Models Documentation</a></p>
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="django_project.html"
+                        title="previous chapter">Django project presentation</a></p>
   <h3>This Page</h3>
   <ul class="this-page-menu">
-    <li><a href="_sources/index.txt"
+    <li><a href="_sources/ingesting_data.txt"
            rel="nofollow">Show Source</a></li>
   </ul>
 <div id="searchbox" style="display: none">
@@ -116,9 +101,9 @@
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="models_doc.html" title="Models Documentation"
-             >next</a> |</li>
-        <li><a href="#">TOUCAN 0.0.1 documentation</a> &raquo;</li> 
+          <a href="django_project.html" title="Django project presentation"
+             >previous</a> |</li>
+        <li><a href="index.html">TOUCAN 0.0.1 documentation</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">
