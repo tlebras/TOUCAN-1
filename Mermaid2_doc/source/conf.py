@@ -100,15 +100,41 @@ pygments_style = 'sphinx'
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
-html_theme = 'default'
+html_theme = 'toucan_theme'
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
 # documentation.
-#html_theme_options = {}
+
+# These options now in toucan_theme, but can be overridden here if required
+# toucan_yellow = '#FFCC00'
+# light_yellow = "#FFEC9E"
+# toucan_grey = '#4D4D4D'
+# toucan_red = '#800000'
+# black = '#000000'
+# white = '#ffffff'
+# html_theme_options = {"stickysidebar": "false",
+#                       "sidebarbgcolor": white,
+#                       "sidebartextcolor": toucan_grey,
+#                       "sidebarlinkcolor": toucan_red,
+#                       
+#                       "footerbgcolor": toucan_yellow,
+#                       "footertextcolor": toucan_red,
+#                       
+#                       "relbarbgcolor": toucan_red,
+#                       "relbartextcolor": white,
+#                       "relbarlinkcolor": white,
+#                       
+#                       "headtextcolor": toucan_red,
+#                       "headfont": "Impact, sans-serif",
+#                       
+#                       "codebgcolor": light_yellow,
+#                       
+#                       
+# }
 
 # Add any paths that contain custom themes here, relative to this directory.
-#html_theme_path = []
+html_theme_path = ['.']
 
 # The name for this set of Sphinx documents.  If None, it defaults to
 # "<project> v<release> documentation".
@@ -119,17 +145,17 @@ html_theme = 'default'
 
 # The name of an image file (relative to this directory) to place at the top
 # of the sidebar.
-#html_logo = None
+html_logo = 'toucan_theme/static/toucan.png'
 
 # The name of an image file (within the static path) to use as favicon of the
 # docs.  This file should be a Windows icon file (.ico) being 16x16 or 32x32
 # pixels large.
-#html_favicon = None
+html_favicon = 'toucan_theme/static/favicon.ico'
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-html_static_path = ['_static']
+#html_static_path = ['_static']
 
 # If not '', a 'Last updated on:' timestamp is inserted at every page bottom,
 # using the given strftime format.

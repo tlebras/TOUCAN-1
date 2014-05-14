@@ -1,0 +1,92 @@
+@import url("default.css");
+
+/* ---------------------------------------------------
+Fonts used: Limelight (headings) and Raleway (body)
+Colours used:
+    - Toucan red = #800000
+    - Toucan grey = #4D4D4D
+    - Toucan yellow = #FFCC00
+    - light yellow = #F4DEBF
+--------------------------------------------------- */
+
+/* -- Set font and background colour for main document -- */
+div.document {
+    font-family: 'Raleway',sans-serif;
+    background-color: #ffffff;
+}
+
+/* -- Set footer font and colours -- */
+body {
+ background-color: #FFCC00;
+}
+
+div.footer ,
+div.footer a {
+    color: #800000;
+}
+
+div.footer a {
+    text-decoration: underline;
+}
+
+/* -- Set colour of top related bar -- */
+div.related {
+    background-color: #800000;
+}
+
+/* -- Set font and colours of sidebar -- */
+div.sphinxsidebar h3 ,
+div.sphinxsidebar h4 { 
+  font-family: 'Limelight', sans-serif; !Important
+}
+
+div.sphinxsidebar h3 ,
+div.sphinxsidebar h4 , 
+div.sphinxsidebar h3 a ,
+div.sphinxsidebar p,
+div.sphinxsidebar ul {
+    color: #4D4D4D;
+}
+
+div.sphinxsidebar a {
+    color: #800000;
+}
+
+/* -- Search box -- */
+div.sphinxsidebar input {
+    border: 1px solid #800000;
+    font-family: 'Raleway',sans-serif;
+}
+
+
+/* -- Headers in main panel -- */
+div.body h1,
+div.body h2,
+div.body h3,
+div.body h4,
+div.body h5,
+div.body h6 {
+    background-color: #f2f2f2;
+    font-family: 'Limelight', sans-serif; !Important
+    font-weight: normal;
+    color: #800000;
+    border-bottom: 1px solid #ccc;
+    margin: 20px -20px 10px -20px;
+    padding: 3px 0 3px 10px;
+}
+
+pre {
+    padding: 5px;
+    background-color: #FFEC9E;
+    color: #333333;
+    line-height: 120%;
+    border: 1px solid #ffcc00;
+    border-left: none;
+    border-right: none;
+}
+
+div.viewcode-block:target {
+    background-color: #f4debf;
+    border-top: 1px solid #ffcc00;
+    border-bottom: 1px solid #ffcc00;
+}
