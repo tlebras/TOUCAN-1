@@ -1,5 +1,5 @@
 Models Documentation
 ====================
 
-.. automodule:: Mermaid2_db.models
+.. automodule:: toucan_db.models
    :members:
