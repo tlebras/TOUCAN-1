@@ -5,9 +5,9 @@ import pytz
 
 def read_data(file_data, instrument, filename):
     """Function reading the file and uploading the data to the database\n
-    :param file_data: file object to be read (file)
-    :param instrument: id of the instrument used for the measurement (int)
-    :param filename: name of the file, the name of the campaign is extracted form it (string)
+    :param file file_data: file object to be read
+    :param int instrument: id of the instrument used for the measurement
+    :param str filename: name of the file, the name of the campaign is extracted form it
     """
 
     # Read the cvs file (turn the string into an array)
@@ -67,7 +67,7 @@ def read_data(file_data, instrument, filename):
 
 def read_file(file_data):
     """Creates an array (actually a list of lists) based on the uploaded data\n
-    :param file_data: file object to be read (file)
+    :param file file_data: file object to be read
     """
 
     # create an empty list to store the data
@@ -90,7 +90,7 @@ def read_file(file_data):
 def file_ok(line_1):
     """check if the file is legit\n
     to be modified, this function is not enough to check the integrity of the file given\n
-    :param line_1: first line of the csv file, only the header is checked (array)
+    :param array line_1: first line of the csv file, only the header is checked
     """
 
     # only check performed : the first ten elements must match the following :
@@ -110,7 +110,7 @@ def file_ok(line_1):
 def read_campaign_name(filename):
     """
     Get the name of the campaign from the name of the file (this function may should be rewritten or completed)\n
-    :param filename: name of the file (string)
+    :param str filename: name of the file
     """
     # we assume that the name of the file begins with "extraction_XXXXX_"
     # XXXXX being the name of the campaign
@@ -131,44 +131,41 @@ def read_campaign_name(filename):
 
 def get_campaign(filename):
     """
-    Get the campaign name, and check to see if we already have this campaign in the database
-    If we don't: Create it
-    If we do: Return this campaign
-    
+    Get the campaign name, and check to see if we already have this campaign in the database. Create new campaign if not.
+
     :param filename: Name of the file, which contains the campaign name
-    
-    :return campaign: the campaign object found or created
-    
+    :return: the campaign object found or created
     """
     campaign_name = read_campaign_name(filename)
     campaign = Campaign.objects.get_or_create(campaign=campaign_name)[0]
     return campaign        
 
+
 def get_deployment(site, pi, campaign):
     """
-    Check to see if we already have this campaign in the database
-    If we don't: Create it
-    If we do: Return this campaign
-    
-    :param site: Name of the deployment site
-    :param pi: Name of the PI
-    :param campaign: Campaign object this deployment is attached to
-    
-    :return deployment: the Deployment object found or created
-    
+    Check to see if we already have this deployment in the database. Create new deployment if not.
+
+    :param string site: Name of the deployment site
+    :param string pi: Name of the PI
+    :param Campaign campaign: Campaign object this deployment is attached to
+    :return: the Deployment object found or created
+
     """
     deployment = Deployment.objects.get_or_create(site=site, pi=pi, campaign=campaign)[0]       
     return deployment
- 
+
+
 def get_point(data, dep_id):
     """
     Check to see if the current point has already been created. If so, return the point id. If not, create a new point.
-    To be regarded as the same point, ALL of the model's fields (matchup_id, point, time_is, etc) must be the same.
-    
-    :param data: Data array containing the 10 field values
-    :param dep_id:   Id number of the deployment this point is attached to
-    
-    :return point_id: the point id of either the point that was found, or the new one created
+
+    .. NOTE::
+
+        To be regarded as the same point, *all* of the model's fields (matchup_id, point, time_is, etc) must be the same.
+
+    :param array data: Data array containing the 10 field values
+    :param integer dep_id:   Id number of the deployment this point is attached to
+    :return: the point id of either the point that was found, or the new one created
     """
     matchup_id = data[0]
     point = 'POINT({0} {1})'.format(data[3], data[4])
@@ -197,10 +194,10 @@ def get_point(data, dep_id):
 
 def units_and_name(type):
     """Using a dictionary, return the units and long name associate with a measurement type
-    :param type: measurement type (string), as taken from the input spreadsheet headings
-    
-    Returns a dictionary with keys "units" and "long_name"
-    If the input type isn't coded, sets units = "NA" and long name = type
+
+    :param string type: measurement type, as taken from the input spreadsheet headings
+    :return: a dictionary with keys "units" and "long_name". If the input type isn't coded,
+             sets units = "NA" and long name = type
     """
     types={ 
             'a_is': ('m-1', 'Total absorption coefficient'),
@@ -239,11 +236,13 @@ def units_and_name(type):
     except KeyError:
         return {'units':'NA', 'long_name': type.lower()}
 
+
 def get_type(string, radiometric):
     """Read the measurement type from the string read, if it doesn't exist, create it\n
     Force the type to be lower case, so that we don't get duplicates with just differences in case
-    :param string: string containing the measurement type, i.e. in "Rho_wn_IS_412" the type is "Rho_wn_IS"
-    :param radiometric: boolean, true if the measurement is radiometric, meaning the string contains the wavelength
+
+    :param string string: string containing the measurement type, i.e. in "Rho_wn_IS_412" the type is "Rho_wn_IS"
+    :param boolean radiometric: true if the measurement is radiometric, meaning the string contains the wavelength
     """
 
     type = ''
@@ -273,7 +272,7 @@ def get_type(string, radiometric):
 
 def get_wavelength(string):
     """Read the measurement wavelength from the string, if it doesn't exist, create it\n
-    :param string: string containing the wavelength, i.e. in "Rho_wn_IS_412" the type is "412"
+    :param string string: containing the wavelength, i.e. in "Rho_wn_IS_412" the type is "412"
     """
 
     wavelength = ''

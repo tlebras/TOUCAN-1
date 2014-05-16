@@ -15,8 +15,8 @@ class DataReaders():
         Default values are specified for variable names, wavelengths etc, but these can be overridden
         by user if they are put in the json file. Default is to read Reflectance
 
-        :param ingest : An IngestImages object instance, which contains metadata and inputdir variables
-        Returns data: Dictionary containing all the data arrays
+        :param ingest: An IngestImages object instance, which contains metadata and inputdir variables
+        :return: Dictionary containing all the data arrays
         """
         # AATSR files have two directions, with separate viewing angle arrays
         ingest.aatsr_directions = ('nadir','fward')
@@ -70,8 +70,8 @@ class DataReaders():
         Default values are specified for variable names, wavelengths etc, but these can be overridden
         by user if they are put in the json file. Default is to read Radiance.
 
-        :param ingest : An IngestImages object instance, which contains metadata and inputdir variables
-        Returns data: Dictionary containing all the data arrays
+        :param ingest: An IngestImages object instance, which contains metadata and inputdir variables
+        :return: Dictionary containing all the data arrays
         """
         # Define the names of the viewing angle datasets, if not overridden by metadata file
         if not 'angle_names' in ingest.metadata.keys():
@@ -118,8 +118,8 @@ class DataReaders():
         Default values are specified for variable names, wavelengths etc, but these can be overridden
         by user if they are put in the json file. Default is to read Reflectance
 
-        :param ingest : An IngestImages object instance, which contains metadata and inputdir variables
-        Returns data: Dictionary containing all the data arrays
+        :param ingest: An IngestImages object instance, which contains metadata and inputdir variables
+        :return: Dictionary containing all the data arrays
         """
         # Define the names of the viewing angle datasets, if not overridden by metadata file
         if not 'angle_names' in ingest.metadata.keys():
@@ -163,11 +163,11 @@ class DataReaders():
         Extract the region of interest, and at the same time regrid to a regular grid.
         Returns a dictionary containing the parameters that were requested in the metadata file
         (plus coordinates) for the specified region.
-        :param ingest : An IngestImages object instance, which contains metadata and inputdir variables
-        Returns:
-            data: dictionary containing the coordinates and data arrays
-            time_temp: The value of whichever variable was specified by ingest.metadata['time_variable'].
-                       This will be converted to a proper datetime in the calling method.
+        
+        :param ingest: An IngestImages object instance, which contains metadata and inputdir variables
+        :return: Dictionary containing the coordinates and data arrays
+        :return: The value of whichever variable was specified by ingest.metadata['time_variable'].
+                 This will be converted to a proper datetime in the calling method.
         """
         from osgeo import gdal
 
@@ -223,11 +223,10 @@ class DataReaders():
         Returns a dictionary containing the parameters that were requested in the metadata file
         (plus coordinates) for the specified region.
 
-        :param ingest : An IngestImages object instance, which contains metadata and inputdir variables
-        Returns:
-            data: dictionary containing the coordinates and data arrays
-            time_temp: The value of whichever variable was specified by ingest.metadata['time_variable'].
-                       This will be converted to a proper datetime in the calling method.
+        :param ingest: An IngestImages object instance, which contains metadata and inputdir variables
+        :return: Dictionary containing the coordinates and data arrays
+        :return: The value of whichever variable was specified by ingest.metadata['time_variable'].
+                 This will be converted to a proper datetime in the calling method.
         """
         import epr
 

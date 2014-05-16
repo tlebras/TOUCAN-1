@@ -11,14 +11,16 @@ from ingest import units_and_name
 
 
 class IngestImages():
-    
+    """
+    Image ingestion class, with methods to do everything needed to ingest images
+    into the TOUCAN database
+
+    :param str inputdir: Directory containing the input files
+    :param str outputdir: Top level archive directory to save geotiffs to
+                       (region/instrument/year subdirectories will be automatically created)
+    """
+
     def __init__(self, inputdir, outdir):
-        """
-        Initialise ingestion object with the input and output directory locations
-        :param inputdir : Directory containing the input files
-        :param outputdir : Top level archive directory to save geotiffs to
-                           (region/instrument/year subdirectories will be automatically created)
-        """
         self.inputdir = inputdir
         self.outdir = outdir
 
@@ -33,7 +35,8 @@ class IngestImages():
     def ingest_image(self, thisfile):
         """
         Ingest a single image. This method is called by ingest_all, or it can be called manually to ingest one file
-        :param thisfile : The metadata file for the image to be ingested (including full directory path)
+        
+        :param str thisfile: The metadata file for the image to be ingested (including full directory path)
         """
         self.metafile = thisfile
         self.read_meta_file()
@@ -44,10 +47,9 @@ class IngestImages():
         self.tidy_up()
         
     def get_file_list(self):
-        """Get a list of all the metadata files in the specified directory
+        """Get a list of all the metadata files in the specified directory. Assumes metadata files have extension .json
         
-        We assume metadata files have extension .json
-        Returns list of metafiles
+        :return: list of metafiles
         """
         metafiles = glob.glob(self.inputdir+"/*.json")
         return metafiles
@@ -60,10 +62,11 @@ class IngestImages():
     
     def read_data(self):
         """
-        Read in data from the data file (coordinates, and the parameters that were specified in the meta file)
+        Read in data from the data file (coordinates, and the parameters that were specified in the meta file). This
+        method is a wrapper to call various others depending on the file type
         
-        This method is a wrapper to call various others depending on the file type
-        Returns a dictionary "data" holding all the data
+        :return: Dictionary "data" holding all the data
+        :raises IOError: if the requested instrument type is not coded 
         """
         reader = DataReaders()
         instrument = self.metadata["instrument"].lower()
@@ -82,7 +85,7 @@ class IngestImages():
         """
         Save data to a geoTiff file, after creating appropriate directory structure
 
-        :param data: the data dictionary for this file 
+        :param dict data: the data dictionary for this file 
         """
         savedir = os.path.join(self.outdir, self.metadata['region_name'].upper(), self.metadata['instrument'].upper(),
                                str(self.metadata['datetime'].year))
@@ -141,7 +144,8 @@ class IngestImages():
         
         Create new instances of ImageRegion and/or Instrument as required, otherwise fetch existing ones.
         Then add all the metadata to a new Image instance.
-        :param data: the data dictionary
+        
+        :param dict data: the data dictionary, as returned by :py:meth:`IngestImages.read_data`
         """
         # Get foreign key objects, or create new ones if necessary
         image_region,_ = ImageRegion.objects.get_or_create(region=self.metadata['region_name'].lower())

@@ -115,6 +115,7 @@ class Image(models.Model):
     - version (TextField)
     - instrument (ForeignKey)
     - region (ForeignKey)
+    - measurement_type (ForeignKey)
     - SZA   Sun zenith angle (mean over region)
     - SAA   Sun azimuth angle (mean over region)
     - VZA   Viewing zenith angle (mean over region)

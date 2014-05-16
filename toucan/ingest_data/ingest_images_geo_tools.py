@@ -3,6 +3,9 @@ from osgeo import gdal, osr
 
 
 class GeoTools():
+    """
+    Tools for geographic things - regridding, creating geotiff etc
+    """
     def __init__(self):
         self.EARTH_RADIUS = 6378137
 
@@ -45,17 +48,18 @@ class GeoTools():
     def get_new_lat_lon(old_lon, old_lat, region):
         """
         Calculate new coordinate lists to use for regridding, such that the resolution is about the same as the old grid
-        #
-        # 1A------2A------3A
-        # |       |       |
-        # 1B------2B------3B
-        # |       |       |
-        # 1C------2C------3C
-        #
-        # When we just used adjacent lon and lat values to compute dx and dy, we sometimes still got holes. So use
-        # opposite corners of squares made up from each group of four points instead:
-        # ie. Rather than take dx as difference between 1A-2A, 2A-3A etc, we use 1A-2B, 2A-3B, etc
-        # and for dy, use 2A-1B, 3A-2B etc.
+
+        When we just used adjacent lon and lat values to compute dx and dy, we sometimes still got holes. So use
+        opposite corners of squares made up from each group of four points instead:
+        ie. Rather than take dx as difference between 1A-2A, 2A-3A etc, we use 1A-2B, 2A-3B, etc
+        and for dy, use 2A-1B, 3A-2B etc::
+
+            1A------2A------3A 
+            |       |       |  
+            1B------2B------3B 
+            |       |       |  
+            1C------2C------3C 
+
         """
         min_lon = region[2]
         max_lon = region[3]
@@ -88,17 +92,19 @@ class GeoTools():
         Re-grid data to a regular grid, at the same time as extracting the region of interest
 
         Go through each point of the original grid, check if it is in the new grid, and if so append the 
-        data value to the closest grid point in the new grid. 
-        Returns the mean value for each new grid point.
+        data value to the closest grid point in the new grid.
+        
+        .. NOTE::
 
-        NB Assumes that coordinates in the original satellite files are valid for the CENTRE of the pixel, and that the
-        new coordinates are for the EDGES of the pixel (which is the GeoTiff convention).
+            Assumes that coordinates in the original satellite files are valid for the *centre* of the pixel, and that the
+            new coordinates are for the *edges* of the pixel (which is the GeoTiff convention).
 
         :param old_lon: Longitude for the original grid (2d)
         :param old_lat: Latitude for the original grid (2d)
         :param new_lon: Longitude for the new grid (1d)
         :param new_lat: Latitude for the new grid (1d)
         :param data: 2d array of data to be regridded
+        :return: array containing the mean value for each new grid point.
         """
         dx = np.diff(new_lon)[0]
         dy = np.diff(new_lat)[0]
