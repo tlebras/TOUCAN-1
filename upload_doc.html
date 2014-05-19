@@ -67,7 +67,7 @@
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>line_1</strong> &#8211; first line of the csv file, only the header is checked (array)</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>line_1</strong> (<a class="reference external" href="http://docs.python.org/library/array.html#module-array" title="(in Python v2.7)"><em>array</em></a>) &#8211; first line of the csv file, only the header is checked</td>
 </tr>
 </tbody>
 </table>
@@ -76,17 +76,14 @@
 <dl class="function">
 <dt id="ingest.get_campaign">
 <tt class="descclassname">ingest.</tt><tt class="descname">get_campaign</tt><big>(</big><em>filename</em><big>)</big><a class="headerlink" href="#ingest.get_campaign" title="Permalink to this definition">¶</a></dt>
-<dd><p>Get the campaign name, and check to see if we already have this campaign in the database
-If we don&#8217;t: Create it
-If we do: Return this campaign</p>
+<dd><p>Get the campaign name, and check to see if we already have this campaign in the database. Create new campaign if not.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>filename</strong> &#8211; Name of the file, which contains the campaign name</td>
 </tr>
-<tr class="field-even field"><th class="field-name" colspan="2">Return campaign:</th></tr>
-<tr class="field-even field"><td>&nbsp;</td><td class="field-body">the campaign object found or created</td>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">the campaign object found or created</td>
 </tr>
 </tbody>
 </table>
@@ -95,22 +92,19 @@ If we do: Return this campaign</p>
 <dl class="function">
 <dt id="ingest.get_deployment">
 <tt class="descclassname">ingest.</tt><tt class="descname">get_deployment</tt><big>(</big><em>site</em>, <em>pi</em>, <em>campaign</em><big>)</big><a class="headerlink" href="#ingest.get_deployment" title="Permalink to this definition">¶</a></dt>
-<dd><p>Check to see if we already have this campaign in the database
-If we don&#8217;t: Create it
-If we do: Return this campaign</p>
+<dd><p>Check to see if we already have this deployment in the database. Create new deployment if not.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>site</strong> &#8211; Name of the deployment site</li>
-<li><strong>pi</strong> &#8211; Name of the PI</li>
-<li><strong>campaign</strong> &#8211; Campaign object this deployment is attached to</li>
+<li><strong>site</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#module-string" title="(in Python v2.7)"><em>string</em></a>) &#8211; Name of the deployment site</li>
+<li><strong>pi</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#module-string" title="(in Python v2.7)"><em>string</em></a>) &#8211; Name of the PI</li>
+<li><strong>campaign</strong> (<em>Campaign</em>) &#8211; Campaign object this deployment is attached to</li>
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name" colspan="2">Return deployment:</th></tr>
-<tr class="field-even field"><td>&nbsp;</td><td class="field-body"><p class="first last">the Deployment object found or created</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">the Deployment object found or created</p>
 </td>
 </tr>
 </tbody>
@@ -120,20 +114,22 @@ If we do: Return this campaign</p>
 <dl class="function">
 <dt id="ingest.get_point">
 <tt class="descclassname">ingest.</tt><tt class="descname">get_point</tt><big>(</big><em>data</em>, <em>dep_id</em><big>)</big><a class="headerlink" href="#ingest.get_point" title="Permalink to this definition">¶</a></dt>
-<dd><p>Check to see if the current point has already been created. If so, return the point id. If not, create a new point.
-To be regarded as the same point, ALL of the model&#8217;s fields (matchup_id, point, time_is, etc) must be the same.</p>
+<dd><p>Check to see if the current point has already been created. If so, return the point id. If not, create a new point.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">To be regarded as the same point, <em>all</em> of the model&#8217;s fields (matchup_id, point, time_is, etc) must be the same.</p>
+</div>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>data</strong> &#8211; Data array containing the 10 field values</li>
-<li><strong>dep_id</strong> &#8211; Id number of the deployment this point is attached to</li>
+<li><strong>data</strong> (<a class="reference external" href="http://docs.python.org/library/array.html#module-array" title="(in Python v2.7)"><em>array</em></a>) &#8211; Data array containing the 10 field values</li>
+<li><strong>dep_id</strong> (<em>integer</em>) &#8211; Id number of the deployment this point is attached to</li>
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name" colspan="2">Return point_id:</th></tr>
-<tr class="field-even field"><td>&nbsp;</td><td class="field-body"><p class="first last">the point id of either the point that was found, or the new one created</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">the point id of either the point that was found, or the new one created</p>
 </td>
 </tr>
 </tbody>
@@ -144,9 +140,19 @@ To be regarded as the same point, ALL of the model&#8217;s fields (matchup_id, p
 <dt id="ingest.get_type">
 <tt class="descclassname">ingest.</tt><tt class="descname">get_type</tt><big>(</big><em>string</em>, <em>radiometric</em><big>)</big><a class="headerlink" href="#ingest.get_type" title="Permalink to this definition">¶</a></dt>
 <dd><p>Read the measurement type from the string read, if it doesn&#8217;t exist, create it</p>
-<p>Force the type to be lower case, so that we don&#8217;t get duplicates with just differences in case
-:param string: string containing the measurement type, i.e. in &#8220;Rho_wn_IS_412&#8221; the type is &#8220;Rho_wn_IS&#8221;
-:param radiometric: boolean, true if the measurement is radiometric, meaning the string contains the wavelength</p>
+<p>Force the type to be lower case, so that we don&#8217;t get duplicates with just differences in case</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>string</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#module-string" title="(in Python v2.7)"><em>string</em></a>) &#8211; string containing the measurement type, i.e. in &#8220;Rho_wn_IS_412&#8221; the type is &#8220;Rho_wn_IS&#8221;</li>
+<li><strong>radiometric</strong> (<em>boolean</em>) &#8211; true if the measurement is radiometric, meaning the string contains the wavelength</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="function">
@@ -157,7 +163,7 @@ To be regarded as the same point, ALL of the model&#8217;s fields (matchup_id, p
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>string</strong> &#8211; string containing the wavelength, i.e. in &#8220;Rho_wn_IS_412&#8221; the type is &#8220;412&#8221;</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>string</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#module-string" title="(in Python v2.7)"><em>string</em></a>) &#8211; containing the wavelength, i.e. in &#8220;Rho_wn_IS_412&#8221; the type is &#8220;412&#8221;</td>
 </tr>
 </tbody>
 </table>
@@ -171,7 +177,7 @@ To be regarded as the same point, ALL of the model&#8217;s fields (matchup_id, p
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>filename</strong> &#8211; name of the file (string)</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>filename</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; name of the file</td>
 </tr>
 </tbody>
 </table>
@@ -186,9 +192,9 @@ To be regarded as the same point, ALL of the model&#8217;s fields (matchup_id, p
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>file_data</strong> &#8211; file object to be read (file)</li>
-<li><strong>instrument</strong> &#8211; id of the instrument used for the measurement (int)</li>
-<li><strong>filename</strong> &#8211; name of the file, the name of the campaign is extracted form it (string)</li>
+<li><strong>file_data</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#file" title="(in Python v2.7)"><em>file</em></a>) &#8211; file object to be read</li>
+<li><strong>instrument</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a>) &#8211; id of the instrument used for the measurement</li>
+<li><strong>filename</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; name of the file, the name of the campaign is extracted form it</li>
 </ul>
 </td>
 </tr>
@@ -204,7 +210,7 @@ To be regarded as the same point, ALL of the model&#8217;s fields (matchup_id, p
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>file_data</strong> &#8211; file object to be read (file)</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>file_data</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#file" title="(in Python v2.7)"><em>file</em></a>) &#8211; file object to be read</td>
 </tr>
 </tbody>
 </table>
@@ -213,10 +219,338 @@ To be regarded as the same point, ALL of the model&#8217;s fields (matchup_id, p
 <dl class="function">
 <dt id="ingest.units_and_name">
 <tt class="descclassname">ingest.</tt><tt class="descname">units_and_name</tt><big>(</big><em>type</em><big>)</big><a class="headerlink" href="#ingest.units_and_name" title="Permalink to this definition">¶</a></dt>
-<dd><p>Using a dictionary, return the units and long name associate with a measurement type
-:param type: measurement type (string), as taken from the input spreadsheet headings</p>
-<p>Returns a dictionary with keys &#8220;units&#8221; and &#8220;long_name&#8221;
-If the input type isn&#8217;t coded, sets units = &#8220;NA&#8221; and long name = type</p>
+<dd><p>Using a dictionary, return the units and long name associate with a measurement type</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>type</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#module-string" title="(in Python v2.7)"><em>string</em></a>) &#8211; measurement type, as taken from the input spreadsheet headings</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">a dictionary with keys &#8220;units&#8221; and &#8220;long_name&#8221;. If the input type isn&#8217;t coded,
+sets units = &#8220;NA&#8221; and long name = type</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<span class="target" id="module-ingest_images"></span><dl class="class">
+<dt id="ingest_images.IngestImages">
+<em class="property">class </em><tt class="descclassname">ingest_images.</tt><tt class="descname">IngestImages</tt><big>(</big><em>inputdir</em>, <em>outdir</em><big>)</big><a class="headerlink" href="#ingest_images.IngestImages" title="Permalink to this definition">¶</a></dt>
+<dd><p>Image ingestion class, with methods to do everything needed to ingest images
+into the TOUCAN database</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>inputdir</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Directory containing the input files</li>
+<li><strong>outputdir</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Top level archive directory to save geotiffs to
+(region/instrument/year subdirectories will be automatically created)</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="ingest_images.IngestImages.add_to_database">
+<tt class="descname">add_to_database</tt><big>(</big><big>)</big><a class="headerlink" href="#ingest_images.IngestImages.add_to_database" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add this image to the database</p>
+<p>Create new instances of ImageRegion and/or Instrument as required, otherwise fetch existing ones.
+Then add all the metadata to a new Image instance.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>data</strong> (<a class="reference external" href="http://docs.python.org/library/stdtypes.html#dict" title="(in Python v2.7)"><em>dict</em></a>) &#8211; the data dictionary, as returned by <a class="reference internal" href="#ingest_images.IngestImages.read_data" title="ingest_images.IngestImages.read_data"><tt class="xref py py-meth docutils literal"><span class="pre">IngestImages.read_data()</span></tt></a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="ingest_images.IngestImages.get_file_list">
+<tt class="descname">get_file_list</tt><big>(</big><big>)</big><a class="headerlink" href="#ingest_images.IngestImages.get_file_list" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a list of all the metadata files in the specified directory. Assumes metadata files have extension .json</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">list of metafiles</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="ingest_images.IngestImages.ingest_all">
+<tt class="descname">ingest_all</tt><big>(</big><big>)</big><a class="headerlink" href="#ingest_images.IngestImages.ingest_all" title="Permalink to this definition">¶</a></dt>
+<dd><p>Loop through all the files in the given input directory and ingest them</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="ingest_images.IngestImages.ingest_image">
+<tt class="descname">ingest_image</tt><big>(</big><em>thisfile</em><big>)</big><a class="headerlink" href="#ingest_images.IngestImages.ingest_image" title="Permalink to this definition">¶</a></dt>
+<dd><p>Ingest a single image. This method is called by ingest_all, or it can be called manually to ingest one file</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>thisfile</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; The metadata file for the image to be ingested (including full directory path)</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="ingest_images.IngestImages.make_quicklook">
+<tt class="descname">make_quicklook</tt><big>(</big><big>)</big><a class="headerlink" href="#ingest_images.IngestImages.make_quicklook" title="Permalink to this definition">¶</a></dt>
+<dd><p>Make a jpg for quick checking of the data</p>
+<p>Define reference wavelengths for R,G,B and pick out whichever instrument bands are closest to these.
+Pull out the relevant data arrays, then normalise values to be between 0 and 1 (which plt.imshow needs).</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="ingest_images.IngestImages.read_data">
+<tt class="descname">read_data</tt><big>(</big><big>)</big><a class="headerlink" href="#ingest_images.IngestImages.read_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read in data from the data file (coordinates, and the parameters that were specified in the meta file). This
+method is a wrapper to call various others depending on the file type</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Dictionary &#8220;data&#8221; holding all the data</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises IOError:</th><td class="field-body">if the requested instrument type is not coded</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="ingest_images.IngestImages.read_meta_file">
+<tt class="descname">read_meta_file</tt><big>(</big><big>)</big><a class="headerlink" href="#ingest_images.IngestImages.read_meta_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read a JSON formatted metadata file (name in self.metafile), returning a dictionary</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="ingest_images.IngestImages.save_geotiff">
+<tt class="descname">save_geotiff</tt><big>(</big><big>)</big><a class="headerlink" href="#ingest_images.IngestImages.save_geotiff" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save data to a geoTiff file, after creating appropriate directory structure</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>data</strong> (<a class="reference external" href="http://docs.python.org/library/stdtypes.html#dict" title="(in Python v2.7)"><em>dict</em></a>) &#8211; the data dictionary for this file</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="ingest_images.IngestImages.tidy_up">
+<tt class="descname">tidy_up</tt><big>(</big><big>)</big><a class="headerlink" href="#ingest_images.IngestImages.tidy_up" title="Permalink to this definition">¶</a></dt>
+<dd><p>Move files to an &#8220;ingested&#8221; folder once they are processed, ready to be deleted later</p>
+</dd></dl>
+
+</dd></dl>
+
+<span class="target" id="module-ingest_images_file_readers"></span><dl class="class">
+<dt id="ingest_images_file_readers.DataReaders">
+<em class="property">class </em><tt class="descclassname">ingest_images_file_readers.</tt><tt class="descname">DataReaders</tt><a class="headerlink" href="#ingest_images_file_readers.DataReaders" title="Permalink to this definition">¶</a></dt>
+<dd><p>Class to hold all of our different readers for different instruments and filetypes</p>
+<dl class="method">
+<dt id="ingest_images_file_readers.DataReaders.read_aatsr">
+<tt class="descname">read_aatsr</tt><big>(</big><em>ingest</em><big>)</big><a class="headerlink" href="#ingest_images_file_readers.DataReaders.read_aatsr" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read an AATSR file (.N1 format) and extract data for our region of interest</p>
+<p>Default values are specified for variable names, wavelengths etc, but these can be overridden
+by user if they are put in the json file. Default is to read Reflectance</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>ingest</strong> &#8211; An IngestImages object instance, which contains metadata and inputdir variables</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Dictionary containing all the data arrays</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="ingest_images_file_readers.DataReaders.read_hdf_gdal">
+<tt class="descname">read_hdf_gdal</tt><big>(</big><em>ingest</em><big>)</big><a class="headerlink" href="#ingest_images_file_readers.DataReaders.read_hdf_gdal" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read an HDF format data file (eg VIIRS), using GDAL package</p>
+<p>Extract the region of interest, and at the same time regrid to a regular grid.
+Returns a dictionary containing the parameters that were requested in the metadata file
+(plus coordinates) for the specified region.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>ingest</strong> &#8211; An IngestImages object instance, which contains metadata and inputdir variables</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Dictionary containing the coordinates and data arrays</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">The value of whichever variable was specified by ingest.metadata[&#8216;time_variable&#8217;].
+This will be converted to a proper datetime in the calling method.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="ingest_images_file_readers.DataReaders.read_meris">
+<tt class="descname">read_meris</tt><big>(</big><em>ingest</em><big>)</big><a class="headerlink" href="#ingest_images_file_readers.DataReaders.read_meris" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read a MERIS file (.N1 format) and extract data for our region of interest</p>
+<p>Default values are specified for variable names, wavelengths etc, but these can be overridden
+by user if they are put in the json file. Default is to read Radiance.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>ingest</strong> &#8211; An IngestImages object instance, which contains metadata and inputdir variables</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Dictionary containing all the data arrays</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="ingest_images_file_readers.DataReaders.read_n1">
+<tt class="descname">read_n1</tt><big>(</big><em>ingest</em><big>)</big><a class="headerlink" href="#ingest_images_file_readers.DataReaders.read_n1" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read N1 file (eg MERIS or AATSR), using pyepr package</p>
+<p>Extract the region of interest, and at the same time regrid to a regular grid.
+Returns a dictionary containing the parameters that were requested in the metadata file
+(plus coordinates) for the specified region.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>ingest</strong> &#8211; An IngestImages object instance, which contains metadata and inputdir variables</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Dictionary containing the coordinates and data arrays</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">The value of whichever variable was specified by ingest.metadata[&#8216;time_variable&#8217;].
+This will be converted to a proper datetime in the calling method.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="ingest_images_file_readers.DataReaders.read_viirs">
+<tt class="descname">read_viirs</tt><big>(</big><em>ingest</em><big>)</big><a class="headerlink" href="#ingest_images_file_readers.DataReaders.read_viirs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read a VIIRS file (.hdf format) and extract data for our region of interest</p>
+<p>Default values are specified for variable names, wavelengths etc, but these can be overridden
+by user if they are put in the json file. Default is to read Reflectance</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>ingest</strong> &#8211; An IngestImages object instance, which contains metadata and inputdir variables</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Dictionary containing all the data arrays</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<span class="target" id="module-ingest_images_geo_tools"></span><dl class="class">
+<dt id="ingest_images_geo_tools.GeoTools">
+<em class="property">class </em><tt class="descclassname">ingest_images_geo_tools.</tt><tt class="descname">GeoTools</tt><a class="headerlink" href="#ingest_images_geo_tools.GeoTools" title="Permalink to this definition">¶</a></dt>
+<dd><p>Tools for geographic things - regridding, creating geotiff etc</p>
+<dl class="staticmethod">
+<dt id="ingest_images_geo_tools.GeoTools.array2raster">
+<em class="property">static </em><tt class="descname">array2raster</tt><big>(</big><em>newRasterfn</em>, <em>rasterOrigin</em>, <em>pixelWidth</em>, <em>pixelHeight</em>, <em>data</em>, <em>variables</em>, <em>rotate=0</em><big>)</big><a class="headerlink" href="#ingest_images_geo_tools.GeoTools.array2raster" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert data dictionary (of arrays) into a multiband GeoTiff</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>newRasterfn</strong> &#8211; filename to save to</li>
+<li><strong>rasterOrigin</strong> &#8211; location of top left corner</li>
+<li><strong>pixelWidth</strong> &#8211; e-w pixel size</li>
+<li><strong>pixelHeight</strong> &#8211; n-s pixel size</li>
+<li><strong>data</strong> &#8211; dictionary containing the data arrays</li>
+<li><strong>variables</strong> &#8211; list of which keys from the dictionary to output</li>
+<li><strong>rotate</strong> &#8211; Optional rotation angle (in radians)</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="ingest_images_geo_tools.GeoTools.extract_region_and_regrid">
+<em class="property">static </em><tt class="descname">extract_region_and_regrid</tt><big>(</big><em>old_lon</em>, <em>old_lat</em>, <em>new_lon</em>, <em>new_lat</em>, <em>data</em><big>)</big><a class="headerlink" href="#ingest_images_geo_tools.GeoTools.extract_region_and_regrid" title="Permalink to this definition">¶</a></dt>
+<dd><p>Re-grid data to a regular grid, at the same time as extracting the region of interest</p>
+<p>Go through each point of the original grid, check if it is in the new grid, and if so append the 
+data value to the closest grid point in the new grid.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Assumes that coordinates in the original satellite files are valid for the <em>centre</em> of the pixel, and that the
+new coordinates are for the <em>edges</em> of the pixel (which is the GeoTiff convention).</p>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>old_lon</strong> &#8211; Longitude for the original grid (2d)</li>
+<li><strong>old_lat</strong> &#8211; Latitude for the original grid (2d)</li>
+<li><strong>new_lon</strong> &#8211; Longitude for the new grid (1d)</li>
+<li><strong>new_lat</strong> &#8211; Latitude for the new grid (1d)</li>
+<li><strong>data</strong> &#8211; 2d array of data to be regridded</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">array containing the mean value for each new grid point.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="ingest_images_geo_tools.GeoTools.get_new_lat_lon">
+<em class="property">static </em><tt class="descname">get_new_lat_lon</tt><big>(</big><em>old_lon</em>, <em>old_lat</em>, <em>region</em><big>)</big><a class="headerlink" href="#ingest_images_geo_tools.GeoTools.get_new_lat_lon" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate new coordinate lists to use for regridding, such that the resolution is about the same as the old grid</p>
+<p>When we just used adjacent lon and lat values to compute dx and dy, we sometimes still got holes. So use
+opposite corners of squares made up from each group of four points instead:
+ie. Rather than take dx as difference between 1A-2A, 2A-3A etc, we use 1A-2B, 2A-3B, etc
+and for dy, use 2A-1B, 3A-2B etc:</p>
+<div class="highlight-python"><div class="highlight"><pre>1A------2A------3A 
+|       |       |  
+1B------2B------3B 
+|       |       |  
+1C------2C------3C 
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="ingest_images_geo_tools.GeoTools.latlon_distance_meters">
+<tt class="descname">latlon_distance_meters</tt><big>(</big><em>lat</em>, <em>lon</em><big>)</big><a class="headerlink" href="#ingest_images_geo_tools.GeoTools.latlon_distance_meters" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate the great circle distance between two points on the earth using the Haversine equation</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>lat</strong> &#8211; latitude pair in decimal degree as a list or scipy vec</li>
+<li><strong>lon</strong> &#8211; longitude pair in decimal degree as a list or scipy vec</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
 </dd></dl>
 
 </div>
