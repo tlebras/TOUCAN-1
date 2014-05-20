@@ -127,4 +127,5 @@ class ImageResource(ModelResource):
             'point': ALL_WITH_RELATIONS,
             'measurement_type': ALL_WITH_RELATIONS,
             'region': ALL_WITH_RELATIONS,
+            'time': ['gte', 'lte']
         }
