@@ -129,3 +129,6 @@ class ImageResource(ModelResource):
             'region': ALL_WITH_RELATIONS,
             'time': ['gte', 'lte']
         }
+        ordering = {
+            'time': ALL,
+        }
