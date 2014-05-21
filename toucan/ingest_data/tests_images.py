@@ -32,9 +32,9 @@ class InjestToolsTest(InjestToolsSetup):
     def test_metafile_read(self):
         """Check that read_meta_file returns a dictionary with the correct values
         """
-        testdict = eval(open(self.testmeta).read()) # Read json file directly as a python dictionary
+        testdict = eval(open(self.testmeta).read())[0] # Read json file directly as a python dictionary
         self.ingest.metafile = self.testmeta
-        self.ingest.read_meta_file()
+        self.ingest.metadata = self.ingest.read_meta_file()[0]
         self.assertDictEqual(self.ingest.metadata, testdict)
         
     # Call an appropriate reading script, based on the file type.
@@ -47,7 +47,7 @@ class InjestToolsTest(InjestToolsSetup):
         """
         Check that read_data returns a dictionary with the correct keys
         """
-        self.ingest.metadata = eval(open(self.testmeta).read())
+        self.ingest.metadata = eval(open(self.testmeta).read())[0]
         self.ingest.read_data()
         self.assertEquals("longitude" in self.ingest.data.keys(), True)
         self.assertEquals("latitude" in self.ingest.data.keys(), True)
@@ -59,7 +59,7 @@ class InjestToolsTest(InjestToolsSetup):
         """
         Check that geotiff file is created and saved to correct place
         """
-        self.ingest.metadata = eval(open(self.testmeta).read())
+        self.ingest.metadata = eval(open(self.testmeta).read())[0]
         self.ingest.read_data()
         self.ingest.save_geotiff()
         self.assertEquals(os.path.isdir(
@@ -102,7 +102,7 @@ class InjestToolsTest(InjestToolsSetup):
             self.ingest.metadata = {'filename': 'test.hdf',
                                     'archive_location': __file__,  # File that must exist
                                     }
-            self.ingest.tidy_up()
+            self.ingest.tidy_up(meta=True)
         print self.ingest.metadata['archive_location']
         mock.assert_any_call(self.ingest.metafile,
                              os.path.join(self.ingest.inputdir, 'ingested', os.path.basename(self.ingest.metafile)))

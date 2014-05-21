@@ -26,7 +26,7 @@ class IngestImages():
 
     def ingest_all(self):
         """
-        Loop through all the files in the given input directory and ingest them
+        Loop through all the metadata files in the given input directory and ingest all image files
         """
         self.filelist = self.get_file_list()
         for thisfile in self.filelist:
@@ -34,20 +34,32 @@ class IngestImages():
         
     def ingest_image(self, thisfile):
         """
-        Ingest a single image. This method is called by ingest_all, or it can be called manually to ingest one file
-        
+        Ingest images from a single metafile. This method is called by ingest_all,
+        or it can be called manually to ingest one file
+
         :param str thisfile: The metadata file for the image to be ingested (including full directory path)
         """
         self.metafile = thisfile
-        self.read_meta_file()
-        self.read_data()
-        self.save_geotiff()
-        self.make_quicklook()
-        self.add_to_database()
-        self.tidy_up()
+        metadata_all = self.read_meta_file()
+
+        # Loop through all image files in this meta file
+        last = False
+        for image in range(len(metadata_all)):
+            # Only tidy up metafile on the last pass
+            if image==len(metadata_all)-1:
+                last = True
+
+            self.metadata = metadata_all[image]
+            self.read_data()
+            self.save_geotiff()
+            self.make_quicklook()
+            self.add_to_database()
+            self.tidy_up(meta=last)
         
     def get_file_list(self):
-        """Get a list of all the metadata files in the specified directory. Assumes metadata files have extension .json
+        """
+        Get a list of all the metadata files in the specified directory.
+        Assumes metadata files have extension .json
         
         :return: list of metafiles
         """
@@ -58,7 +70,8 @@ class IngestImages():
         """
         Read a JSON formatted metadata file (name in self.metafile), returning a dictionary
         """
-        self.metadata = json.load(open(self.metafile))
+        metadata_all = json.load(open(self.metafile))
+        return metadata_all
     
     def read_data(self):
         """
@@ -183,7 +196,7 @@ class IngestImages():
             if not new:
                 print "Image already ingested!"
 
-    def tidy_up(self):
+    def tidy_up(self, meta=False):
         """
         Move files to an "ingested" folder once they are processed, ready to be deleted later
         """
@@ -194,8 +207,9 @@ class IngestImages():
 
         # Make sure the geotiff was created before moving files
         if os.path.isfile(self.metadata['archive_location']):
-            # Metadata file (contains path)
-            os.rename(self.metafile, os.path.join(ingested_dir,os.path.basename(self.metafile)))
             # Data file (contains filename only)
             os.rename(os.path.join(self.inputdir,self.metadata['filename']),
                       os.path.join(ingested_dir,self.metadata['filename']))
+        if meta:
+            # Metadata file (contains path)
+            os.rename(self.metafile, os.path.join(ingested_dir,os.path.basename(self.metafile)))
