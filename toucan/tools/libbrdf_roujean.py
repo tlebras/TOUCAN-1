@@ -51,10 +51,10 @@ class RoujeanBRDF(ToolBase):
         instrument = jsonresults[0]['instrument']['name']
         Q = Querydb()
         wavelengths = Q.get_wavelengths(instrument)
-        
+
         # Generate the plot
         self.brdf_timeseries(sun_zenith, sensor_zenith, relative_azimuth, reflectance_arr,
-                        dates, 0, 0, wavelengths)
+                        dates, min(dates), max(dates), wavelengths)
 
     @staticmethod
     def get_angles(jsonresults):
@@ -71,7 +71,11 @@ class RoujeanBRDF(ToolBase):
 
         sun_zenith = scipy.deg2rad(angles['SZA'])
         sensor_zenith = scipy.deg2rad(angles['VZA'])
+
+        # Relative azimuth angle, should be in range 0-180
         relative_azimuth = np.abs(scipy.deg2rad(angles['SAA']) - scipy.deg2rad(angles['VAA']))
+        fix = relative_azimuth > scipy.pi
+        relative_azimuth[fix] = 2*scipy.pi - relative_azimuth[fix]
 
         return sun_zenith, sensor_zenith, relative_azimuth
 
@@ -206,20 +210,46 @@ class RoujeanBRDF(ToolBase):
         """
         Plot timeseries of binned BRDF
         """
-        # Set up plot
+        # Keep within the dates that we have available
+        start_date = max(start_date, min(dates))
+        end_date = min(end_date, max(dates))
+
+        # Initialise everything
         nbands = len(reflectance)
-        colormap = plt.cm.gist_ncar
+        current = start_date
+        step = datetime.timedelta(days=bin_size)
+        datebins = []
+        first = True
+
+        # Step through the date bins
+        while current < end_date:
+            idx = (dates >= current) & (dates < current+step)
+
+            # Compute BRDF for each band
+            brdf=[]
+            for band in range(nbands):
+                k_coeff = self.calc_roujean_coeffs(sun_zenith[idx], sensor_zenith[idx], relative_azimuth[idx],
+                                                   reflectance[band, idx])
+                brdf.append(self.calc_brdf(sun_zenith[idx], sensor_zenith[idx], relative_azimuth[idx], k_coeff))
+
+            # Add to the array
+            brdf = np.nanmean(np.array(brdf), axis=1)
+            if first:
+                brdf_arr = brdf
+                first = False
+            else:
+                brdf_arr = np.vstack([brdf_arr, brdf])
+
+            # Keep track of the bin midpoint, for plotting
+            datebins.append(current + step/2)
+            current += step
+
+        # Plot timeseries with one line per band
+        colormap = plt.cm.spectral
         plt.figure()
         plt.gca().set_color_cycle([colormap(i) for i in np.linspace(0, 0.9, nbands)])
-
-        # For each band, compute brdf and plot
-        for band in range(nbands):
-            k_coeff = self.calc_roujean_coeffs(sun_zenith, sensor_zenith, relative_azimuth, reflectance[band])
-            brdf = self.calc_brdf(sun_zenith, sensor_zenith, relative_azimuth, k_coeff)
-
-            plt.plot(dates, brdf, label=str(wavelengths[band]))
-
-        plt.legend()
+        lines = plt.plot(datebins, brdf_arr, '-o')
+        plt.legend(lines, wavelengths, )
         plt.show()
 
 if __name__ == '__main__':
