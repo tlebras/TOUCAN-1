@@ -52,9 +52,12 @@ class RoujeanBRDF(ToolBase):
         Q = Querydb()
         wavelengths = Q.get_wavelengths(instrument)
 
+        # Calculate BRDF
+        datebins, brdf_arr, err_r_arr, err_s_arr = self.brdf_timeseries(sun_zenith, sensor_zenith, relative_azimuth,
+                                                                        reflectance_arr, dates, min(dates), max(dates))
+
         # Generate the plot
-        self.brdf_timeseries(sun_zenith, sensor_zenith, relative_azimuth, reflectance_arr,
-                        dates, min(dates), max(dates), wavelengths)
+        self.plot_timeseries(datebins, brdf_arr, wavelengths)
 
     @staticmethod
     def get_angles(jsonresults):
@@ -205,10 +208,19 @@ class RoujeanBRDF(ToolBase):
         return brdf
 
     def brdf_timeseries(self, sun_zenith, sensor_zenith, relative_azimuth, reflectance,
-                        dates, start_date, end_date, wavelengths,
-                        bin_size=5):
+                        dates, start_date, end_date, bin_size=5):
         """
         Plot timeseries of binned BRDF
+
+        :param sun_zenith: <numpy> array of sun zenith angles in radians.
+        :param sensor_zenith: <numpy> array of sensor zenith angles in radians
+        :param relative_azimuth: <numpy> array of relative (sun/sensor) azimuth angles in radians.
+        :param reflectance: <numpy> array of reflectances, nbands x ntimes
+        :param dates: Array of python datetime objects
+        :param start_date: Start date to use in calculations, as a python datetime object
+        :param end_date: End date to use in calculations, as a python datetime object
+        :param wavelengths: List of the sensor's bands
+        :param bin_size: [Optional] Length of the time bins, in days. Default is 5 days.
         """
         # Keep within the dates that we have available
         start_date = max(start_date, min(dates))
@@ -223,7 +235,9 @@ class RoujeanBRDF(ToolBase):
 
         # Step through the date bins
         while current < end_date:
+            # Pick out which images are in this bin
             idx = (dates >= current) & (dates < current+step)
+            nvals = np.sum(idx)
 
             # Compute BRDF for each band
             brdf=[]
@@ -232,24 +246,49 @@ class RoujeanBRDF(ToolBase):
                                                    reflectance[band, idx])
                 brdf.append(self.calc_brdf(sun_zenith[idx], sensor_zenith[idx], relative_azimuth[idx], k_coeff))
 
-            # Add to the array
+            # Mean for this time bin
             brdf = np.nanmean(np.array(brdf), axis=1)
+
+            # Calculate error estimates for this time bin
+            roujean_diff = reflectance[:, idx] - np.tile(brdf, (nvals, 1)).T
+            rmse = np.sqrt(np.nanmean(roujean_diff**2, axis=1))
+            err_r = 3 * rmse    # Random error
+            err_s = rmse/np.sqrt(nvals)  # Systematic error
+
+            # Add this time bin's results to the final arrays
             if first:
                 brdf_arr = brdf
+                err_r_arr = err_r
+                err_s_arr = err_s
                 first = False
             else:
                 brdf_arr = np.vstack([brdf_arr, brdf])
+                err_r_arr = np.vstack([err_r_arr, err_r])
+                err_s_arr = np.vstack([err_s_arr, err_s])
 
             # Keep track of the bin midpoint, for plotting
             datebins.append(current + step/2)
             current += step
 
+        return datebins, brdf_arr, err_r_arr, err_s_arr
+
+    @staticmethod
+    def plot_timeseries(times, ydata, labels):
+        """
+        Line plot of the input data, with separate line per band
+
+        :param times: 1d list of times, as python datetime objects
+        :param ydata: The data to plot. 2d array with dimensions nbands x ntimes
+        :param labels: Labels for the plot legend. List with length nbands
+        """
+        nbands = len(labels)
+
         # Plot timeseries with one line per band
         colormap = plt.cm.spectral
         plt.figure()
         plt.gca().set_color_cycle([colormap(i) for i in np.linspace(0, 0.9, nbands)])
-        lines = plt.plot(datebins, brdf_arr, '-o')
-        plt.legend(lines, wavelengths, )
+        lines = plt.plot(times, ydata, '-o')
+        plt.legend(lines, labels, )
         plt.show()
 
 if __name__ == '__main__':
