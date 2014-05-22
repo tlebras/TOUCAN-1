@@ -5,24 +5,40 @@ class Querydb(object):
     Perform query of the TOUCAN database, using the search parameters passed in
     """
 
-    def __init__(self, search_list):
-        self.search_list = search_list
+    def __init__(self):
+        pass
 
-    def get(self):
+    @staticmethod
+    def get(url, params):
         """
         Do GET request and return objects
 
         :returns: JSON objects
         """
-        url = "http://127.0.0.1:8000/api/v1/image/"
-        params = self.construct_search_params(self.search_list)
-
         r = requests.get(url, params=params)
-
         # Raise error if status not ok
         r.raise_for_status()
-
         return r.json()['objects']
+
+    def get_wavelengths(self, instrument):
+        """
+        Get the wavelengths associated with the specified instrument
+        """
+        url = "http://127.0.0.1:8000/api/v1/instrumentwavelength/"
+        params = {'instrument__name': instrument.lower()}
+        r = self.get(url, params)
+
+        wavelengths = [result['value'] for result in r]
+        return wavelengths
+
+    def get_images(self, search_list):
+        """
+        Get list of images, given the input search parameters
+        """
+        url = "http://127.0.0.1:8000/api/v1/image/"
+        params = self.construct_search_params(search_list)
+        r = self.get(url, params)
+        return r
 
     @staticmethod
     def construct_search_params(search_list):
@@ -45,7 +61,8 @@ class Querydb(object):
                            'instrument': 'instrument__name',
                            'sensor': 'instrument__name',
                            'start_date': 'time__gte',
-                           'end_date': 'time__lte'
+                           'end_date': 'time__lte',
+                           'order_by': 'order_by',
                            }
 
         # Construct dictionary with the new search_param:value pairs

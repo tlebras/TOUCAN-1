@@ -2,14 +2,28 @@ import sys
 import scipy
 import scipy.linalg
 import numpy as np
-sys.path.append(".")
+import datetime
+import matplotlib.pyplot as plt
 
+from osgeo import gdal
+
+sys.path.append(".")
 from libbase import ToolBase
 from libquerydb import Querydb
 
 def main():
+
+    #  Query the database for matching files
+    search = {'site': 'Libya4',
+              'sensor': 'meris',
+              'end_date':'2006-12-31',
+              'order_by': 'time',
+              }
+    Q = Querydb()
+    results = Q.get_images(search)
+
     brdf = RoujeanBRDF()
-    brdf.run()
+    brdf.run(results)
 
 class RoujeanBRDF(ToolBase):
     """
@@ -20,24 +34,30 @@ class RoujeanBRDF(ToolBase):
     def __init__(self):
         pass
 
-    def run(self):
+    def run(self, jsonresults):
         """
-        Do some stuff here
+        Compute and plot BRDF
         """
-
-        #  Query the database for matching files
-        search = {'site': 'Libya4',
-                  'sensor': 'meris'
-                  }
-        Q = Querydb(search)
-        results = Q.get()
 
         # Extract fields we need
-        files = np.array([result['archive_location'] for result in results])
-        sun_zenith, sensor_zenith, relative_azimuth = self.get_angles(results)
+        files = np.array([result['archive_location'] for result in jsonresults])
+        dates = np.array([datetime.datetime.strptime(result['time'], '%Y-%m-%dT%H:%M:%S.%f') for result in jsonresults])
+        sun_zenith, sensor_zenith, relative_azimuth = self.get_angles(jsonresults)
+
+        # Read reflectance from the archived files
+        reflectance_arr = self.get_reflectance(files)
+
+        # Get list of wavelengths
+        instrument = jsonresults[0]['instrument']['name']
+        Q = Querydb()
+        wavelengths = Q.get_wavelengths(instrument)
+        
+        # Generate the plot
+        self.brdf_timeseries(sun_zenith, sensor_zenith, relative_azimuth, reflectance_arr,
+                        dates, 0, 0, wavelengths)
 
     @staticmethod
-    def get_angles(jsonobject):
+    def get_angles(jsonresults):
         """
         Extract the viewing angle information from the JSON object returned
         from the database
@@ -47,13 +67,43 @@ class RoujeanBRDF(ToolBase):
         """
         angles={}
         for angle in ('SZA', 'SAA', 'VZA', 'VAA'):
-            angles[angle] = np.array([entry[angle] for entry in jsonobject])
+            angles[angle] = np.array([entry[angle] for entry in jsonresults])
 
         sun_zenith = scipy.deg2rad(angles['SZA'])
         sensor_zenith = scipy.deg2rad(angles['VZA'])
-        relative_azimuth = scipy.deg2rad(angles['SAA']) - scipy.deg2rad(angles['VAA'])
+        relative_azimuth = np.abs(scipy.deg2rad(angles['SAA']) - scipy.deg2rad(angles['VAA']))
 
         return sun_zenith, sensor_zenith, relative_azimuth
+
+    @staticmethod
+    def get_reflectance(filelist):
+        """
+        Read in reflectance data from list of GeoTiff files, and compute the area mean
+        for each band for each file.
+
+        :param filelist: List of file names to read
+        :returns: Array of reflectances, dimensions nbands x nfiles
+        """
+        def read_file(thisfile):
+            """ Function to open Geotiff and read data as array"""
+            image = gdal.Open(thisfile)
+            data = image.ReadAsArray()
+            arr = np.nanmean(np.nanmean(data, axis=1), axis=1)
+            image = None
+            return arr
+
+        # Loop over all the files and read reflectances
+        first = True
+        for thisfile in filelist:
+            dat = read_file(thisfile)
+            if first:
+                reflectance_arr = dat
+                first = False
+            else:
+                reflectance_arr = np.vstack([reflectance_arr, dat])
+
+        # Return the array, transposed so first dimension is the band
+        return reflectance_arr.T
 
     @staticmethod
     def calc_kernel_f1(sun_zenith, sensor_zenith, relative_azimuth):
@@ -120,7 +170,7 @@ class RoujeanBRDF(ToolBase):
         """
 
         # Remove any values that have -999 for the reflectance.
-        idx = reflectance != -999
+        idx = ~np.isnan(reflectance) & ~np.isnan(sun_zenith)
 
         f_matrix = scipy.ones((reflectance[idx].shape[0], 3))  # There are 3 k_coeffs
         f_matrix[:, 1] = self.calc_kernel_f1(sun_zenith[idx], sensor_zenith[idx], relative_azimuth[idx])
@@ -151,12 +201,26 @@ class RoujeanBRDF(ToolBase):
         return brdf
 
     def brdf_timeseries(self, sun_zenith, sensor_zenith, relative_azimuth, reflectance,
-                        dates, start_date, end_date,
-                        bin_size=20):
+                        dates, start_date, end_date, wavelengths,
+                        bin_size=5):
         """
         Plot timeseries of binned BRDF
         """
+        # Set up plot
+        nbands = len(reflectance)
+        colormap = plt.cm.gist_ncar
+        plt.figure()
+        plt.gca().set_color_cycle([colormap(i) for i in np.linspace(0, 0.9, nbands)])
 
+        # For each band, compute brdf and plot
+        for band in range(nbands):
+            k_coeff = self.calc_roujean_coeffs(sun_zenith, sensor_zenith, relative_azimuth, reflectance[band])
+            brdf = self.calc_brdf(sun_zenith, sensor_zenith, relative_azimuth, k_coeff)
+
+            plt.plot(dates, brdf, label=str(wavelengths[band]))
+
+        plt.legend()
+        plt.show()
 
 if __name__ == '__main__':
     main()
