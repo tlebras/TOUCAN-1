@@ -65,7 +65,7 @@ class RoujeanBRDF(ToolBase):
         Extract the viewing angle information from the JSON object returned
         from the database
 
-        :param jsonobject: JSON formatted string result from database query
+        :param jsonresults: JSON formatted string result from database query
         :returns: sun zenith angle, sensor zenith angle, relative azimuth angle
         """
         angles={}
@@ -239,35 +239,39 @@ class RoujeanBRDF(ToolBase):
             idx = (dates >= current) & (dates < current+step)
             nvals = np.sum(idx)
 
-            # Compute BRDF for each band
-            brdf=[]
-            for band in range(nbands):
-                k_coeff = self.calc_roujean_coeffs(sun_zenith[idx], sensor_zenith[idx], relative_azimuth[idx],
-                                                   reflectance[band, idx])
-                brdf.append(self.calc_brdf(sun_zenith[idx], sensor_zenith[idx], relative_azimuth[idx], k_coeff))
+            if nvals > 0:
+                # Compute BRDF for each band
+                brdf=[]
+                for band in range(nbands):
+                    k_coeff = self.calc_roujean_coeffs(sun_zenith[idx], sensor_zenith[idx], relative_azimuth[idx],
+                                                       reflectance[band, idx])
+                    brdf.append(self.calc_brdf(sun_zenith[idx], sensor_zenith[idx], relative_azimuth[idx], k_coeff))
 
-            # Mean for this time bin
-            brdf = np.nanmean(np.array(brdf), axis=1)
+                # Mean for this time bin
+                brdf = np.nanmean(np.array(brdf), axis=1)
 
-            # Calculate error estimates for this time bin
-            roujean_diff = reflectance[:, idx] - np.tile(brdf, (nvals, 1)).T
-            rmse = np.sqrt(np.nanmean(roujean_diff**2, axis=1))
-            err_r = 3 * rmse    # Random error
-            err_s = rmse/np.sqrt(nvals)  # Systematic error
+                # Calculate error estimates for this time bin
+                roujean_diff = reflectance[:, idx] - np.tile(brdf, (nvals, 1)).T
+                rmse = np.sqrt(np.nanmean(roujean_diff**2, axis=1))
+                err_r = 3 * rmse    # Random error
+                err_s = rmse/np.sqrt(nvals)  # Systematic error
 
-            # Add this time bin's results to the final arrays
-            if first:
-                brdf_arr = brdf
-                err_r_arr = err_r
-                err_s_arr = err_s
-                first = False
-            else:
-                brdf_arr = np.vstack([brdf_arr, brdf])
-                err_r_arr = np.vstack([err_r_arr, err_r])
-                err_s_arr = np.vstack([err_s_arr, err_s])
+                # Add this time bin's results to the final arrays
+                if first:
+                    brdf_arr = brdf
+                    err_r_arr = err_r
+                    err_s_arr = err_s
+                    first = False
+                else:
+                    brdf_arr = np.vstack([brdf_arr, brdf])
+                    err_r_arr = np.vstack([err_r_arr, err_r])
+                    err_s_arr = np.vstack([err_s_arr, err_s])
 
-            # Keep track of the bin midpoint, for plotting
-            datebins.append(current + step/2)
+                # Keep track of the bin's mean datetime, for plotting
+                # Convert to timestamps first, to enable easy mean calculation
+                timestamps = [float(d.strftime('%s')) for d in dates[idx]]
+                datebins.append(datetime.datetime.fromtimestamp(np.mean(timestamps)))
+
             current += step
 
         return datebins, brdf_arr, err_r_arr, err_s_arr
