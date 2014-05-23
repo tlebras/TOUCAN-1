@@ -57,7 +57,10 @@ class RoujeanBRDF(ToolBase):
                                                                         reflectance_arr, dates, min(dates), max(dates))
 
         # Generate the plot
-        self.plot_timeseries(datebins, brdf_arr, wavelengths)
+        region = jsonresults[0]['region']['region']
+        title = instrument.upper()+' BRDF at site '+region
+        self.plot_timeseries(datebins, brdf_arr, wavelengths, xlabel='Date',
+                             title=title)
 
     @staticmethod
     def get_angles(jsonresults):
@@ -92,7 +95,10 @@ class RoujeanBRDF(ToolBase):
         :returns: Array of reflectances, dimensions nbands x nfiles
         """
         def read_file(thisfile):
-            """ Function to open Geotiff and read data as array"""
+            """
+            Function to open Geotiff and read data as array
+            Returns area mean
+            """
             image = gdal.Open(thisfile)
             data = image.ReadAsArray()
             arr = np.nanmean(np.nanmean(data, axis=1), axis=1)
@@ -277,22 +283,39 @@ class RoujeanBRDF(ToolBase):
         return datebins, brdf_arr, err_r_arr, err_s_arr
 
     @staticmethod
-    def plot_timeseries(times, ydata, labels):
+    def plot_timeseries(times, ydata, line_labels, title=None, xlabel=None, ylabel=None):
         """
         Line plot of the input data, with separate line per band
 
         :param times: 1d list of times, as python datetime objects
         :param ydata: The data to plot. 2d array with dimensions nbands x ntimes
-        :param labels: Labels for the plot legend. List with length nbands
+        :param line_labels: Labels for the plot legend. List with length nbands
+        :param title: [Optional] Title for the plot
+        :param xlabel: [Optional] Text label for the x axis
+        :param ylabel: [Optional] Text label for the y axis
         """
-        nbands = len(labels)
+        nbands = len(line_labels)
+        fig = plt.figure(figsize=(16,10))
+
+        # Set up color cycling
+        colormap = plt.cm.spectral
+        plt.gca().set_color_cycle([colormap(i) for i in np.linspace(0, 0.9, nbands)])
 
         # Plot timeseries with one line per band
-        colormap = plt.cm.spectral
-        plt.figure()
-        plt.gca().set_color_cycle([colormap(i) for i in np.linspace(0, 0.9, nbands)])
         lines = plt.plot(times, ydata, '-o')
-        plt.legend(lines, labels, )
+
+        # Put legend box outside the plot window
+        plt.legend(lines, line_labels, title='Bands',
+                  loc='center left', bbox_to_anchor=(1, 0.5))
+
+        # Labels
+        if title:
+            plt.title(title)
+        if xlabel:
+            plt.xlabel(xlabel)
+        if ylabel:
+            plt.ylabel(ylabel)
+
         plt.show()
 
 if __name__ == '__main__':
