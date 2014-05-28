@@ -4,6 +4,7 @@ import scipy.linalg
 import numpy as np
 import datetime
 import matplotlib.pyplot as plt
+import csv
 
 from osgeo import gdal
 
@@ -43,12 +44,13 @@ class RoujeanBRDF(ToolBase):
         files = np.array([result['archive_location'] for result in jsonresults])
         dates = np.array([datetime.datetime.strptime(result['time'], '%Y-%m-%dT%H:%M:%S.%f') for result in jsonresults])
         sun_zenith, sensor_zenith, relative_azimuth = self.get_angles(jsonresults)
+        instrument = jsonresults[0]['instrument']['name']
+        region = jsonresults[0]['region']['region']
 
         # Read reflectance from the archived files
         reflectance_arr = self.get_reflectance(files)
 
         # Get list of wavelengths
-        instrument = jsonresults[0]['instrument']['name']
         Q = Querydb()
         wavelengths = Q.get_wavelengths(instrument)
 
@@ -57,10 +59,16 @@ class RoujeanBRDF(ToolBase):
                                                                         reflectance_arr, dates, min(dates), max(dates))
 
         # Generate the plot
-        region = jsonresults[0]['region']['region']
         title = instrument.upper()+' BRDF at site '+region
         self.plot_timeseries(datebins, brdf_arr, wavelengths, xlabel='Date',
                              title=title)
+
+        # Save to text file
+        # File name has format brdf_instrument_region_mindate_maxdate.csv
+        d_min, d_max = datebins[0].strftime('%Y-%m-%d'), datebins[-1].strftime('%Y-%m-%d')
+        csv_file = '_'.join(['brdf', instrument, region, d_min, d_max])+'.csv'
+        self.save_as_text(datebins, ['BRDF', 'Random error', 'Systematic error'], wavelengths,
+                          [brdf_arr, err_r_arr, err_s_arr], csv_file)
 
     @staticmethod
     def get_angles(jsonresults):
@@ -317,6 +325,41 @@ class RoujeanBRDF(ToolBase):
             plt.ylabel(ylabel)
 
         plt.show()
+
+    @staticmethod
+    def save_as_text(date_list, variables, bands, array_list, filename):
+        """
+        Save the BRDF and error estimates in a csv text file
+
+        Use similar format as DIMITRI:
+        - Going along the columns = different dates
+        - Going down the rows, start with parameter 1 and have a row per wavelength. Then
+          start the next parameter and have a row per wavelength etc.
+
+        :param date_list: List of dates, to be used as column headers
+        :param variables: List of the variable names we are printing
+        :param bands: The wavelength values
+        :param array_list: List of arrays of data to print. Should be
+                           same number of arrays as we have names in variables
+                           and the arrays should have dimensions len(date_list)x len(bands)
+        :param filename: Name of the file to write to
+        """
+        strd = datetime.datetime.strftime
+        header_row = ['Variable', 'Wavelength'] + [strd(d, '%Y-%m-%dT%H:%M:%S') for d in date_list]
+        # header_row = str(header_row).strip('[]')
+
+        # Build a 2d array containing all the data
+        array_2d = np.hstack(array_list).T  # Transpose to get time dimension as column
+
+        # Write to CSV file
+        csv_file = csv.writer(open(filename,"w"), delimiter=',', quoting=csv.QUOTE_MINIMAL)
+        csv_file.writerow(header_row)
+        for ind, row in enumerate(array_2d):
+            # Add columns for the variable name and the band
+            thisvar = ind // len(bands)
+            thisband = ind % len(bands)
+            csv_file.writerow([variables[thisvar], bands[thisband]]+list(row))
+
 
 if __name__ == '__main__':
     main()
