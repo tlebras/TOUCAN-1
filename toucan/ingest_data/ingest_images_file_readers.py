@@ -1,6 +1,7 @@
 from ingest_images_geo_tools import GeoTools
 import os
 import datetime
+from calendar import isleap
 import pytz
 import numpy as np
 
@@ -268,4 +269,63 @@ class DataReaders():
         for angle in ingest.metadata['angle_names']:
             data[angle] = get_variable(ingest.metadata['angle_names'][angle])
 
+        # If this is MERIS reflectance, apply solar correction
+        if ingest.metadata['instrument'].lower() == 'meris' and ingest.metadata['vartype'] == 'radiance':
+            data = self.correct_MERIS(image, longitude, latitude, new_lon, new_lat, ingest.metadata, data)
+
         return data, time_temp
+
+    @staticmethod
+    def correct_MERIS(image, old_lon, old_lat, new_lon, new_lat, metadata, data):
+            """
+            Correct MERIS TOA radiance according to solar irradiance model
+            :param image: An open image file
+            :param old_lon: Original longitude array (needed for regridding)
+            :param old_lat: Original latitude array (needed for regridding)
+            :param new_lon: New longitude array (needed for regridding)
+            :param new_lat: New latitude array (needed for regridding)
+            :param metadata: Image metadata dictionary
+            :param data: Dictionary containing the data
+            :returns: Data, with the reflectances corrected
+
+            """
+            # Get detector index
+            ccd_ind = image.get_band('detector_index').read_as_array()
+
+            # Read in solar model
+            aux_path = os.path.abspath(os.path.join(os.path.dirname(__file__), 'aux_files'))
+            solar_file = os.path.join(aux_path, 'MERIS_Irradiances_Model2004.txt')
+            with open(solar_file) as fp:
+                lines = fp.readlines()
+
+            irr_full = []
+            for line in lines[1:]:
+                irr_full.append(np.array([float(s) for s in line.split()[1:]]))
+            irr_full = np.vstack(irr_full)
+
+            # Resample to reduced resolution
+            irr_red = np.zeros((925, 15))
+            for ind in range(irr_red.shape[0]):
+                irr_red[ind,:] = np.mean(irr_full[ind*4:(ind+1)*4, :], axis=0)
+
+            # Build the solar irradiance array
+            sun_irr = irr_red[ccd_ind, :]
+            sun_irr[ccd_ind<0] = np.nan  # ccd_ind=-1 are invalid pixels
+
+            # Get date information
+            timestr = image.get_sph().get_field('FIRST_LINE_TIME').get_elem()
+            date = datetime.datetime.strptime(timestr,'%d-%b-%Y %H:%M:%S.%f').replace(tzinfo=pytz.UTC)
+            day_in_year = date.timetuple().tm_yday
+            year_length = 365 + isleap(date.year)
+
+            # Correct solar irradiance for earth-sun distance
+            sun_irr *= (1 + 0.0167*np.cos(2*np.pi*(day_in_year-3.0)/year_length))**2
+
+            # Apply correction to TOA reflectance
+            sun_zenith = data['SZA']
+            for band, varname in enumerate(metadata['variables']):
+                sun_irr_band = GeoTools.extract_region_and_regrid(old_lon, old_lat, new_lon, new_lat,
+                                                                  sun_irr[..., band])
+                data[varname] *= np.pi * np.cos(np.deg2rad(sun_zenith))/sun_irr_band
+
+            return data
