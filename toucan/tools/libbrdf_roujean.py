@@ -248,7 +248,7 @@ class RoujeanBRDF(ToolBase):
         first = True
 
         # Step through the date bins
-        while current < end_date:
+        while current <= end_date:
             # Pick out which images are in this bin
             idx = (dates >= current) & (dates < current+step)
             nvals = np.sum(idx)
@@ -346,7 +346,6 @@ class RoujeanBRDF(ToolBase):
         """
         strd = datetime.datetime.strftime
         header_row = ['Variable', 'Wavelength'] + [strd(d, '%Y-%m-%dT%H:%M:%S') for d in date_list]
-        # header_row = str(header_row).strip('[]')
 
         # Build a 2d array containing all the data
         array_2d = np.hstack(array_list).T  # Transpose to get time dimension as column
