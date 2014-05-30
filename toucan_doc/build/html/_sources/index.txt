@@ -13,6 +13,7 @@ Contents:
    
    models_doc
    upload_doc
+   tools_doc
    django_project
    ingesting_data
 

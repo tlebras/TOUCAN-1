@@ -28,7 +28,7 @@ def main():
 
 class RoujeanBRDF(ToolBase):
     """
-    Class for calculating the Roujean BRDF coefficients. Bassed on Roujean (1992). A Bidrectional Reflectance Model
+    Class for calculating the Roujean BRDF coefficients. Based on Roujean (1992): A Bidirectional Reflectance Model
     of the Earth's Surface fo the Correction of Remote Sensing Data
     """
 
@@ -37,7 +37,11 @@ class RoujeanBRDF(ToolBase):
 
     def run(self, jsonresults):
         """
-        Compute and plot BRDF
+        Compute and plot BRDF. Take results from a database query, extract the reflectance
+        values from the returned files, calculate BRDF timeseries, plot the timeseries, and
+        output to a csv text file.
+
+        :param jsonresults: The results from a database query, as JSON format
         """
 
         # Extract fields we need
@@ -77,7 +81,7 @@ class RoujeanBRDF(ToolBase):
         from the database
 
         :param jsonresults: JSON formatted string result from database query
-        :returns: sun zenith angle, sensor zenith angle, relative azimuth angle
+        :returns: sun zenith angle, sensor zenith angle, relative azimuth angle (in radians)
         """
         angles={}
         for angle in ('SZA', 'SAA', 'VZA', 'VAA'):
@@ -134,7 +138,7 @@ class RoujeanBRDF(ToolBase):
         :param sun_zenith: <numpy> array of sun zenith angles in radians.
         :param sensor_zenith: <numpy> array of sensor zenith angles in radians
         :param relative_azimuth: <numpy> array of relative (sun/sensor) azimuth angles in radians.
-        :return: <numpy> Roujean F1 kernel
+        :return: Roujean F1 kernel
         """
 
         # Just a bit of syntax candy
@@ -161,7 +165,7 @@ class RoujeanBRDF(ToolBase):
         :param sun_zenith: <numpy> array of sun zenith angles in radians.
         :param sensor_zenith: <numpy> array of sensor zenith angles in radians
         :param relative_azimuth: <numpy> array of relative (sun/sensor) azimuth angles in radians.
-        :return: <numpy> Roujean F2 kernel
+        :return: Roujean F2 kernel
         """
 
         # Just a bit of syntax candy
@@ -187,7 +191,7 @@ class RoujeanBRDF(ToolBase):
         :param sensor_zenith: <numpy> array of sensor zenith angles in radians
         :param relative_azimuth: <numpy> array of relative (sun/sensor) azimuth angles in radians.
         :param reflectance: <numpy> array of reflectance (TOA in the case of dimitripy)
-        return: k_coeff: <numpy>
+        :returns: numpy array with the k0, k1, k2 coefficients
         """
 
         # Remove any values that have -999 for the reflectance.
@@ -211,8 +215,8 @@ class RoujeanBRDF(ToolBase):
         :param sun_zenith: <numpy> array of sun zenith angles in radians.
         :param sensor_zenith: <numpy> array of sensor zenith angles in radians
         :param relative_azimuth: <numpy> array of relative (sun/sensor) azimuth angles in radians.
-        :param k_coeff: <numpy> (n, 3) array of Roujean coefficients k0m k1 and k2 respectively
-        return brdf: <numpy> array of reflectance values
+        :param k_coeff: <numpy> (n, 3) array of Roujean coefficients k0, k1 and k2 respectively
+        :returns: brdf - array of reflectance values
         """
 
         f1 = self.calc_kernel_f1(sun_zenith, sensor_zenith, relative_azimuth)
@@ -235,6 +239,8 @@ class RoujeanBRDF(ToolBase):
         :param end_date: End date to use in calculations, as a python datetime object
         :param wavelengths: List of the sensor's bands
         :param bin_size: [Optional] Length of the time bins, in days. Default is 5 days.
+
+        :returns: Binned dates (list) and BRDF, random error, systematic error (arrays with shape nbands x ntimes)
         """
         # Keep within the dates that we have available
         start_date = max(start_date, min(dates))
@@ -332,8 +338,9 @@ class RoujeanBRDF(ToolBase):
         Save the BRDF and error estimates in a csv text file
 
         Use similar format as DIMITRI:
-        - Going along the columns = different dates
-        - Going down the rows, start with parameter 1 and have a row per wavelength. Then
+
+        * Going along the columns = different dates
+        * Going down the rows, start with parameter 1 and have a row per wavelength. Then
           start the next parameter and have a row per wavelength etc.
 
         :param date_list: List of dates, to be used as column headers
