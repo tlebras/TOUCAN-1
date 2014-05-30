@@ -39,10 +39,16 @@ class IngestImages():
 
         :param str thisfile: The metadata file for the image to be ingested (including full directory path)
         """
+        # ------------------------------------------------
+        # Read this metadata file
+        # ------------------------------------------------
         self.metafile = thisfile
         metadata_all = self.read_meta_file()
 
+        # ------------------------------------------------
         # Loop through all image files in this meta file
+        # and process them one at a time
+        # ------------------------------------------------
         last = False
         for image in range(len(metadata_all)):
             # Only tidy up metafile on the last pass
@@ -50,12 +56,29 @@ class IngestImages():
                 last = True
 
             self.metadata = metadata_all[image]
-            self.read_data()
-            self.save_geotiff()
-            self.make_quicklook()
-            self.add_to_database()
+
+            # ------------------------------------------------
+            # If current instrument is AATSR, we have separate nadir/forward datasets
+            # Loop over them, to create separate database entry and files for each
+            # ------------------------------------------------
+            if self.metadata['instrument'].lower() == 'aatsr':
+                directions = ('fward', 'nadir')
+            else:  # Leave direction blank for other instruments
+                directions = ('',)  # Needs to be a list so we can iterate over it
+            for direction in directions:
+                self.metadata['direction'] = direction
+                self.read_data()
+                self.save_geotiff()
+                self.make_quicklook()
+                self.add_to_database()
+                # Clear varnames before we go on to the next direction
+                self.metadata.pop('variables')
+            # ------------------------------------------------
+            # Tidy up completed image
+            # Also tidies metafile if this was the last image
+            # ------------------------------------------------
             self.tidy_up(meta=last)
-        
+
     def get_file_list(self):
         """
         Get a list of all the metadata files in the specified directory.
@@ -104,9 +127,14 @@ class IngestImages():
                                str(self.metadata['datetime'].year))
         if not os.path.exists(savedir):
             os.makedirs(savedir)
-        outfile = os.path.join(savedir, os.path.splitext(self.metadata['filename'])[0]+'.tif')
+
+        # Set the output file location
+        # Append AATSR direction to the file name if required
+        direction = (self.metadata['direction'] if 'direction' in self.metadata.keys() else '')
+        dir_str = ('_'+direction if direction.isalnum() else '')
+        outfile = os.path.join(savedir, os.path.splitext(self.metadata['filename'])[0]+dir_str+'.tif')
         self.metadata['archive_location'] = outfile # Save for later when we add to database
-        
+
         # We give the origin as bottom left corner, then treat both dx and dy as +ve.
         rasterOrigin=(self.data['longitude'].min(), self.data['latitude'].min())
         dx = self.data['longitude'][1] - self.data['longitude'][0]
@@ -114,7 +142,7 @@ class IngestImages():
         GeoTools.array2raster(outfile, rasterOrigin, dx, dy, self.data, self.metadata['variables'])
 
         # Save the viewing angles in a separate file
-        outfile = os.path.join(savedir, os.path.splitext(self.metadata['filename'])[0]+'_view_angles.tif')
+        outfile = os.path.join(savedir, os.path.splitext(self.metadata['filename'])[0]+dir_str+'_view_angles.tif')
         GeoTools.array2raster(outfile, rasterOrigin, dx, dy, self.data, self.metadata['angle_names'].keys())
 
     def make_quicklook(self):
@@ -126,7 +154,11 @@ class IngestImages():
         """
         savedir = os.path.join(self.outdir, self.metadata['region_name'].upper(), self.metadata['instrument'].upper(),
                                str(self.metadata['datetime'].year))
-        outfile = os.path.join(savedir, os.path.splitext(self.metadata['filename'])[0]+'.jpg')
+        # Set the output file location
+        # Append AATSR direction to the file name if required
+        direction = (self.metadata['direction'] if 'direction' in self.metadata.keys() else '')
+        dir_str = ('_'+direction if direction.isalnum() else '')
+        outfile = os.path.join(savedir, os.path.splitext(self.metadata['filename'])[0]+dir_str+'.jpg')
         self.metadata['web_location'] = outfile
 
         # Define wavelengths to use as RGB bands
@@ -169,32 +201,24 @@ class IngestImages():
         for band in self.metadata['wavelengths']:
             wavelength,_ = InstrumentWavelength.objects.get_or_create(value=band, instrument=instrument)
 
-        # If current instrument is AATSR, we have separate nadir/forward datasets
-        # and need to the append direction name when retrieving angles from the dictionary
-        if self.metadata['instrument'].lower() == 'aatsr':
-            directions = self.aatsr_directions
-        else:  # Leave direction blank for other instruments
-            directions = ('',)  # Needs to be a list so we can iterate over it
-
-        # Create the image object, making separate ones for each direction if required. Use get_or_create
-        # to prevent duplicate records being created
+        # Create the image object. Use get_or_create to prevent duplicate records being created
         coords = self.metadata['region_coords']
-        for direction in directions:
-            image, new = Image.objects.get_or_create(region=image_region,
-                                                     instrument=instrument,
-                                                     measurement_type=meas_type,
-                                                     archive_location=os.path.join(self.metadata['archive_location']),
-                                                     web_location=os.path.join(self.metadata['web_location']),
-                                                     top_left_point='POINT({0} {1})'.format(coords[2], coords[1]),
-                                                     bot_right_point='POINT({0} {1})'.format(coords[3], coords[0]),
-                                                     time=self.metadata['datetime'],
-                                                     SZA=np.nanmean(self.data['SZA'+direction]),
-                                                     SAA=np.nanmean(self.data['SAA'+direction]),
-                                                     VZA=np.nanmean(self.data['VZA'+direction]),
-                                                     VAA=np.nanmean(self.data['VAA'+direction]),
-                                                     direction=(direction if direction.isalnum() else None))
-            if not new:
-                print "Image already ingested!"
+        direction = (self.metadata['direction'] if 'direction' in self.metadata.keys() else '')
+        image, new = Image.objects.get_or_create(region=image_region,
+                                                 instrument=instrument,
+                                                 measurement_type=meas_type,
+                                                 archive_location=os.path.join(self.metadata['archive_location']),
+                                                 web_location=os.path.join(self.metadata['web_location']),
+                                                 top_left_point='POINT({0} {1})'.format(coords[2], coords[1]),
+                                                 bot_right_point='POINT({0} {1})'.format(coords[3], coords[0]),
+                                                 time=self.metadata['datetime'],
+                                                 SZA=np.nanmean(self.data['SZA']),
+                                                 SAA=np.nanmean(self.data['SAA']),
+                                                 VZA=np.nanmean(self.data['VZA']),
+                                                 VAA=np.nanmean(self.data['VAA']),
+                                                 direction=(direction if direction.isalnum() else None))
+        if not new:
+            print "Image already ingested!"
 
     def tidy_up(self, meta=False):
         """

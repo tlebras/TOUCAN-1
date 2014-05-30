@@ -19,18 +19,17 @@ class DataReaders():
         :param ingest: An IngestImages object instance, which contains metadata and inputdir variables
         :return: Dictionary containing all the data arrays
         """
-        # AATSR files have two directions, with separate viewing angle arrays
-        ingest.aatsr_directions = ('nadir','fward')
+        # Set the AATSR viewing direction
+        direction = ingest.metadata['direction']
 
         # Define the names of the viewing angle datasets, if not overridden by metadata file
         if not 'angle_names' in ingest.metadata.keys():
             ingest.metadata['angle_names'] = {}
-            for direction in ingest.aatsr_directions:
-                ingest.metadata['angle_names'].update({'VZA'+direction: 'view_elev_'+direction,
-                                                       'VAA'+direction: 'view_azimuth_'+direction,
-                                                       'SZA'+direction: 'sun_elev_'+direction,
-                                                       'SAA'+direction: 'sun_azimuth_'+direction})
-        
+            ingest.metadata['angle_names'].update({'VZA': 'view_elev_'+direction,
+                                                   'VAA': 'view_azimuth_'+direction,
+                                                   'SZA': 'sun_elev_'+direction,
+                                                   'SAA': 'sun_azimuth_'+direction})
+
         # Define name of the time variable, if not overridden by metadata file
         if not 'time_variable' in ingest.metadata.keys():
             ingest.metadata['time_variable'] = 'FIRST_LINE_TIME'
@@ -44,16 +43,14 @@ class DataReaders():
         if not 'variables' in ingest.metadata.keys():
             ingest.metadata['vartype'] = 'reflectance'
             varnames = []
-            for direction in ingest.aatsr_directions:
-                for band_name in ('reflec_dir_0550', 'reflec_dir_0670', 'reflec_dir_0870', 'reflec_dir_1600', 
-                                  'btemp_dir_0370', 'btemp_dir_1100', 'btemp_dir_1200'):
+            for band_name in ('reflec_dir_0550', 'reflec_dir_0670', 'reflec_dir_0870', 'reflec_dir_1600', 
+                              'btemp_dir_0370', 'btemp_dir_1100', 'btemp_dir_1200'):
                     varnames.append(band_name.replace('dir', direction.lower()))
             ingest.metadata['variables'] = varnames
 
         # Name of the flag array, and which bit to use
-        # TODO deal with nadir and forward arrays
         if not 'flag_name' in ingest.metadata.keys():
-            ingest.metadata['flag_name'] = 'confid_flags_nadir'
+            ingest.metadata['flag_name'] = 'confid_flags_'+direction.lower()
             ingest.metadata['flag_bit'] = 3
 
         # Read in the data (extracting ROI and regridding at same time)
