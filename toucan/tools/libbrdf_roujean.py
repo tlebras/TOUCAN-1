@@ -12,6 +12,7 @@ sys.path.append(".")
 from libbase import ToolBase
 from libquerydb import Querydb
 
+
 def main():
 
     #  Query the database for matching files
@@ -25,6 +26,7 @@ def main():
 
     brdf = RoujeanBRDF()
     brdf.run(results)
+
 
 class RoujeanBRDF(ToolBase):
     """
@@ -44,35 +46,61 @@ class RoujeanBRDF(ToolBase):
         :param jsonresults: The results from a database query, as JSON format
         """
 
+        # -------------------------------
         # Extract fields we need
+        # -------------------------------
         files = np.array([result['archive_location'] for result in jsonresults])
         dates = np.array([datetime.datetime.strptime(result['time'], '%Y-%m-%dT%H:%M:%S.%f') for result in jsonresults])
         sun_zenith, sensor_zenith, relative_azimuth = self.get_angles(jsonresults)
         instrument = jsonresults[0]['instrument']['name']
         region = jsonresults[0]['region']['region']
 
+        # -------------------------------
         # Read reflectance from the archived files
+        # -------------------------------
         reflectance_arr = self.get_reflectance(files)
 
+        # -------------------------------
         # Get list of wavelengths
+        # -------------------------------
         Q = Querydb()
         wavelengths = Q.get_wavelengths(instrument)
 
-        # Calculate BRDF
-        datebins, brdf_arr, err_r_arr, err_s_arr = self.brdf_timeseries(sun_zenith, sensor_zenith, relative_azimuth,
-                                                                        reflectance_arr, dates, min(dates), max(dates))
+        # -------------------------------
+        # Calculate BRDF timeseries
+        # -------------------------------
+        temp = self.brdf_timeseries(sun_zenith, sensor_zenith, relative_azimuth, reflectance_arr,
+                                    dates, min(dates), max(dates))
+        datebins, brdf_arr, ref_arr, err_r_arr, err_s_arr = temp    # To keep line lengths down
 
+        # Min and max date strings, for use in filenames
+        d_min, d_max = datebins[0].strftime('%Y-%m-%d'), datebins[-1].strftime('%Y-%m-%d')
+
+        # -------------------------------
+        # Filter the data (take out anything
+        # > 2std away from mean)
+        # -------------------------------
+        # Get the difference between measured reflectance and
+        # modelled BRDF, as a percentage of BRDF
+        brdf_ratio = (ref_arr - brdf_arr) / brdf_arr * 100
+        plot_brdf = self.filter_timeseries(brdf_ratio)
+
+        # -------------------------------
         # Generate the plot
+        # -------------------------------
+        # File name has format brdf_instrument_region_mindate_maxdate.png
         title = instrument.upper()+' BRDF at site '+region
-        self.plot_timeseries(datebins, brdf_arr, wavelengths, xlabel='Date',
+        savename = '_'.join(['brdf', instrument, region, d_min, d_max])+'.png'
+        self.plot_timeseries(datebins, plot_brdf, wavelengths, xlabel='Date',
                              title=title)
 
+        # -------------------------------
         # Save to text file
+        # -------------------------------
         # File name has format brdf_instrument_region_mindate_maxdate.csv
-        d_min, d_max = datebins[0].strftime('%Y-%m-%d'), datebins[-1].strftime('%Y-%m-%d')
         csv_file = '_'.join(['brdf', instrument, region, d_min, d_max])+'.csv'
-        self.save_as_text(datebins, ['BRDF', 'Random error', 'Systematic error'], wavelengths,
-                          [brdf_arr, err_r_arr, err_s_arr], csv_file)
+        self.save_as_text(datebins, ['BRDF', 'Reflectance', 'Random error', 'Systematic error'], wavelengths,
+                          [brdf_arr, ref_arr, err_r_arr, err_s_arr], csv_file)
 
     @staticmethod
     def get_angles(jsonresults):
@@ -194,7 +222,7 @@ class RoujeanBRDF(ToolBase):
         :returns: numpy array with the k0, k1, k2 coefficients
         """
 
-        # Remove any values that have -999 for the reflectance.
+        # Remove any values that have nan for the reflectance.
         idx = ~np.isnan(reflectance) & ~np.isnan(sun_zenith)
 
         f_matrix = scipy.ones((reflectance[idx].shape[0], 3))  # There are 3 k_coeffs
@@ -226,7 +254,7 @@ class RoujeanBRDF(ToolBase):
         return brdf
 
     def brdf_timeseries(self, sun_zenith, sensor_zenith, relative_azimuth, reflectance,
-                        dates, start_date, end_date, bin_size=5):
+                        dates, start_date, end_date, bin_size=5, k_start=None, k_end=None):
         """
         Plot timeseries of binned BRDF
 
@@ -234,13 +262,16 @@ class RoujeanBRDF(ToolBase):
         :param sensor_zenith: <numpy> array of sensor zenith angles in radians
         :param relative_azimuth: <numpy> array of relative (sun/sensor) azimuth angles in radians.
         :param reflectance: <numpy> array of reflectances, nbands x ntimes
-        :param dates: Array of python datetime objects
-        :param start_date: Start date to use in calculations, as a python datetime object
-        :param end_date: End date to use in calculations, as a python datetime object
+        :param dates: The times of the images, as array of python datetime objects
+        :param start_date: Start date for the timeseries, as a python datetime object
+        :param end_date: End date for the timeseries, as a python datetime object
         :param wavelengths: List of the sensor's bands
         :param bin_size: [Optional] Length of the time bins, in days. Default is 5 days.
+        :param k_start: Date to use as start period when calculating k coefficients. If none given, defaults to start_date
+        :param k_end: Date to use as end period when calculating k coefficients. If none given, defaults to end_date
 
-        :returns: Binned dates (list) and BRDF, random error, systematic error (arrays with shape nbands x ntimes)
+        :returns: Binned dates (list) and binned BRDF, sensor reflectance, random error, systematic error
+                  (arrays with shape nbands x ntimes)
         """
         # Keep within the dates that we have available
         start_date = max(start_date, min(dates))
@@ -251,8 +282,26 @@ class RoujeanBRDF(ToolBase):
         current = start_date
         step = datetime.timedelta(days=bin_size)
         datebins = []
+        k_coeffs = np.zeros([nbands, 3])
         first = True
 
+        # Use the main timeseries start/end dates
+        # for k coefficient calculation if no other dates
+        # were specified
+        if not k_start:
+            k_start = start_date
+        if not k_end:
+            k_end = end_date
+
+        # Calculate k coefficients for specified time period
+        idx = (dates >= k_start) & (dates <= k_end)
+        for band in range(nbands):
+            k_coeffs[band, :] = self.calc_roujean_coeffs(sun_zenith[idx], sensor_zenith[idx], relative_azimuth[idx],
+                                                         reflectance[band, idx])
+
+        # Now model BRDF for the whole timeseries, using the
+        # previously calculated k coefficients
+        # -----------------------------------------
         # Step through the date bins
         while current <= end_date:
             # Pick out which images are in this bin
@@ -263,12 +312,14 @@ class RoujeanBRDF(ToolBase):
                 # Compute BRDF for each band
                 brdf=[]
                 for band in range(nbands):
-                    k_coeff = self.calc_roujean_coeffs(sun_zenith[idx], sensor_zenith[idx], relative_azimuth[idx],
-                                                       reflectance[band, idx])
-                    brdf.append(self.calc_brdf(sun_zenith[idx], sensor_zenith[idx], relative_azimuth[idx], k_coeff))
+
+                    # Calculate modelled brdf for this bin
+                    brdf.append(self.calc_brdf(sun_zenith[idx], sensor_zenith[idx], relative_azimuth[idx], k_coeffs[band]))
 
                 # Mean for this time bin
+                # (Modelled brdf and our original reflectance)
                 brdf = np.nanmean(np.array(brdf), axis=1)
+                ref_bin = np.nanmean(reflectance[:, idx], axis=1)
 
                 # Calculate error estimates for this time bin
                 roujean_diff = reflectance[:, idx] - np.tile(brdf, (nvals, 1)).T
@@ -279,11 +330,13 @@ class RoujeanBRDF(ToolBase):
                 # Add this time bin's results to the final arrays
                 if first:
                     brdf_arr = brdf
+                    ref_arr = ref_bin
                     err_r_arr = err_r
                     err_s_arr = err_s
                     first = False
                 else:
                     brdf_arr = np.vstack([brdf_arr, brdf])
+                    ref_arr = np.vstack([ref_arr, ref_bin])
                     err_r_arr = np.vstack([err_r_arr, err_r])
                     err_s_arr = np.vstack([err_s_arr, err_s])
 
@@ -294,10 +347,25 @@ class RoujeanBRDF(ToolBase):
 
             current += step
 
-        return datebins, brdf_arr, err_r_arr, err_s_arr
+        return datebins, brdf_arr, ref_arr, err_r_arr, err_s_arr
 
     @staticmethod
-    def plot_timeseries(times, ydata, line_labels, title=None, xlabel=None, ylabel=None):
+    def filter_timeseries(timeseries):
+        """
+        Filter the timeseries, removing any points more than 2 standard deviations away
+
+        :param timeseries: Array of data to be filered
+        :returns: Array with np.nan insterted at points that were more than 2 standard deviations from mean
+        """
+        ts_mean = np.nanmean(timeseries)
+        ts_std = np.std(timeseries)
+
+        bad = np.abs(timeseries - ts_mean) > 2*ts_std
+        timeseries[bad] = np.nan
+        return timeseries
+
+    @staticmethod
+    def plot_timeseries(times, ydata, line_labels, title=None, xlabel=None, ylabel=None, savename=None):
         """
         Line plot of the input data, with separate line per band
 
@@ -330,7 +398,11 @@ class RoujeanBRDF(ToolBase):
         if ylabel:
             plt.ylabel(ylabel)
 
-        plt.show()
+        # Show or save figure
+        if savename:
+            plt.savefig(savename)
+        else:
+            plt.show()
 
     @staticmethod
     def save_as_text(date_list, variables, bands, array_list, filename):

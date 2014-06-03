@@ -123,11 +123,13 @@ class BrdfRoujeanTests(TestCase):
         Test the timeseries plot
         """
         with patch('matplotlib.pyplot.show') as mock:  # don't display the figure
-            brdf = libbrdf_roujean.RoujeanBRDF()
-            dum = np.array([0, 0, 0])
-            # Test with and without the optional arguments for full coverage
-            brdf.plot_timeseries(dum, dum, dum, title='title', xlabel='xlabel', ylabel='ylabel')
-            brdf.plot_timeseries(dum, dum, dum)
+            with patch('matplotlib.pyplot.savefig') as mock2:  # don't display the figure
+                brdf = libbrdf_roujean.RoujeanBRDF()
+                dum = np.array([0, 0, 0])
+                # Test with and without the optional arguments for full coverage
+                brdf.plot_timeseries(dum, dum, dum, title='title', xlabel='xlabel', ylabel='ylabel',
+                                     savename='savename')
+                brdf.plot_timeseries(dum, dum, dum)
 
     def test_save_csv(self):
         """
