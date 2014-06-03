@@ -31,6 +31,19 @@ class InstrumentResource(ModelResource):
         }     
 
 
+class InstrumentWavelengthResource(ModelResource):
+    instrument = fields.ForeignKey(InstrumentResource, 'instrument', full=True)
+
+    class Meta:
+        queryset = InstrumentWavelength.objects.all()
+        excludes = ['id']
+        include_resource_uri = False
+        filtering = {
+            'instrument': ALL_WITH_RELATIONS,
+            'value': ALL,
+        }
+
+
 class PointResource(ModelResourceGeoDjango):
 
     deployment = fields.ForeignKey(DeploymentResource, 'deployment', full=True)
@@ -107,6 +120,9 @@ class ImageRegionResource(ModelResource):
         filtering = {
             'region': ALL,
         }
+        ordering = {
+            'value': ALL,
+        }
 
 
 class ImageResource(ModelResource):
@@ -128,4 +144,7 @@ class ImageResource(ModelResource):
             'measurement_type': ALL_WITH_RELATIONS,
             'region': ALL_WITH_RELATIONS,
             'time': ['gte', 'lte']
+        }
+        ordering = {
+            'time': ALL,
         }

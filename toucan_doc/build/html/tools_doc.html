@@ -1,0 +1,462 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>TOUCAN Toolbox Documentation &mdash; TOUCAN 0.0.1 documentation</title>
+    
+    <link rel="stylesheet" href="_static/toucan.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="shortcut icon" href="_static/favicon.ico"/>
+    <link rel="top" title="TOUCAN 0.0.1 documentation" href="index.html" />
+    <link rel="next" title="Django project presentation" href="django_project.html" />
+    <link rel="prev" title="Upload Tools Documentation" href="upload_doc.html" />
+<link href='http://fonts.googleapis.com/css?family=Limelight' rel='stylesheet' type='text/css'>
+<link href='http://fonts.googleapis.com/css?family=Raleway' rel='stylesheet' type='text/css'>
+
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="django_project.html" title="Django project presentation"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="upload_doc.html" title="Upload Tools Documentation"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">TOUCAN 0.0.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="toucan-toolbox-documentation">
+<h1>TOUCAN Toolbox Documentation<a class="headerlink" href="#toucan-toolbox-documentation" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="module-tools.libquerydb">
+<span id="toucan-database-query-library"></span><h2>TOUCAN database query library<a class="headerlink" href="#module-tools.libquerydb" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="tools.libquerydb.Querydb">
+<em class="property">class </em><tt class="descclassname">tools.libquerydb.</tt><tt class="descname">Querydb</tt><a class="headerlink" href="#tools.libquerydb.Querydb" title="Permalink to this definition">¶</a></dt>
+<dd><p>Perform query of the TOUCAN database, using the search parameters passed in</p>
+<dl class="staticmethod">
+<dt id="tools.libquerydb.Querydb.construct_search_params">
+<em class="property">static </em><tt class="descname">construct_search_params</tt><big>(</big><em>search_list</em><big>)</big><a class="headerlink" href="#tools.libquerydb.Querydb.construct_search_params" title="Permalink to this definition">¶</a></dt>
+<dd><p>Query url needs to have things in the right &#8216;namespace&#8217;, but we don&#8217;t
+want the other tools to have to know what that is.</p>
+<p>This method converts user friendly search parameters into the ones that 
+django needs. Also allows for multiple ways of searching - can request
+&#8220;region&#8221; or &#8220;site&#8221; for the region name, and &#8220;instrument&#8221; or &#8220;sensor&#8221;</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>search_list</strong> &#8211; Dictionary of search terms to include in this query</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Dictionary with same search values, but formatted correctly for tastypie to handle</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="tools.libquerydb.Querydb.get">
+<em class="property">static </em><tt class="descname">get</tt><big>(</big><em>url</em>, <em>params</em><big>)</big><a class="headerlink" href="#tools.libquerydb.Querydb.get" title="Permalink to this definition">¶</a></dt>
+<dd><p>Do GET request and return objects</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>url</strong> &#8211; The base URL for the query</li>
+<li><strong>params</strong> &#8211; Dictionary of search parameters, format search_parameter:value</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">JSON objects returned by the query</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="tools.libquerydb.Querydb.get_images">
+<tt class="descname">get_images</tt><big>(</big><em>search_list</em><big>)</big><a class="headerlink" href="#tools.libquerydb.Querydb.get_images" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get list of images, given the input search parameters</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>search_list</strong> &#8211; Dictionary of search parameters</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">JSON query results</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="tools.libquerydb.Querydb.get_wavelengths">
+<tt class="descname">get_wavelengths</tt><big>(</big><em>instrument</em><big>)</big><a class="headerlink" href="#tools.libquerydb.Querydb.get_wavelengths" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the wavelengths associated with the specified instrument</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>instrument</strong> &#8211; Instrument name, as it is spelled in the database</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">List of wavelengths</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-tools.libbrdf_roujean">
+<span id="roujean-brdf-library"></span><h2>Roujean BRDF library<a class="headerlink" href="#module-tools.libbrdf_roujean" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="tools.libbrdf_roujean.RoujeanBRDF">
+<em class="property">class </em><tt class="descclassname">tools.libbrdf_roujean.</tt><tt class="descname">RoujeanBRDF</tt><a class="headerlink" href="#tools.libbrdf_roujean.RoujeanBRDF" title="Permalink to this definition">¶</a></dt>
+<dd><p>Class for calculating the Roujean BRDF coefficients. Based on Roujean (1992): A Bidirectional Reflectance Model
+of the Earth&#8217;s Surface fo the Correction of Remote Sensing Data</p>
+<dl class="method">
+<dt id="tools.libbrdf_roujean.RoujeanBRDF.brdf_timeseries">
+<tt class="descname">brdf_timeseries</tt><big>(</big><em>sun_zenith</em>, <em>sensor_zenith</em>, <em>relative_azimuth</em>, <em>reflectance</em>, <em>dates</em>, <em>start_date</em>, <em>end_date</em>, <em>bin_size=5</em>, <em>k_start=None</em>, <em>k_end=None</em><big>)</big><a class="headerlink" href="#tools.libbrdf_roujean.RoujeanBRDF.brdf_timeseries" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plot timeseries of binned BRDF</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>sun_zenith</strong> &#8211; &lt;numpy&gt; array of sun zenith angles in radians.</li>
+<li><strong>sensor_zenith</strong> &#8211; &lt;numpy&gt; array of sensor zenith angles in radians</li>
+<li><strong>relative_azimuth</strong> &#8211; &lt;numpy&gt; array of relative (sun/sensor) azimuth angles in radians.</li>
+<li><strong>reflectance</strong> &#8211; &lt;numpy&gt; array of reflectances, nbands x ntimes</li>
+<li><strong>dates</strong> &#8211; The times of the images, as array of python datetime objects</li>
+<li><strong>start_date</strong> &#8211; Start date for the timeseries, as a python datetime object</li>
+<li><strong>end_date</strong> &#8211; End date for the timeseries, as a python datetime object</li>
+<li><strong>wavelengths</strong> &#8211; List of the sensor&#8217;s bands</li>
+<li><strong>bin_size</strong> &#8211; [Optional] Length of the time bins, in days. Default is 5 days.</li>
+<li><strong>k_start</strong> &#8211; Date to use as start period when calculating k coefficients. If none given, defaults to start_date</li>
+<li><strong>k_end</strong> &#8211; Date to use as end period when calculating k coefficients. If none given, defaults to end_date</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">Binned dates (list) and binned BRDF, sensor reflectance, random error, systematic error
+(arrays with shape nbands x ntimes)</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="tools.libbrdf_roujean.RoujeanBRDF.calc_brdf">
+<tt class="descname">calc_brdf</tt><big>(</big><em>sun_zenith</em>, <em>sensor_zenith</em>, <em>relative_azimuth</em>, <em>k_coeff</em><big>)</big><a class="headerlink" href="#tools.libbrdf_roujean.RoujeanBRDF.calc_brdf" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculates the BRDF given the viewing geometry and the Roujean k coefficients.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>sun_zenith</strong> &#8211; &lt;numpy&gt; array of sun zenith angles in radians.</li>
+<li><strong>sensor_zenith</strong> &#8211; &lt;numpy&gt; array of sensor zenith angles in radians</li>
+<li><strong>relative_azimuth</strong> &#8211; &lt;numpy&gt; array of relative (sun/sensor) azimuth angles in radians.</li>
+<li><strong>k_coeff</strong> &#8211; &lt;numpy&gt; (n, 3) array of Roujean coefficients k0, k1 and k2 respectively</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">brdf - array of reflectance values</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="tools.libbrdf_roujean.RoujeanBRDF.calc_kernel_f1">
+<em class="property">static </em><tt class="descname">calc_kernel_f1</tt><big>(</big><em>sun_zenith</em>, <em>sensor_zenith</em>, <em>relative_azimuth</em><big>)</big><a class="headerlink" href="#tools.libbrdf_roujean.RoujeanBRDF.calc_kernel_f1" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculates the F1 Kernel from Roujean (1992)</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>sun_zenith</strong> &#8211; &lt;numpy&gt; array of sun zenith angles in radians.</li>
+<li><strong>sensor_zenith</strong> &#8211; &lt;numpy&gt; array of sensor zenith angles in radians</li>
+<li><strong>relative_azimuth</strong> &#8211; &lt;numpy&gt; array of relative (sun/sensor) azimuth angles in radians.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">Roujean F1 kernel</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="tools.libbrdf_roujean.RoujeanBRDF.calc_kernel_f2">
+<em class="property">static </em><tt class="descname">calc_kernel_f2</tt><big>(</big><em>sun_zenith</em>, <em>sensor_zenith</em>, <em>relative_azimuth</em><big>)</big><a class="headerlink" href="#tools.libbrdf_roujean.RoujeanBRDF.calc_kernel_f2" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculates the F2 Kernel from Roujean (1992)</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>sun_zenith</strong> &#8211; &lt;numpy&gt; array of sun zenith angles in radians.</li>
+<li><strong>sensor_zenith</strong> &#8211; &lt;numpy&gt; array of sensor zenith angles in radians</li>
+<li><strong>relative_azimuth</strong> &#8211; &lt;numpy&gt; array of relative (sun/sensor) azimuth angles in radians.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">Roujean F2 kernel</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="tools.libbrdf_roujean.RoujeanBRDF.calc_roujean_coeffs">
+<tt class="descname">calc_roujean_coeffs</tt><big>(</big><em>sun_zenith</em>, <em>sensor_zenith</em>, <em>relative_azimuth</em>, <em>reflectance</em><big>)</big><a class="headerlink" href="#tools.libbrdf_roujean.RoujeanBRDF.calc_roujean_coeffs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculates the Roujean coefficients k0, k1 and k2, given the angles and reflectance</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>sun_zenith</strong> &#8211; &lt;numpy&gt; array of sun zenith angles in radians.</li>
+<li><strong>sensor_zenith</strong> &#8211; &lt;numpy&gt; array of sensor zenith angles in radians</li>
+<li><strong>relative_azimuth</strong> &#8211; &lt;numpy&gt; array of relative (sun/sensor) azimuth angles in radians.</li>
+<li><strong>reflectance</strong> &#8211; &lt;numpy&gt; array of reflectance (TOA in the case of dimitripy)</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">numpy array with the k0, k1, k2 coefficients</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="tools.libbrdf_roujean.RoujeanBRDF.filter_timeseries">
+<em class="property">static </em><tt class="descname">filter_timeseries</tt><big>(</big><em>timeseries</em><big>)</big><a class="headerlink" href="#tools.libbrdf_roujean.RoujeanBRDF.filter_timeseries" title="Permalink to this definition">¶</a></dt>
+<dd><p>Filter the timeseries, removing any points more than 2 standard deviations away</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>timeseries</strong> &#8211; Array of data to be filered</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Array with np.nan insterted at points that were more than 2 standard deviations from mean</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="tools.libbrdf_roujean.RoujeanBRDF.get_angles">
+<em class="property">static </em><tt class="descname">get_angles</tt><big>(</big><em>jsonresults</em><big>)</big><a class="headerlink" href="#tools.libbrdf_roujean.RoujeanBRDF.get_angles" title="Permalink to this definition">¶</a></dt>
+<dd><p>Extract the viewing angle information from the JSON object returned
+from the database</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>jsonresults</strong> &#8211; JSON formatted string result from database query</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">sun zenith angle, sensor zenith angle, relative azimuth angle (in radians)</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="tools.libbrdf_roujean.RoujeanBRDF.get_reflectance">
+<em class="property">static </em><tt class="descname">get_reflectance</tt><big>(</big><em>filelist</em><big>)</big><a class="headerlink" href="#tools.libbrdf_roujean.RoujeanBRDF.get_reflectance" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read in reflectance data from list of GeoTiff files, and compute the area mean
+for each band for each file.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>filelist</strong> &#8211; List of file names to read</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Array of reflectances, dimensions nbands x nfiles</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="tools.libbrdf_roujean.RoujeanBRDF.plot_timeseries">
+<em class="property">static </em><tt class="descname">plot_timeseries</tt><big>(</big><em>times</em>, <em>ydata</em>, <em>line_labels</em>, <em>title=None</em>, <em>xlabel=None</em>, <em>ylabel=None</em>, <em>savename=None</em><big>)</big><a class="headerlink" href="#tools.libbrdf_roujean.RoujeanBRDF.plot_timeseries" title="Permalink to this definition">¶</a></dt>
+<dd><p>Line plot of the input data, with separate line per band</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>times</strong> &#8211; 1d list of times, as python datetime objects</li>
+<li><strong>ydata</strong> &#8211; The data to plot. 2d array with dimensions nbands x ntimes</li>
+<li><strong>line_labels</strong> &#8211; Labels for the plot legend. List with length nbands</li>
+<li><strong>title</strong> &#8211; [Optional] Title for the plot</li>
+<li><strong>xlabel</strong> &#8211; [Optional] Text label for the x axis</li>
+<li><strong>ylabel</strong> &#8211; [Optional] Text label for the y axis</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="tools.libbrdf_roujean.RoujeanBRDF.run">
+<tt class="descname">run</tt><big>(</big><em>jsonresults</em><big>)</big><a class="headerlink" href="#tools.libbrdf_roujean.RoujeanBRDF.run" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute and plot BRDF. Take results from a database query, extract the reflectance
+values from the returned files, calculate BRDF timeseries, plot the timeseries, and
+output to a csv text file.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>jsonresults</strong> &#8211; The results from a database query, as JSON format</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="tools.libbrdf_roujean.RoujeanBRDF.save_as_text">
+<em class="property">static </em><tt class="descname">save_as_text</tt><big>(</big><em>date_list</em>, <em>variables</em>, <em>bands</em>, <em>array_list</em>, <em>filename</em><big>)</big><a class="headerlink" href="#tools.libbrdf_roujean.RoujeanBRDF.save_as_text" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save the BRDF and error estimates in a csv text file</p>
+<p>Use similar format as DIMITRI:</p>
+<ul class="simple">
+<li>Going along the columns = different dates</li>
+<li>Going down the rows, start with parameter 1 and have a row per wavelength. Then
+start the next parameter and have a row per wavelength etc.</li>
+</ul>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>date_list</strong> &#8211; List of dates, to be used as column headers</li>
+<li><strong>variables</strong> &#8211; List of the variable names we are printing</li>
+<li><strong>bands</strong> &#8211; The wavelength values</li>
+<li><strong>array_list</strong> &#8211; List of arrays of data to print. Should be
+same number of arrays as we have names in variables
+and the arrays should have dimensions len(date_list)x len(bands)</li>
+<li><strong>filename</strong> &#8211; Name of the file to write to</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="index.html">
+              <img class="logo" src="_static/toucan.png" alt="Logo"/>
+            </a></p>
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">TOUCAN Toolbox Documentation</a><ul>
+<li><a class="reference internal" href="#module-tools.libquerydb">TOUCAN database query library</a></li>
+<li><a class="reference internal" href="#module-tools.libbrdf_roujean">Roujean BRDF library</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="upload_doc.html"
+                        title="previous chapter">Upload Tools Documentation</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="django_project.html"
+                        title="next chapter">Django project presentation</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/tools_doc.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="django_project.html" title="Django project presentation"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="upload_doc.html" title="Upload Tools Documentation"
+             >previous</a> |</li>
+        <li><a href="index.html">TOUCAN 0.0.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2014, ARGANS Ltd.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+    </div>
+  </body>
+</html>
