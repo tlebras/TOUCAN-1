@@ -270,12 +270,156 @@ class DataReaders():
         if ingest.metadata['instrument'].lower() == 'meris' and ingest.metadata['vartype'] == 'radiance':
             data = self.correct_MERIS(image, longitude, latitude, new_lon, new_lat, ingest.metadata, data)
 
+        # If this is AATSR reflectance, apply corrections
+        if ingest.metadata['instrument'].lower() == 'aatsr' and ingest.metadata['vartype'] == 'reflectance':
+            data = self.correct_AATSR(image, longitude, latitude, new_lon, new_lat, ingest.metadata, data)
+
         return data, time_temp
+
+    def correct_AATSR(self, image, metadata, data):
+        """
+        Apply corrections to AATSR reflectance and angles
+
+        :param image: Open epr image object
+        :param metadata: The metadata dictionary for this image
+        :param data: Data dictionary of uncorrected data
+        :returns: Updated data dictionary with corrected data
+        """
+        # ----------------------------------------
+        # Correct angles: convert elevation (zenith==90)
+        # to zenith angle (zenith==0)
+        # ----------------------------------------
+        for angle in ('SZA', 'VZA'):
+            data[angle] = 90 - data[angle]
+
+        # ----------------------------------------
+        # Correct reflectance for sun zenith angle
+        # ----------------------------------------
+        sun_zenith = data['SZA']
+        for var in metadata['variables']:
+            # Only apply to the reflectance bands, not the brightness temp bands
+            if 'reflec' in var:
+                data[var] *= 0.01/np.cos(np.deg2rad(sun_zenith))
+
+        # ----------------------------------------
+        # Correct the 1600nm band for non linearity
+        # (This has been done already usually, need
+        # to check the value of the GC1 filename
+        # that was used in processing)
+        # ----------------------------------------
+        band1600 = metadata['variables'][3]  # 1600nm is band 3 in our index
+        dsd_ind = 30  # Index of the GC1 file in the DSD list
+        gc1 = image.get_band(band1600).product.get_dsd_at(dsd_ind).filename
+        if gc1 == 'ATS_GC1_AXVIEC20020123_073430_20020101_000000_20200101_000000':
+            # Nonlinearity coefficients from pre-launch calibration
+            coeffs = [-0.000027, -0.1093, 0.009393, 0.001013]
+            # Convert 1.6um reflectance back to raw signal using linear conversion
+            volts = data[band1600]/0.192 * -0.816
+            # Convert 1.6um raw signal to reflectance using non-linear conversion function
+            data[band1600] = np.pi*(coeffs[0] + coeffs[1]*volts + coeffs[2]*volts**2 + coeffs[3]*volts**3)/1.553
+
+        # ----------------------------------------
+        # Remove existing drift correction and
+        # apply new one using look up table
+        # ----------------------------------------
+        timestr = image.get_sph().get_field(metadata['time_variable']).get_elem()
+        acq_date = datetime.datetime.strptime(timestr,'%d-%b-%Y %H:%M:%S.%f')
+        for band, var in enumerate(metadata['variables']):
+            # Only apply to the reflectance bands, not the brightness temp bands
+            if 'reflec' in var:
+                uncorrected = self.aatsr_drift_remove(gc1, data[var], band, acq_date)
+                data[var] = self.aatsr_drift_apply(uncorrected, band, acq_date)
+
+        return data
+
+    @staticmethod
+    def aatsr_drift_remove(gc1, reflectance, band, acq_date):
+        """
+        Remove drift correction from AATSR reflectance
+
+        :param gc1: Name of the GC1 file that was used
+        :param reflectance: Array of reflectance for this band
+        :param band: Index of this band (0-3)
+        :param acq_date: Acquisition date for this image
+        :returns: Array of reflectance with drift correction removed
+        """
+        # Get date of the CG1 file
+        gc1_date = datetime.datetime.strptime(gc1[14:29], '%Y%m%d_%H%M%S')
+
+        # Find which correction was applied for that date
+        exp_start = datetime.datetime(2005, 11, 29, 13, 20, 26)
+        exp_end = datetime.datetime(2006, 12, 18, 20 ,14, 15)
+        none_start = datetime.datetime(2010, 4, 4)
+        none_end = datetime.datetime(2010, 7, 13)
+        if gc1_date < exp_start or (none_start <= gc1_date < none_end):
+            corr = 0
+        elif exp_start <= gc1_date < exp_end:
+            corr = 1
+        else:
+            corr = 2
+
+        # Calculate drift correction
+        K = [0.034, 0.021, 0.013, 0.002]  # yearly drift rates for exponential drift
+        A = np.array([[0.083,  1.5868E-3],  # Thin film drift model coefficients
+                      [0.056,  1.2374E-3],
+                      [0.041,  9.6111E-4]])
+        ndays = (datetime.datetime(2002, 3, 1) - acq_date).days  # Days since envisat launch
+
+        # No correction
+        drift = 1.0
+
+        # Exponential drift correction
+        if (band==3 and corr==0) or (band!=3 and corr==1):
+            drift = np.exp(K[band] * ndays/365.0)
+
+        # Thin film drift correction
+        if band!=3 and corr==2:
+            drift = 1.0 + A[band, 0]*np.sin(A[band, 1]*ndays)**2
+
+        uncorrected = reflectance * drift
+        return uncorrected
+
+    @staticmethod
+    def aatsr_drift_apply(reflectance, band, acq_date):
+        """
+        Apply drift correction to AATSR reflectance
+
+        :param reflectance: Array of the uncorrected reflectance values
+        :param band: Index of this band (0-3)
+        :param acq_date: Acquisition date of this image
+        :returns: Array of drift corrected reflectance values
+        """
+        if acq_date <= datetime.datetime(2002, 3, 1):
+            raise "Error: Acquisition date is before ENVISAT Launch"
+
+        # Read in the look up table
+        # Dates are in column 2, format like 01-JAN-2010
+        # Columns 4+ contain the drift values. They are in pairs of drift then error for each band, so 
+        # we read alternating columns to just get the drift values.
+        aux_path = os.path.abspath(os.path.join(os.path.dirname(__file__), 'aux_files'))
+        drift_lut_file = os.path.join(aux_path, 'AATSR_VIS_DRIFT_V02-01.DAT')
+        with open(drift_lut_file) as fp:
+            lines = fp.readlines()
+        nhead = 5   # Header lines
+        lut_dates = [datetime.datetime.strptime(line.split()[1], '%d-%b-%Y') for line in lines[nhead:]]
+        lut_drift = np.array([[float(value) for value in line.split()[3::2]] for line in lines[nhead:]])
+
+        # Convert dates to timestamps, so they can be interpolated
+        acq_date = float(acq_date.strftime('%s'))
+        lut_dates = [float(date.strftime('%s')) for date in lut_dates]
+
+        # Interpolate to get drift at this acquisition date
+        drift = np.interp(acq_date, lut_dates, lut_drift[:,band])
+
+        # Apply correction
+        corrected = reflectance / drift
+        return corrected
 
     @staticmethod
     def correct_MERIS(image, old_lon, old_lat, new_lon, new_lat, metadata, data):
             """
             Correct MERIS TOA radiance according to solar irradiance model
+            
             :param image: An open image file
             :param old_lon: Original longitude array (needed for regridding)
             :param old_lat: Original latitude array (needed for regridding)
@@ -310,7 +454,7 @@ class DataReaders():
             sun_irr[ccd_ind<0] = np.nan  # ccd_ind=-1 are invalid pixels
 
             # Get date information
-            timestr = image.get_sph().get_field('FIRST_LINE_TIME').get_elem()
+            timestr = image.get_sph().get_field(metadata['time_variable']).get_elem()
             date = datetime.datetime.strptime(timestr,'%d-%b-%Y %H:%M:%S.%f').replace(tzinfo=pytz.UTC)
             day_in_year = date.timetuple().tm_yday
             year_length = 365 + isleap(date.year)
