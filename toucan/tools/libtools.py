@@ -6,6 +6,19 @@ import scipy
 from osgeo import gdal
 
 
+def slice_dictionary(dic_in, idx):
+    """
+    Slice a dictionary - ie given a dictionary where all the keys point to a list (or 1d array),
+    return a new dictionary with the same keys but just one slice from each of those lists
+
+    :param dic_in: Input dictionary to be sliced
+    :param idx: Index to slice
+    :returns: Sliced dictionary with same keys as input
+    """
+    dic_out = {key: dic_in[key][idx] for key in dic_in.keys()}
+    return dic_out
+
+
 def get_angles(jsonresults):
     """
     Extract the viewing angle information from the JSON object returned
@@ -60,3 +73,67 @@ def get_reflectance(filelist):
 
     # Return the array, transposed so first dimension is the band
     return reflectance_arr.T
+
+
+def check_doublet(reference, target, amc_threshold, day_threshold, roi_threshold):
+    """
+    Check if this doublet meets all the criteria
+
+    :param reference: Dictionary containing data for a single image (reflectance array, date, viewing angles) for the reference sensor
+    :param target: Same as reference, but for the target sensor
+    :param amc_threshold: Threshold value for AMC
+    :param day_threshold: Threshold value for time offset, in days
+    :param roi_threshold: Threshold value for ROI coverage, as fraction
+    :returns: valid, True if doublet meets all criteria, False if any failed
+    """
+    valid_doublet = True
+
+    # Check AMC
+    amc = calc_amc((reference['SZA'], target['SZA']), (reference['VZA'], target['VZA']),
+                   (reference['RAA'], target['RAA']))
+    if amc > amc_threshold:
+        valid_doublet = False
+
+    # Check dates
+    date_diff = np.abs(reference['dates'] - target['dates']).days
+    if date_diff > day_threshold:
+        valid_doublet = False
+
+    # Check ROI coverage
+    coverage = lambda arr: float(np.sum(~np.isnan(arr))) / arr.size
+    ref_cover = coverage(reference['reflectance'])
+    tar_cover = coverage(target['reflectance'])
+    if (ref_cover < roi_threshold) or (tar_cover < roi_threshold):
+        valid_doublet = False
+
+    return valid_doublet
+
+
+def calc_amc(sza, vza, raa):
+    """
+    Calculate angular matching criteria (AMC)
+
+    :param sza: Tuple containing sun zenith angle for sensor A and sensor B
+    :param vza: Tuple containing viewing zenith angle for sensor A and sensor B
+    :param raa: Tuple containing relative azimuth angle for sensor A and sensor B
+    :returns: The AMC value
+    """
+    s1 = (sza[1] - sza[0])**2
+    s2 = (vza[1] - vza[0])**2
+    s3 = 0.25 * (np.abs(raa[1]) - np.abs(raa[0]))**2
+
+    amc = np.sqrt(s1 + s2 + s3)
+    return amc
+
+
+def calc_amc_threshold(dsza, dvza, draa):
+    """
+    Calculate the threshold AMC value, based on input angle offsets
+
+    :param dsza: The threshold difference in sun zenith angle between two sensors
+    :param dvza: The threshold difference in sensor zenith angle between two sensors
+    :param draa: The threshold difference in relative azimuth angle between two sensors
+    :returns: The corresponding threshold AMC value
+    """
+    amc = np.sqrt(dsza**2 + dvza**2 + 0.25*draa**2)
+    return amc
