@@ -272,7 +272,7 @@ class DataReaders():
 
         # If this is AATSR reflectance, apply corrections
         if ingest.metadata['instrument'].lower() == 'aatsr' and ingest.metadata['vartype'] == 'reflectance':
-            data = self.correct_AATSR(image, longitude, latitude, new_lon, new_lat, ingest.metadata, data)
+            data = self.correct_AATSR(image, ingest.metadata, data)
 
         return data, time_temp
 
