@@ -4,6 +4,7 @@ A central library for functions/tools that are used across several of the other 
 import numpy as np
 import scipy
 from osgeo import gdal
+import datetime
 
 
 def slice_dictionary(dic_in, idx):
@@ -17,6 +18,22 @@ def slice_dictionary(dic_in, idx):
     """
     dic_out = {key: dic_in[key][idx] for key in dic_in.keys()}
     return dic_out
+
+
+def mean_date(dates):
+    """
+    Return the mean value from a list of dates. We convert the dates into unix timestamps,
+    which are just numbers and therefore easy to take the mean, then convert the mean value
+    back to a datetime object.
+
+    :param dates: List of python datetime dates
+    :returns: The mean date
+    """
+    timestamps = [float(d.strftime('%s')) for d in dates]
+    mean_timestamp = np.mean(timestamps)
+    mean_date = datetime.datetime.fromtimestamp(mean_timestamp)
+
+    return mean_date
 
 
 def get_angles(jsonresults):
@@ -42,7 +59,7 @@ def get_angles(jsonresults):
     return sun_zenith, sensor_zenith, relative_azimuth
 
 
-def get_reflectance(filelist):
+def get_mean_reflectance(filelist):
     """
     Read in reflectance data from list of GeoTiff files, and compute the area mean
     for each band for each file.
@@ -73,6 +90,32 @@ def get_reflectance(filelist):
 
     # Return the array, transposed so first dimension is the band
     return reflectance_arr.T
+
+
+def get_reflectance_band(filelist, band_idx):
+    """
+    Read in reflectance data for specified band from a list of GeoTiff files and return a list of 2d reflectance arrays
+
+    :param filelist: List of file names to read
+    :param band_idx: Index of the band to read (0-based)
+    :returns: List (nfiles long) of 2d reflectance arrays
+    """
+    def read_file(thisfile):
+        """
+        Function to open Geotiff and read the specified band as 2d array
+        """
+        image = gdal.Open(thisfile)
+        data = image.GetRasterBand(band_idx + 1).ReadAsArray()  # convert to 1 based index
+        image = None
+        return data
+
+    # Loop over all the files and read reflectances
+    reflectance_list = []
+    for thisfile in filelist:
+        dat = read_file(thisfile)
+        reflectance_list.append(dat)
+
+    return reflectance_list
 
 
 def check_doublet(reference, target, amc_threshold, day_threshold, roi_threshold):

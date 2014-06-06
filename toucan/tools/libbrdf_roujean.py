@@ -56,7 +56,7 @@ class RoujeanBRDF(ToolBase):
         # -------------------------------
         # Read reflectance from the archived files
         # -------------------------------
-        reflectance_arr = libtools.get_reflectance(files)
+        reflectance_arr = libtools.get_mean_reflectance(files)
 
         # -------------------------------
         # Get list of wavelengths
@@ -284,8 +284,7 @@ class RoujeanBRDF(ToolBase):
 
                 # Keep track of the bin's mean datetime, for plotting
                 # Convert to timestamps first, to enable easy mean calculation
-                timestamps = [float(d.strftime('%s')) for d in dates[idx]]
-                datebins.append(datetime.datetime.fromtimestamp(np.mean(timestamps)))
+                datebins.append(libtools.mean_date(dates[idx]))
 
             current += step
 

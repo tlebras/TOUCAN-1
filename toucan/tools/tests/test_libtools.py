@@ -20,6 +20,16 @@ class ToolsTests(TestCase):
         result = libtools.slice_dictionary(testdic, 1)
         self.assertDictEqual(result, {'key1':1, 'key2':'b'})
 
+    def test_mean_date(self):
+        """
+        Test calculation of mean date
+        """
+        date1 = datetime.datetime(2000,1,1)
+        date2 = datetime.datetime(2000,1,3)
+        expected = datetime.datetime(2000,1,2)
+        result = libtools.mean_date((date1, date2))
+        self.assertEquals(result, expected)
+
     def test_get_angles(self):
         """
         Test that get_angles returns expected results
@@ -30,9 +40,9 @@ class ToolsTests(TestCase):
         self.assertEquals(sensor_zenith, 0)
         self.assertEquals(relative_azimuth, 0)
 
-    def test_get_reflectance(self):
+    def test_get_mean_reflectance(self):
         """
-        Test get_reflectance returns correct array shape
+        Test get_mean_reflectance returns correct array shape
         """
         fake_files = ('file1', 'file2')
         nfiles = len(fake_files)
@@ -42,8 +52,27 @@ class ToolsTests(TestCase):
         with patch('osgeo.gdal.Open') as mock:
             # Set fake return_value to mock reading in data from the file
             mock.return_value.ReadAsArray.return_value = np.zeros((nbands, 2, 2))
-            out = libtools.get_reflectance(fake_files)
-            self.assertTrue((out == np.zeros((nbands, nfiles))).all())
+            out = libtools.get_mean_reflectance(fake_files)
+        self.assertTrue((out == np.zeros((nbands, nfiles))).all())
+
+    def test_get_reflectance_band(self):
+        """
+        Test get_reflectance_band returns correct array shape
+        """
+        fake_files = ('file1', 'file2')
+        nfiles = len(fake_files)
+        nx = 4
+        ny = 5
+
+        # Mock the file opening bit
+        with patch('osgeo.gdal.Open') as mock:
+            # Set fake return_value to mock reading in data from the file
+            mock.return_value.GetRasterBand.return_value.ReadAsArray.return_value = np.zeros((nx, ny))
+            out = libtools.get_reflectance_band(fake_files, 0)
+        # Check result is a list with nfiles entries
+        self.assertEquals(len(out), nfiles)
+        # Check the arrays in the list have correct dimensions
+        self.assertEquals(out[0].shape, (nx, ny))
 
     def test_check_doublet(self):
         """
