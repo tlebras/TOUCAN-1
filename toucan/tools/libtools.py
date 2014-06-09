@@ -118,6 +118,44 @@ def get_reflectance_band(filelist, band_idx):
     return reflectance_list
 
 
+def get_doublets(reference, target, amc_threshold=15, day_threshold=3, roi_threshold=0.75):
+    """
+    Get doublets that fit the angular matching criteria
+
+    :param reference: Dictionary containing the reference sensor data
+    :param target: Dictionary containing the target sensor data
+    :param amc_threshold: [Optional] Threshold value to use for AMC (default 15)
+    :param day_threshold: [Optional] Threshold value for time offset allowed, in days (default 2)
+    :param roi_threshold: [Optional] Minimum ROI coverage allowed as a fraction (default 0.75)
+    """
+    maxdays = datetime.timedelta(days=day_threshold)
+    doublets = []
+    times = []
+
+    # Loop over each target sensor image
+    for target_idx,_ in enumerate(target['dates']):
+        # Find which reference images are within the day threshold. These are the ones we'll check
+        target_date = target['dates'][target_idx]
+        candidates = np.where(np.abs(reference['dates'] - target_date) < maxdays)[0]
+
+        # Loop through these candidates and see if they fulfil all criteria to be a match
+        for ref_idx in candidates:
+            # Get just this pair of images from the dictionaries
+            reference_image = slice_dictionary(reference, ref_idx)
+            target_image = slice_dictionary(target, target_idx)
+            valid = check_doublet(reference_image, target_image, amc_threshold, day_threshold, roi_threshold)
+            amc = calc_amc((reference_image['SZA'], target_image['SZA']), (reference_image['VZA'], target_image['VZA']),
+                   (reference_image['RAA'], target_image['RAA']))
+            # Check if this pair of images meets the criteria to be a doublet
+            # and store the indices if so. Also store the mean date for plotting
+            if valid:
+                doublets.append((target_idx, ref_idx, amc))
+                # Get the mean time for the two images
+                times.append(mean_date((target_image['dates'], reference_image['dates'])))
+
+    return doublets, times
+
+
 def check_doublet(reference, target, amc_threshold, day_threshold, roi_threshold):
     """
     Check if this doublet meets all the criteria

@@ -79,10 +79,10 @@ class ToolsTests(TestCase):
         Test that check doublet returns correct results
         """
         dummy = {'dates': datetime.datetime(2000, 1, 1),
-                     'reflectance': np.ones((3,3,3))*np.nan,
-                     'SZA': 0,
-                     'VZA': 0,
-                     'RAA': 0}
+                 'reflectance': np.ones((3,3,3))*np.nan,
+                 'SZA': 0,
+                 'VZA': 0,
+                 'RAA': 0}
 
         # Test valid doublet
         valid = libtools.check_doublet(dummy, dummy, 0, 0, 0)
