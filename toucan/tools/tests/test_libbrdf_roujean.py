@@ -79,6 +79,20 @@ class BrdfRoujeanTests(TestCase):
                                      savename='savename')
                 brdf.plot_timeseries(dum, dum, dum)
 
+    def test_filter_timeseries(self):
+        """
+        Check that filter_timeseries removes correct values
+
+        NB we need to be able to compare arrays that contain nan. Normally nan!=nan by definition,
+        but we can use numpy.testing.assert_array_equal to compare such that nan==nan.
+        It returns None if the arrays are equal, and raises AssertionError if they are different
+        """
+        timeseries = np.array([0,1,2,3,4,5,6,7,8,9,10, 99,-99], dtype='float')
+        result = libbrdf_roujean.RoujeanBRDF.filter_timeseries(timeseries)
+        expected = np.array([0,1,2,3,4,5,6,7,8,9,10, np.nan,np.nan], dtype='float')
+
+        self.assertEqual(np.testing.assert_array_equal(result, expected), None)
+
     def test_save_csv(self):
         """
         Test the CSV file writer
