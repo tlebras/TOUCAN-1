@@ -38,8 +38,37 @@ class RadiometricDriftTests(TestCase):
 
     def test_region_check(self):
         """
-        Check that exception is raised if target and reference regions don't match
+        Check that exception is raised if target and reference regions don't match (and not if they do)
         """
         reference = {'region': 'reference'}
         target = {'region': 'target'}
+
+        # Check that IOError is raised for nonmatching regions
         self.assertRaises(IOError, librad_drift.RadiometricDrift.check_fields, reference, target)
+
+        # Check no error raised if regions match
+        librad_drift.RadiometricDrift.check_fields(reference, reference)
+
+    def test_get_drift_timeseries(self):
+        """
+        Check that expected reflectance ratio timeseries is returned
+        """
+        # NB inputs need to be to be lists
+        ref1 = 1.0
+        ref2 = 2.0
+        data = {'target': {'reflectance': [ref1,]},
+                'reference': {'reflectance': [ref2,]}
+                }
+        doublet = ([0, 0], )
+        result = librad_drift.RadiometricDrift.get_drift_timeseries(data, doublet)
+        self.assertEquals(result, [ref1/ref2, ])  # Output will be a list
+
+    def test_plot_drift(self):
+        """
+        Test the radiometric drift plot
+        """
+        with patch('matplotlib.pyplot.show') as mock:  # don't display the figure
+            with patch('matplotlib.pyplot.savefig') as mock2:  # don't display the figure
+                times = (datetime.datetime(2000, 1, 1), datetime.datetime(2001, 1, 1), datetime.datetime(2002, 1, 1))
+                ref_ratio = (1, 2, 3)
+                librad_drift.RadiometricDrift.plot_radiometric_drift(times, ref_ratio, 'target', 'reference')
