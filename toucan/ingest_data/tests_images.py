@@ -3,6 +3,7 @@ from mock import *
 import numpy as np
 
 from django.test import TestCase
+import unittest
 
 from ingest_data.ingest_images import *
 from ingest_data.ingest_images_file_readers import *
@@ -67,7 +68,7 @@ class InjestToolsTest(InjestToolsSetup):
                                        self.ingest.metadata['instrument'].upper(),str(self.ingest.metadata['datetime'].year))),
                           True)
 
-    @nottest
+    @unittest.skip('No X server running')  # to do, make a skipif 
     def test_make_quicklook(self):
         """
         Test creation of jpeg quicklook
