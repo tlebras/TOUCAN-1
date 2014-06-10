@@ -117,7 +117,9 @@ class BrdfRoujeanTests(TestCase):
         self.assertEquals(sum(results[0] != testdates), 0)
         # Check correct data values are returned
         self.assertEquals(np.sum(results[1:]), 0)
-
+        
+    
+    @nottest
     def test_plot_timeseries(self):
         """
         Test the timeseries plot
