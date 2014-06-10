@@ -1,5 +1,7 @@
 import numpy as np
 import datetime
+import unittest
+
 from django.test import TestCase
 from mock import *
 from tools import libbase, libbrdf_roujean
@@ -119,7 +121,7 @@ class BrdfRoujeanTests(TestCase):
         self.assertEquals(np.sum(results[1:]), 0)
         
     
-    @nottest
+    @unittest.skip('No X server running')  # to do, make a skipif 
     def test_plot_timeseries(self):
         """
         Test the timeseries plot
