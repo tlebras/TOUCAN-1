@@ -174,6 +174,7 @@ class FiletypeTests(InjestToolsSetup):
 class FunctionalTests(InjestToolsSetup):
     """Functional tests running the ingestion routines as the user will
     """
+    @unittest.skip('No X server running')  # to do, make a skipif 
     def test_ingest_single_image(self):
         """Ingest a single image, from the specified metadata file
         """
@@ -181,6 +182,7 @@ class FunctionalTests(InjestToolsSetup):
         with patch('os.rename') as mock:  # don't actually move the data file at the end
             I.ingest_image(self.testmeta)
 
+    @unittest.skip('No X server running')  # to do, make a skipif 
     def test_ingest_all_images(self):
         """Ingest all the images in the input directory
         """
