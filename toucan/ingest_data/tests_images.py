@@ -67,6 +67,7 @@ class InjestToolsTest(InjestToolsSetup):
                                        self.ingest.metadata['instrument'].upper(),str(self.ingest.metadata['datetime'].year))),
                           True)
 
+    @nottest
     def test_make_quicklook(self):
         """
         Test creation of jpeg quicklook
