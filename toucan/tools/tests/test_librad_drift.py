@@ -2,6 +2,7 @@ from django.test import TestCase
 from tools import librad_drift
 from mock import *
 import datetime
+import numpy as np
 
 class RadiometricDriftTests(TestCase):
     """
@@ -71,4 +72,10 @@ class RadiometricDriftTests(TestCase):
             with patch('matplotlib.pyplot.savefig') as mock2:  # don't display the figure
                 times = (datetime.datetime(2000, 1, 1), datetime.datetime(2001, 1, 1), datetime.datetime(2002, 1, 1))
                 ref_ratio = (1, 2, 3)
-                librad_drift.RadiometricDrift.plot_radiometric_drift(times, ref_ratio, 'target', 'reference')
+
+                plot = librad_drift.RadiometricDrift.plot_radiometric_drift
+                # Test without optional arguments
+                plot(times, ref_ratio, 'target', 'reference', band=0)
+
+                # Test with optional arguments
+                plot(times, ref_ratio, 'target', 'reference', band=0, savename='plot.png')

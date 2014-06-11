@@ -1,6 +1,7 @@
 import numpy as np
 import datetime
 import matplotlib.pyplot as plt
+import csv
 
 from libbase import ToolBase
 from libquerydb import Querydb
@@ -12,13 +13,13 @@ def main():
     #  Query the database for matching files
     Q = Querydb()
     search = {'site': 'Libya4',
-              'sensor': 'meris',
+              'sensor': 'aatsr',
               'end_date': '2006-12-31',
               'order_by': 'time',
               }
     reference = Q.get_images(search)
 
-    search['sensor'] = 'aatsr'
+    search['sensor'] = 'meris'
     target = Q.get_images(search)
 
     drift = RadiometricDrift()
@@ -35,38 +36,72 @@ class RadiometricDrift(ToolBase):
                        'target': target
                        }
 
-        #  TODO think how we will organise the bands
-        band_idx = {'reference': 12,
-                    'target': 2}
-
         # -------------------------------
-        # Extract fields we need
+        # Extract metadata fields
         # -------------------------------
         data = {}
         for sensor in ('reference', 'target'):
             data[sensor] = self.extract_fields(jsonresults[sensor])
-            data[sensor]['reflectance'] = libtools.get_reflectance_band(data[sensor]['files'], band_idx[sensor])
-        # Instrument names
-        ref_instrument = data['reference']['instrument'][0]
-        target_instrument = data['target']['instrument'][0]
 
         # Check data are ok
         self.check_fields(data['reference'], data['target'])
 
-        # -------------------------------
-        # Doublets are found using angular matching criteria
-        # -------------------------------
-        doublets, doublet_times = libtools.get_doublets(data['reference'], data['target'], amc_threshold=45, day_threshold=3)
+        # Pick out instrument names
+        instrument = {'reference': data['reference']['instrument'][0],
+                      'target': data['target']['instrument'][0]}
 
         # -------------------------------
-        # Timeseries of drift is calculated
+        # Get lists of wavelengths
         # -------------------------------
-        ref_ratio = self.get_drift_timeseries(data, doublets)
+        Q = Querydb()
+        wavelengths = {'target': np.array(Q.get_wavelengths(instrument['target'])),
+                       'reference': np.array(Q.get_wavelengths(instrument['reference']))
+                       }
 
         # -------------------------------
-        # Plot displayed and/or saved
+        # Loop over all the target sensor's
+        # bands and see if we have a reference
+        # sensor band close to it
+        #
+        # If we do, carry on and process that band,
+        # else skip to the next one
         # -------------------------------
-        self.plot_radiometric_drift(doublet_times, ref_ratio, target_instrument, ref_instrument)
+        ref_ratio_all = []
+        drift_all = []
+        bands = []
+        for target_idx, target_band in enumerate(wavelengths['target']):
+            ref_idx = np.argmin(np.abs(np.array(wavelengths['reference'] - target_band)))
+            ref_band = wavelengths['reference'][ref_idx]
+
+            if np.abs(target_band - ref_band) > 10:
+                pass
+            else:
+                band_idx = {'reference': ref_idx, 'target': target_idx}
+                bands.append(target_band)
+                # -------------------------------
+                # Read reflectance from geotiffs
+                # -------------------------------
+                for sensor in ('reference', 'target'):
+                    data[sensor]['reflectance'] = libtools.get_reflectance_band(data[sensor]['files'], band_idx[sensor])
+
+                # -------------------------------
+                # Doublets are found using angular matching criteria
+                # -------------------------------
+                doublets, doublet_times = libtools.get_doublets(data['reference'], data['target'], amc_threshold=45)
+
+                # -------------------------------
+                # Timeseries of drift is calculated
+                # -------------------------------
+                ref_ratio = self.get_drift_timeseries(data, doublets)
+                ref_ratio_all.append(ref_ratio)
+
+                # -------------------------------
+                # Plot displayed and/or saved
+                # -------------------------------
+                savename = 'drift_%s_ref_%s_%i.png' % (instrument['target'], instrument['reference'], target_band)
+                drift = self.plot_radiometric_drift(doublet_times, ref_ratio, instrument['target'], 
+                                                    instrument['reference'], target_band, savename)
+                drift_all.append(drift)
 
         # Text file saved
 
@@ -99,6 +134,10 @@ class RadiometricDrift(ToolBase):
     def check_fields(reference, target):
         """
         Check that target and reference regions match
+
+        :param reference: Dictionary with reference sensor data
+        :param target: Dictionary with target sensor data
+        :raises IOError: if the regions don't match
         """
         if set(reference['region']) != set(target['region']):
             raise IOError("ERROR: Target and reference sensor regions do not match")
@@ -124,7 +163,7 @@ class RadiometricDrift(ToolBase):
         return refratio
 
     @staticmethod
-    def plot_radiometric_drift(times, ref_ratio, target, reference):
+    def plot_radiometric_drift(times, ref_ratio, target, reference, band, savename=None):
         """
         Plot the ratio of target and reference reflectance, and over lay regression line.
 
@@ -132,22 +171,49 @@ class RadiometricDrift(ToolBase):
         :param ref_ratio: The reflectance ratio timeseries to plot
         :param target: String name of target sensor
         :param reference: String name of reference sensor
+        :param band: The wavelength of this timeseries
+        :param savename: [optional] Filename to save to
+        :returns: The drift (per year)
         """
         sec2year = 86400. * 365.  # Number of seconds in a year
 
-        # Fit line to ratio. NB polyfit doesn't understand datetime objects
+        # Fit line to ratio. NB polyfit doesn't understand datetime objects so convert to timestamps (seconds)
         timestamps = [float(d.strftime('%s')) for d in times]
-        fit = np.polyfit(timestamps, ref_ratio,1)
+        fit = np.polyfit(timestamps, ref_ratio, 1)
         fit_fn = np.poly1d(fit)
 
         drift = fit[0] * sec2year
-        # Plot points and regression line
-        plt.plot(times, ref_ratio, 'yo', times, fit_fn(timestamps), '--k')
 
-        plt.xlabel('Date')
-        plt.ylabel('%s reflectance / %s reflectance' %(target.upper(), reference.upper()))
-        plt.title('Drift: %0.2f per year'%drift)
-        plt.show()
+        # Plot points and regression line
+        plt.figure(figsize=(16, 10))
+        plt.rcParams.update({'font.size': 18})
+        plt.plot(times, ref_ratio, 'bo', times, fit_fn(timestamps), '--k')
+        plt.ylabel('%s / %s reflectance at band %03i nm' %(target.upper(), reference.upper(), band))
+        plt.title('Drift: %0.2f per year' % drift)
+
+        if savename:
+            plt.savefig(savename)
+        else:
+            plt.show()
+
+        return drift
+
+    @staticmethod
+    def save_as_text(bands, drift, filename):
+        """
+        Save the drift information to a csv text file
+
+        :param bands: List of the wavelengths
+        :param drfit: List of the drift values that were calculated
+        :param filename: The file to write to
+        """
+        header_row = ['Wavelength', 'Drift']
+
+        # Write to CSV file
+        csv_file = csv.writer(open(filename,"w"), delimiter=',', quoting=csv.QUOTE_MINIMAL)
+        csv_file.writerow(header_row)
+        for ind, band in enumerate(bands):
+            csv_file.writerow([band, drift[ind]])
 
 if __name__ == '__main__':
    main()
