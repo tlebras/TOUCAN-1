@@ -187,5 +187,5 @@ JENKINS_TASKS = (
 )
 
 PROJECT_APPS=(
-    'toucan',
+    'toucan_db',
 )
