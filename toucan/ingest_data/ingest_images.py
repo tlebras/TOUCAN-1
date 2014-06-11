@@ -132,7 +132,7 @@ class IngestImages():
         # Append AATSR direction to the file name if required
         direction = (self.metadata['direction'] if 'direction' in self.metadata.keys() else '')
         dir_str = ('_'+direction if direction.isalnum() else '')
-        outfile = os.path.join(savedir, os.path.splitext(self.metadata['filename'])[0]+dir_str+'.tif')
+        outfile = os.path.join(savedir, os.path.splitext(os.path.basename(self.metadata['filename']))[0]+dir_str+'.tif')
         self.metadata['archive_location'] = outfile # Save for later when we add to database
 
         # We give the origin as bottom left corner, then treat both dx and dy as +ve.
@@ -142,7 +142,7 @@ class IngestImages():
         GeoTools.array2raster(outfile, rasterOrigin, dx, dy, self.data, self.metadata['variables'])
 
         # Save the viewing angles in a separate file
-        outfile = os.path.join(savedir, os.path.splitext(self.metadata['filename'])[0]+dir_str+'_view_angles.tif')
+        outfile = os.path.join(savedir, os.path.splitext(os.path.basename(self.metadata['filename']))[0]+dir_str+'_view_angles.tif')
         GeoTools.array2raster(outfile, rasterOrigin, dx, dy, self.data, self.metadata['angle_names'].keys())
 
     def make_quicklook(self):
@@ -158,7 +158,7 @@ class IngestImages():
         # Append AATSR direction to the file name if required
         direction = (self.metadata['direction'] if 'direction' in self.metadata.keys() else '')
         dir_str = ('_'+direction if direction.isalnum() else '')
-        outfile = os.path.join(savedir, os.path.splitext(self.metadata['filename'])[0]+dir_str+'.jpg')
+        outfile = os.path.join(savedir, os.path.splitext(os.path.basename(self.metadata['filename']))[0]+dir_str+'.jpg')
         self.metadata['web_location'] = outfile
 
         # Define wavelengths to use as RGB bands
@@ -231,9 +231,9 @@ class IngestImages():
 
         # Make sure the geotiff was created before moving files
         if os.path.isfile(self.metadata['archive_location']):
-            # Data file (contains filename only)
-            os.rename(os.path.join(self.inputdir,self.metadata['filename']),
-                      os.path.join(ingested_dir,self.metadata['filename']))
+            # Data file
+            os.rename(self.metadata['filename'],
+                      os.path.join(ingested_dir, os.path.basename(self.metadata['filename'])))
         if meta:
-            # Metadata file (contains path)
+            # Metadata
             os.rename(self.metafile, os.path.join(ingested_dir,os.path.basename(self.metafile)))
