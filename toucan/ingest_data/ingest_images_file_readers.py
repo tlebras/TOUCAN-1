@@ -170,7 +170,7 @@ class DataReaders():
         from osgeo import gdal
 
         data = {}
-        hdf = gdal.Open(os.path.join(ingest.inputdir, str(ingest.metadata['filename'])))
+        hdf = gdal.Open(str(ingest.metadata['filename']))
 
         # Get the time
         time_temp = float(hdf.GetMetadataItem(ingest.metadata['time_variable']))
@@ -229,7 +229,7 @@ class DataReaders():
         import epr
 
         data = {}
-        image = epr.open(os.path.join(ingest.inputdir, str(ingest.metadata['filename'])))
+        image = epr.open(str(ingest.metadata['filename']))
 
         # Get date/time (is a string like '06-APR-2012 09:00:56.832999')
         time_temp = image.get_sph().get_field(ingest.metadata['time_variable']).get_elem()

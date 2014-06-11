@@ -99,15 +99,14 @@ class InjestToolsTest(InjestToolsSetup):
         """
         with patch('os.rename') as mock:
             self.ingest.metafile = 'test.json'
-            self.ingest.metadata = {'filename': 'test.hdf',
+            self.ingest.metadata = {'filename': '/path/to/some/test.hdf',
                                     'archive_location': __file__,  # File that must exist
                                     }
             self.ingest.tidy_up(meta=True)
-        print self.ingest.metadata['archive_location']
         mock.assert_any_call(self.ingest.metafile,
                              os.path.join(self.ingest.inputdir, 'ingested', os.path.basename(self.ingest.metafile)))
-        mock.assert_any_call(os.path.join(self.ingest.inputdir, self.ingest.metadata['filename']),
-                                os.path.join(self.ingest.inputdir, 'ingested', self.ingest.metadata['filename']))
+        mock.assert_any_call(self.ingest.metadata['filename'],
+                             os.path.join(self.ingest.inputdir, 'ingested', os.path.basename(self.ingest.metadata['filename'])))
 
 
 class GeoToolsTests(InjestToolsSetup):
