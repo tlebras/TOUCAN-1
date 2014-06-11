@@ -103,7 +103,12 @@ class RadiometricDrift(ToolBase):
                                                     instrument['reference'], target_band, savename)
                 drift_all.append(drift)
 
+        # -------------------------------
         # Text file saved
+        # -------------------------------
+        region = data['reference']['region'][0]
+        csv_file = '_'.join(['rad_drift', instrument['target'], 'reference', instrument['reference'], region])+'.csv'
+        self.save_as_text(bands, drift_all, csv_file)
 
     @staticmethod
     def extract_fields(jsonresults):

@@ -79,3 +79,13 @@ class RadiometricDriftTests(TestCase):
 
                 # Test with optional arguments
                 plot(times, ref_ratio, 'target', 'reference', band=0, savename='plot.png')
+
+    def test_save_csv(self):
+        """
+        Test the CSV file writer
+        """
+        # Avoid actually opening/writing to a file
+        with patch('__builtin__.open') as mock:
+            bands = range(3)
+            drift = np.zeros((len(bands)))
+            librad_drift.RadiometricDrift.save_as_text(bands, drift, 'filename.csv')
