@@ -168,7 +168,7 @@ class RadiometricDrift(ToolBase):
         return refratio
 
     @staticmethod
-    def plot_radiometric_drift(times, ref_ratio, target, reference, band, savename=None):
+    def plot_radiometric_drift(times, ref_ratio, target, reference, band, savename=None, doplot=True):
         """
         Plot the ratio of target and reference reflectance, and over lay regression line.
 
@@ -189,17 +189,18 @@ class RadiometricDrift(ToolBase):
 
         drift = fit[0] * sec2year
 
-        # Plot points and regression line
-        plt.figure(figsize=(16, 10))
-        plt.rcParams.update({'font.size': 18})
-        plt.plot(times, ref_ratio, 'bo', times, fit_fn(timestamps), '--k')
-        plt.ylabel('%s / %s reflectance at band %03i nm' %(target.upper(), reference.upper(), band))
-        plt.title('Drift: %0.2f per year' % drift)
+        if doplot:
+            # Plot points and regression line
+            plt.figure(figsize=(16, 10))
+            plt.rcParams.update({'font.size': 18})
+            plt.plot(times, ref_ratio, 'bo', times, fit_fn(timestamps), '--k')
+            plt.ylabel('%s / %s reflectance at band %03i nm' %(target.upper(), reference.upper(), band))
+            plt.title('Drift: %0.2f per year' % drift)
 
-        if savename:
-            plt.savefig(savename)
-        else:
-            plt.show()
+            if savename:
+                plt.savefig(savename)
+            else:
+                plt.show()
 
         return drift
 

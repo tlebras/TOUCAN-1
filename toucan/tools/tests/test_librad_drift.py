@@ -70,15 +70,11 @@ class RadiometricDriftTests(TestCase):
         """
         with patch('matplotlib.pyplot.show') as mock:  # don't display the figure
             with patch('matplotlib.pyplot.savefig') as mock2:  # don't display the figure
-                times = (datetime.datetime(2000, 1, 1), datetime.datetime(2001, 1, 1), datetime.datetime(2002, 1, 1))
-                ref_ratio = (1, 2, 3)
-
+                times = (datetime.datetime(2000, 1, 1), datetime.datetime(2000, 1, 2), datetime.datetime(2000, 1, 3))
+                ref_ratio = (0, 0, 0)
                 plot = librad_drift.RadiometricDrift.plot_radiometric_drift
-                # Test without optional arguments
-                plot(times, ref_ratio, 'target', 'reference', band=0)
-
-                # Test with optional arguments
-                plot(times, ref_ratio, 'target', 'reference', band=0, savename='plot.png')
+                drift = plot(times, ref_ratio, 'target', 'reference', band=0, doplot=False)
+                self.assertEqual(drift, 0)
 
     def test_save_csv(self):
         """
