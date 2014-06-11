@@ -130,7 +130,9 @@ INSTALLED_APPS = (
     'toucan_db',
     'ingest_data',
     'tastypie',
-    'django_jenkins'
+    'django_jenkins',
+    'toucan',
+    'tools',
     #'south',
     # Uncomment the next line to enable the admin:
     # 'django.contrib.admin',
@@ -188,4 +190,7 @@ JENKINS_TASKS = (
 
 PROJECT_APPS=(
     'toucan_db',
+    'toucan',
+    'ingest_data',
+    'tools'
 )
