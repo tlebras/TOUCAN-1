@@ -2,7 +2,7 @@ import requests
 
 class Querydb(object):
     """
-    Perform query of the TOUCAN database, using the search parameters passed in
+    Perform queries on the TOUCAN database
     """
 
     def __init__(self):

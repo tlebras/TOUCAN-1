@@ -4,65 +4,13 @@ import unittest
 
 from django.test import TestCase
 from mock import *
-from tools import libbase, libbrdf_roujean
-
-
-class BaseTests(TestCase):
-
-    def test_base_class(self):
-        """
-        Test abstract base class
-        """
-        class MyClass(libbase.ToolBase):
-            def run(self):
-                pass
-
-        self.assertTrue(issubclass(MyClass, libbase.ToolBase))
-        self.assertTrue(isinstance(MyClass(), libbase.ToolBase))
-
-    def test_incomplete_base_class(self):
-        """
-        Check that base class fails to instantiate if it doesn't
-        overload the run method
-        """
-        class MyClass(libbase.ToolBase):
-            def norun(self):
-                pass
-
-        self.assertTrue(issubclass(MyClass, libbase.ToolBase))
-        with self.assertRaises(TypeError):
-            MyClass()
+from tools import libbrdf_roujean
 
 
 class BrdfRoujeanTests(TestCase):
     """
     Test the Roujean BRDF library
     """
-    def test_get_angles(self):
-        """
-        Test that get_angles returns expected results
-        """
-        testjson = [{'SAA':0, 'SZA':0, 'VZA':0, 'VAA':0}]
-        sun_zenith, sensor_zenith, relative_azimuth = libbrdf_roujean.RoujeanBRDF.get_angles(testjson)
-        self.assertEquals(sun_zenith, 0)
-        self.assertEquals(sensor_zenith, 0)
-        self.assertEquals(relative_azimuth, 0)
-
-    def test_get_reflectance(self):
-        """
-        Test get_reflectance returns correct array shape
-        """
-        fake_files = ('file1', 'file2')
-        nfiles = len(fake_files)
-        nbands = 3  # Arbitrary
-
-        # Mock the file opening bit
-        with patch('osgeo.gdal.Open') as mock:
-            # Set fake return_value to mock reading in data from the file
-            mock.return_value.ReadAsArray.return_value = np.zeros((nbands, 2, 2))
-            out = libbrdf_roujean.RoujeanBRDF.get_reflectance(fake_files)
-            self.assertTrue((out == np.zeros((nbands, nfiles))).all())
-
     def test_calc_f1_kernel(self):
         """
         Test calculation of f1 kernel
@@ -134,6 +82,20 @@ class BrdfRoujeanTests(TestCase):
                 brdf.plot_timeseries(dum, dum, dum, title='title', xlabel='xlabel', ylabel='ylabel',
                                      savename='savename')
                 brdf.plot_timeseries(dum, dum, dum)
+
+    def test_filter_timeseries(self):
+        """
+        Check that filter_timeseries removes correct values
+
+        NB we need to be able to compare arrays that contain nan. Normally nan!=nan by definition,
+        but we can use numpy.testing.assert_array_equal to compare such that nan==nan.
+        It returns None if the arrays are equal, and raises AssertionError if they are different
+        """
+        timeseries = np.array([0,1,2,3,4,5,6,7,8,9,10, 99,-99], dtype='float')
+        result = libbrdf_roujean.RoujeanBRDF.filter_timeseries(timeseries)
+        expected = np.array([0,1,2,3,4,5,6,7,8,9,10, np.nan,np.nan], dtype='float')
+
+        self.assertEqual(np.testing.assert_array_equal(result, expected), None)
 
     def test_save_csv(self):
         """
