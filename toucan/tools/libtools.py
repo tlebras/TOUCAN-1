@@ -147,12 +147,10 @@ def get_doublets(reference, target, amc_threshold=15, day_threshold=3, roi_thres
             reference_image = slice_dictionary(reference, ref_idx)
             target_image = slice_dictionary(target, target_idx)
             valid = check_doublet(reference_image, target_image, amc_threshold, day_threshold, roi_threshold)
-            amc = calc_amc((reference_image['SZA'], target_image['SZA']), (reference_image['VZA'], target_image['VZA']),
-                   (reference_image['RAA'], target_image['RAA']))
             # Check if this pair of images meets the criteria to be a doublet
             # and store the indices if so. Also store the mean date for plotting
             if valid:
-                doublets.append((target_idx, ref_idx, amc))
+                doublets.append((target_idx, ref_idx))
                 # Get the mean time for the two images
                 times.append(mean_date((target_image['dates'], reference_image['dates'])))
 
