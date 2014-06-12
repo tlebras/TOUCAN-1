@@ -114,7 +114,10 @@ class RadiometricDrift(ToolBase):
     def extract_fields(jsonresults):
         """
         Extract fields that we need from the JSON object
-        and return in a nicer format
+        and return as a dictionary
+        
+        :param jsonresults: The results from a database query, as JSON format
+        :returns: Dictionary containing all the data
         """
         files = np.array([result['archive_location'] for result in jsonresults])
         dates = np.array([datetime.datetime.strptime(result['time'], '%Y-%m-%dT%H:%M:%S.%f') for result in jsonresults])
@@ -150,12 +153,12 @@ class RadiometricDrift(ToolBase):
     @staticmethod
     def get_drift_timeseries(data, doublets):
         """
-        Compute the ratio of targe:reference reflectance, given a list of doublets. The area mean
+        Compute the ratio of target/reference reflectance, given a list of doublets. The area mean
         reflectance values are used.
 
         :param data: Dictionary containing the image data
         :param doublets: A list of tuples, each holding the index of the target and reference sensor for that doublet pair
-        :returns: Timeseries of reflectance ratio 
+        :returns: Timeseries of reflectance ratio
         """
         # Get reflectance ratio
         refratio = []
@@ -178,6 +181,8 @@ class RadiometricDrift(ToolBase):
         :param reference: String name of reference sensor
         :param band: The wavelength of this timeseries
         :param savename: [optional] Filename to save to
+        :param doplot: [optional] Set this to False to prevent the plotting commands being executed
+         (for running without a matplotlib backend defined)
         :returns: The drift (per year)
         """
         sec2year = 86400. * 365.  # Number of seconds in a year
@@ -210,7 +215,7 @@ class RadiometricDrift(ToolBase):
         Save the drift information to a csv text file
 
         :param bands: List of the wavelengths
-        :param drfit: List of the drift values that were calculated
+        :param drift: List of the drift values that were calculated
         :param filename: The file to write to
         """
         header_row = ['Wavelength', 'Drift']

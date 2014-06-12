@@ -10,7 +10,8 @@ import datetime
 def slice_dictionary(dic_in, idx):
     """
     Slice a dictionary - ie given a dictionary where all the keys point to a list (or 1d array),
-    return a new dictionary with the same keys but just one slice from each of those lists
+    return a new dictionary with the same keys but just one slice from each of those lists.
+    It is as if we could do ``dictionary[:][index]``
 
     :param dic_in: Input dictionary to be sliced
     :param idx: Index to slice
@@ -127,6 +128,8 @@ def get_doublets(reference, target, amc_threshold=15, day_threshold=3, roi_thres
     :param amc_threshold: [Optional] Threshold value to use for AMC (default 15)
     :param day_threshold: [Optional] Threshold value for time offset allowed, in days (default 3)
     :param roi_threshold: [Optional] Minimum ROI coverage allowed as a fraction (default 0.75)
+    :returns: List of index pairs (ie index of the image in the reference and target image lists),
+     and list of the mean time for each doublet.
     """
     maxdays = datetime.timedelta(days=day_threshold)
     doublets = []
@@ -165,7 +168,7 @@ def check_doublet(reference, target, amc_threshold, day_threshold, roi_threshold
     :param amc_threshold: Threshold value for AMC
     :param day_threshold: Threshold value for time offset, in days
     :param roi_threshold: Threshold value for ROI coverage, as fraction
-    :returns: valid, True if doublet meets all criteria, False if any failed
+    :returns: True if doublet meets all criteria, False if any failed
     """
     valid_doublet = True
 
