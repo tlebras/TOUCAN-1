@@ -8,11 +8,11 @@ from tools import libbase, libbrdf_roujean
 
 
 class BaseTests(TestCase):
-
     def test_base_class(self):
         """
         Test abstract base class
         """
+
         class MyClass(libbase.ToolBase):
             def run(self):
                 pass
@@ -25,6 +25,7 @@ class BaseTests(TestCase):
         Check that base class fails to instantiate if it doesn't
         overload the run method
         """
+
         class MyClass(libbase.ToolBase):
             def norun(self):
                 pass
@@ -38,11 +39,12 @@ class BrdfRoujeanTests(TestCase):
     """
     Test the Roujean BRDF library
     """
+
     def test_get_angles(self):
         """
         Test that get_angles returns expected results
         """
-        testjson = [{'SAA':0, 'SZA':0, 'VZA':0, 'VAA':0}]
+        testjson = [{'SAA': 0, 'SZA': 0, 'VZA': 0, 'VAA': 0}]
         sun_zenith, sensor_zenith, relative_azimuth = libbrdf_roujean.RoujeanBRDF.get_angles(testjson)
         self.assertEquals(sun_zenith, 0)
         self.assertEquals(sensor_zenith, 0)
@@ -84,21 +86,21 @@ class BrdfRoujeanTests(TestCase):
         brdf = libbrdf_roujean.RoujeanBRDF()
 
         # Test returns expected result from valid input
-        dum = np.array([0,])  # arguments need to be numpy arrays
+        dum = np.array([0, ])  # arguments need to be numpy arrays
         k_coeff = brdf.calc_roujean_coeffs(dum, dum, dum, dum)
         self.assertEquals(sum(k_coeff), 0)
 
         # Test returns -999 if scipy.linalg.lstsq fails
-        dum = np.array([np.nan,])  # arguments need to be numpy arrays
+        dum = np.array([np.nan, ])  # arguments need to be numpy arrays
         k_coeff = brdf.calc_roujean_coeffs(dum, dum, dum, dum)
-        self.assertEquals(sum(k_coeff), -999*3)
+        self.assertEquals(sum(k_coeff), -999 * 3)
 
     def test_calc_brdf(self):
         """
         Test BRDF calculation
         """
         brdf = libbrdf_roujean.RoujeanBRDF()
-        brdf = brdf.calc_brdf(0, 0, 0, [0,0,0])
+        brdf = brdf.calc_brdf(0, 0, 0, [0, 0, 0])
         self.assertEquals(brdf, 0)
 
     def test_brdf_timeseries(self):
@@ -119,8 +121,7 @@ class BrdfRoujeanTests(TestCase):
         self.assertEquals(sum(results[0] != testdates), 0)
         # Check correct data values are returned
         self.assertEquals(np.sum(results[1:]), 0)
-        
-    
+
     @unittest.skip('No X server running')  # to do, make a skipif 
     def test_plot_timeseries(self):
         """

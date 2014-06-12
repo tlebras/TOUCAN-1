@@ -18,7 +18,7 @@ def main():
     #  Query the database for matching files
     search = {'site': 'Libya4',
               'sensor': 'meris',
-              'end_date':'2006-12-31',
+              'end_date': '2006-12-31',
               'order_by': 'time',
               }
     Q = Querydb()
