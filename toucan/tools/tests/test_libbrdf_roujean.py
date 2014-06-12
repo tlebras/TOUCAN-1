@@ -44,7 +44,7 @@ class BrdfRoujeanTests(TestCase):
         """
         Test that get_angles returns expected results
         """
-        testjson = [{'SAA': 0, 'SZA': 0, 'VZA': 0, 'VAA': 0}]
+        testjson = [{'SAA':0, 'SZA':0, 'VZA':0, 'VAA':0}]
         sun_zenith, sensor_zenith, relative_azimuth = libbrdf_roujean.RoujeanBRDF.get_angles(testjson)
         self.assertEquals(sun_zenith, 0)
         self.assertEquals(sensor_zenith, 0)
@@ -86,21 +86,21 @@ class BrdfRoujeanTests(TestCase):
         brdf = libbrdf_roujean.RoujeanBRDF()
 
         # Test returns expected result from valid input
-        dum = np.array([0, ])  # arguments need to be numpy arrays
+        dum = np.array([0,])  # arguments need to be numpy arrays
         k_coeff = brdf.calc_roujean_coeffs(dum, dum, dum, dum)
         self.assertEquals(sum(k_coeff), 0)
 
         # Test returns -999 if scipy.linalg.lstsq fails
-        dum = np.array([np.nan, ])  # arguments need to be numpy arrays
+        dum = np.array([np.nan,])  # arguments need to be numpy arrays
         k_coeff = brdf.calc_roujean_coeffs(dum, dum, dum, dum)
-        self.assertEquals(sum(k_coeff), -999 * 3)
+        self.assertEquals(sum(k_coeff), -999*3)
 
     def test_calc_brdf(self):
         """
         Test BRDF calculation
         """
         brdf = libbrdf_roujean.RoujeanBRDF()
-        brdf = brdf.calc_brdf(0, 0, 0, [0, 0, 0])
+        brdf = brdf.calc_brdf(0, 0, 0, [0,0,0])
         self.assertEquals(brdf, 0)
 
     def test_brdf_timeseries(self):
@@ -121,7 +121,8 @@ class BrdfRoujeanTests(TestCase):
         self.assertEquals(sum(results[0] != testdates), 0)
         # Check correct data values are returned
         self.assertEquals(np.sum(results[1:]), 0)
-
+        
+    
     @unittest.skip('No X server running')  # to do, make a skipif 
     def test_plot_timeseries(self):
         """
@@ -135,6 +136,20 @@ class BrdfRoujeanTests(TestCase):
                 brdf.plot_timeseries(dum, dum, dum, title='title', xlabel='xlabel', ylabel='ylabel',
                                      savename='savename')
                 brdf.plot_timeseries(dum, dum, dum)
+
+    def test_filter_timeseries(self):
+        """
+        Check that filter_timeseries removes correct values
+
+        NB we need to be able to compare arrays that contain nan. Normally nan!=nan by definition,
+        but we can use numpy.testing.assert_array_equal to compare such that nan==nan.
+        It returns None if the arrays are equal, and raises AssertionError if they are different
+        """
+        timeseries = np.array([0,1,2,3,4,5,6,7,8,9,10, 99,-99], dtype='float')
+        result = libbrdf_roujean.RoujeanBRDF.filter_timeseries(timeseries)
+        expected = np.array([0,1,2,3,4,5,6,7,8,9,10, np.nan,np.nan], dtype='float')
+
+        self.assertEqual(np.testing.assert_array_equal(result, expected), None)
 
     def test_save_csv(self):
         """

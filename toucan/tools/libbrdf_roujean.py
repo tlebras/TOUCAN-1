@@ -6,12 +6,10 @@ import datetime
 import matplotlib.pyplot as plt
 import csv
 
-from osgeo import gdal
-
 sys.path.append(".")
 from libbase import ToolBase
 from libquerydb import Querydb
-
+import libtools
 
 def main():
 
@@ -51,14 +49,14 @@ class RoujeanBRDF(ToolBase):
         # -------------------------------
         files = np.array([result['archive_location'] for result in jsonresults])
         dates = np.array([datetime.datetime.strptime(result['time'], '%Y-%m-%dT%H:%M:%S.%f') for result in jsonresults])
-        sun_zenith, sensor_zenith, relative_azimuth = self.get_angles(jsonresults)
+        sun_zenith, sensor_zenith, relative_azimuth = libtools.get_angles(jsonresults)
         instrument = jsonresults[0]['instrument']['name']
         region = jsonresults[0]['region']['region']
 
         # -------------------------------
         # Read reflectance from the archived files
         # -------------------------------
-        reflectance_arr = self.get_reflectance(files)
+        reflectance_arr = libtools.get_mean_reflectance(files)
 
         # -------------------------------
         # Get list of wavelengths
@@ -92,7 +90,7 @@ class RoujeanBRDF(ToolBase):
         title = instrument.upper()+' BRDF at site '+region
         savename = '_'.join(['brdf', instrument, region, d_min, d_max])+'.png'
         self.plot_timeseries(datebins, plot_brdf, wavelengths, xlabel='Date',
-                             title=title)
+                             title=title, savename=savename)
 
         # -------------------------------
         # Save to text file
@@ -101,62 +99,6 @@ class RoujeanBRDF(ToolBase):
         csv_file = '_'.join(['brdf', instrument, region, d_min, d_max])+'.csv'
         self.save_as_text(datebins, ['BRDF', 'Reflectance', 'Random error', 'Systematic error'], wavelengths,
                           [brdf_arr, ref_arr, err_r_arr, err_s_arr], csv_file)
-
-    @staticmethod
-    def get_angles(jsonresults):
-        """
-        Extract the viewing angle information from the JSON object returned
-        from the database
-
-        :param jsonresults: JSON formatted string result from database query
-        :returns: sun zenith angle, sensor zenith angle, relative azimuth angle (in radians)
-        """
-        angles={}
-        for angle in ('SZA', 'SAA', 'VZA', 'VAA'):
-            angles[angle] = np.array([entry[angle] for entry in jsonresults])
-
-        sun_zenith = scipy.deg2rad(angles['SZA'])
-        sensor_zenith = scipy.deg2rad(angles['VZA'])
-
-        # Relative azimuth angle, should be in range 0-180
-        relative_azimuth = np.abs(scipy.deg2rad(angles['SAA']) - scipy.deg2rad(angles['VAA']))
-        fix = relative_azimuth > scipy.pi
-        relative_azimuth[fix] = 2*scipy.pi - relative_azimuth[fix]
-
-        return sun_zenith, sensor_zenith, relative_azimuth
-
-    @staticmethod
-    def get_reflectance(filelist):
-        """
-        Read in reflectance data from list of GeoTiff files, and compute the area mean
-        for each band for each file.
-
-        :param filelist: List of file names to read
-        :returns: Array of reflectances, dimensions nbands x nfiles
-        """
-        def read_file(thisfile):
-            """
-            Function to open Geotiff and read data as array
-            Returns area mean
-            """
-            image = gdal.Open(thisfile)
-            data = image.ReadAsArray()
-            arr = np.nanmean(np.nanmean(data, axis=1), axis=1)
-            image = None
-            return arr
-
-        # Loop over all the files and read reflectances
-        first = True
-        for thisfile in filelist:
-            dat = read_file(thisfile)
-            if first:
-                reflectance_arr = dat
-                first = False
-            else:
-                reflectance_arr = np.vstack([reflectance_arr, dat])
-
-        # Return the array, transposed so first dimension is the band
-        return reflectance_arr.T
 
     @staticmethod
     def calc_kernel_f1(sun_zenith, sensor_zenith, relative_azimuth):
@@ -342,8 +284,7 @@ class RoujeanBRDF(ToolBase):
 
                 # Keep track of the bin's mean datetime, for plotting
                 # Convert to timestamps first, to enable easy mean calculation
-                timestamps = [float(d.strftime('%s')) for d in dates[idx]]
-                datebins.append(datetime.datetime.fromtimestamp(np.mean(timestamps)))
+                datebins.append(libtools.mean_date(dates[idx]))
 
             current += step
 
@@ -400,7 +341,7 @@ class RoujeanBRDF(ToolBase):
 
         # Show or save figure
         if savename:
-            plt.savefig(savename)
+            plt.savefig(savename, bbox_inches='tight', pad_inches=0)
         else:
             plt.show()
 
