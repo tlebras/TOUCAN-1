@@ -191,14 +191,14 @@ class RadiometricDrift(ToolBase):
 
         if doplot:
             # Plot points and regression line
-            plt.figure(figsize=(16, 10))
+            fig = plt.figure(figsize=(16, 10))
             plt.rcParams.update({'font.size': 18})
             plt.plot(times, ref_ratio, 'bo', times, fit_fn(timestamps), '--k')
             plt.ylabel('%s / %s reflectance at band %03i nm' %(target.upper(), reference.upper(), band))
             plt.title('Drift: %0.2f per year' % drift)
-
+            fig.autofmt_xdate()  # For better auto placement of xaxis date ticks
             if savename:
-                plt.savefig(savename)
+                plt.savefig(savename, bbox_inches='tight', pad_inches=0)
             else:
                 plt.show()
 

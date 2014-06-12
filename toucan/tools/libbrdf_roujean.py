@@ -90,7 +90,7 @@ class RoujeanBRDF(ToolBase):
         title = instrument.upper()+' BRDF at site '+region
         savename = '_'.join(['brdf', instrument, region, d_min, d_max])+'.png'
         self.plot_timeseries(datebins, plot_brdf, wavelengths, xlabel='Date',
-                             title=title)
+                             title=title, savename=savename)
 
         # -------------------------------
         # Save to text file
@@ -341,7 +341,7 @@ class RoujeanBRDF(ToolBase):
 
         # Show or save figure
         if savename:
-            plt.savefig(savename)
+            plt.savefig(savename, bbox_inches='tight', pad_inches=0)
         else:
             plt.show()
 
