@@ -63,7 +63,7 @@
 <dl class="class">
 <dt id="tools.libquerydb.Querydb">
 <em class="property">class </em><tt class="descclassname">tools.libquerydb.</tt><tt class="descname">Querydb</tt><a class="headerlink" href="#tools.libquerydb.Querydb" title="Permalink to this definition">¶</a></dt>
-<dd><p>Perform query of the TOUCAN database, using the search parameters passed in</p>
+<dd><p>Perform queries on the TOUCAN database</p>
 <dl class="staticmethod">
 <dt id="tools.libquerydb.Querydb.construct_search_params">
 <em class="property">static </em><tt class="descname">construct_search_params</tt><big>(</big><em>search_list</em><big>)</big><a class="headerlink" href="#tools.libquerydb.Querydb.construct_search_params" title="Permalink to this definition">¶</a></dt>
@@ -137,6 +137,199 @@ django needs. Also allows for multiple ways of searching - can request
 </table>
 </dd></dl>
 
+</dd></dl>
+
+</div>
+<div class="section" id="module-tools.libtools">
+<span id="toucan-general-tools-library"></span><h2>TOUCAN general tools library<a class="headerlink" href="#module-tools.libtools" title="Permalink to this headline">¶</a></h2>
+<p>A central library for functions/tools that are used across several of the other tools</p>
+<dl class="function">
+<dt id="tools.libtools.calc_amc">
+<tt class="descclassname">tools.libtools.</tt><tt class="descname">calc_amc</tt><big>(</big><em>sza</em>, <em>vza</em>, <em>raa</em><big>)</big><a class="headerlink" href="#tools.libtools.calc_amc" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate angular matching criteria (AMC)</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>sza</strong> &#8211; Tuple containing sun zenith angle for sensor A and sensor B</li>
+<li><strong>vza</strong> &#8211; Tuple containing viewing zenith angle for sensor A and sensor B</li>
+<li><strong>raa</strong> &#8211; Tuple containing relative azimuth angle for sensor A and sensor B</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">The AMC value</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="tools.libtools.calc_amc_threshold">
+<tt class="descclassname">tools.libtools.</tt><tt class="descname">calc_amc_threshold</tt><big>(</big><em>dsza</em>, <em>dvza</em>, <em>draa</em><big>)</big><a class="headerlink" href="#tools.libtools.calc_amc_threshold" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate the threshold AMC value, based on input angle offsets</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>dsza</strong> &#8211; The threshold difference in sun zenith angle between two sensors</li>
+<li><strong>dvza</strong> &#8211; The threshold difference in sensor zenith angle between two sensors</li>
+<li><strong>draa</strong> &#8211; The threshold difference in relative azimuth angle between two sensors</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">The corresponding threshold AMC value</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="tools.libtools.check_doublet">
+<tt class="descclassname">tools.libtools.</tt><tt class="descname">check_doublet</tt><big>(</big><em>reference</em>, <em>target</em>, <em>amc_threshold</em>, <em>day_threshold</em>, <em>roi_threshold</em><big>)</big><a class="headerlink" href="#tools.libtools.check_doublet" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check if this doublet meets all the criteria</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>reference</strong> &#8211; Dictionary containing data for a single image (reflectance array, date, viewing angles) for the reference sensor</li>
+<li><strong>target</strong> &#8211; Same as reference, but for the target sensor</li>
+<li><strong>amc_threshold</strong> &#8211; Threshold value for AMC</li>
+<li><strong>day_threshold</strong> &#8211; Threshold value for time offset, in days</li>
+<li><strong>roi_threshold</strong> &#8211; Threshold value for ROI coverage, as fraction</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">True if doublet meets all criteria, False if any failed</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="tools.libtools.get_angles">
+<tt class="descclassname">tools.libtools.</tt><tt class="descname">get_angles</tt><big>(</big><em>jsonresults</em><big>)</big><a class="headerlink" href="#tools.libtools.get_angles" title="Permalink to this definition">¶</a></dt>
+<dd><p>Extract the viewing angle information from the JSON object returned
+from the database</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>jsonresults</strong> &#8211; JSON formatted string result from database query</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">sun zenith angle, sensor zenith angle, relative azimuth angle (in radians)</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="tools.libtools.get_doublets">
+<tt class="descclassname">tools.libtools.</tt><tt class="descname">get_doublets</tt><big>(</big><em>reference</em>, <em>target</em>, <em>amc_threshold=15</em>, <em>day_threshold=3</em>, <em>roi_threshold=0.75</em><big>)</big><a class="headerlink" href="#tools.libtools.get_doublets" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get doublets that fit the angular matching criteria</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>reference</strong> &#8211; Dictionary containing the reference sensor data</li>
+<li><strong>target</strong> &#8211; Dictionary containing the target sensor data</li>
+<li><strong>amc_threshold</strong> &#8211; [Optional] Threshold value to use for AMC (default 15)</li>
+<li><strong>day_threshold</strong> &#8211; [Optional] Threshold value for time offset allowed, in days (default 3)</li>
+<li><strong>roi_threshold</strong> &#8211; [Optional] Minimum ROI coverage allowed as a fraction (default 0.75)</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">List of index pairs (ie index of the image in the reference and target image lists),
+and list of the mean time for each doublet.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="tools.libtools.get_mean_reflectance">
+<tt class="descclassname">tools.libtools.</tt><tt class="descname">get_mean_reflectance</tt><big>(</big><em>filelist</em><big>)</big><a class="headerlink" href="#tools.libtools.get_mean_reflectance" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read in reflectance data from list of GeoTiff files, and compute the area mean
+for each band for each file.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>filelist</strong> &#8211; List of file names to read</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Array of reflectances, dimensions nbands x nfiles</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="tools.libtools.get_reflectance_band">
+<tt class="descclassname">tools.libtools.</tt><tt class="descname">get_reflectance_band</tt><big>(</big><em>filelist</em>, <em>band_idx</em><big>)</big><a class="headerlink" href="#tools.libtools.get_reflectance_band" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read in reflectance data for specified band from a list of GeoTiff files and return a list of 2d reflectance arrays</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>filelist</strong> &#8211; List of file names to read</li>
+<li><strong>band_idx</strong> &#8211; Index of the band to read (0-based)</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">List (nfiles long) of 2d reflectance arrays</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="tools.libtools.mean_date">
+<tt class="descclassname">tools.libtools.</tt><tt class="descname">mean_date</tt><big>(</big><em>dates</em><big>)</big><a class="headerlink" href="#tools.libtools.mean_date" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the mean value from a list of dates. We convert the dates into unix timestamps,
+which are just numbers and therefore easy to take the mean, then convert the mean value
+back to a datetime object.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>dates</strong> &#8211; List of python datetime dates</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">The mean date</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="tools.libtools.slice_dictionary">
+<tt class="descclassname">tools.libtools.</tt><tt class="descname">slice_dictionary</tt><big>(</big><em>dic_in</em>, <em>idx</em><big>)</big><a class="headerlink" href="#tools.libtools.slice_dictionary" title="Permalink to this definition">¶</a></dt>
+<dd><p>Slice a dictionary - ie given a dictionary where all the keys point to a list (or 1d array),
+return a new dictionary with the same keys but just one slice from each of those lists.
+It is as if we could do <tt class="docutils literal"><span class="pre">dictionary[:][index]</span></tt></p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>dic_in</strong> &#8211; Input dictionary to be sliced</li>
+<li><strong>idx</strong> &#8211; Index to slice</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">Sliced dictionary with same keys as input</p>
+</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 </div>
@@ -285,40 +478,6 @@ of the Earth&#8217;s Surface fo the Correction of Remote Sensing Data</p>
 </dd></dl>
 
 <dl class="staticmethod">
-<dt id="tools.libbrdf_roujean.RoujeanBRDF.get_angles">
-<em class="property">static </em><tt class="descname">get_angles</tt><big>(</big><em>jsonresults</em><big>)</big><a class="headerlink" href="#tools.libbrdf_roujean.RoujeanBRDF.get_angles" title="Permalink to this definition">¶</a></dt>
-<dd><p>Extract the viewing angle information from the JSON object returned
-from the database</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>jsonresults</strong> &#8211; JSON formatted string result from database query</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">sun zenith angle, sensor zenith angle, relative azimuth angle (in radians)</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="staticmethod">
-<dt id="tools.libbrdf_roujean.RoujeanBRDF.get_reflectance">
-<em class="property">static </em><tt class="descname">get_reflectance</tt><big>(</big><em>filelist</em><big>)</big><a class="headerlink" href="#tools.libbrdf_roujean.RoujeanBRDF.get_reflectance" title="Permalink to this definition">¶</a></dt>
-<dd><p>Read in reflectance data from list of GeoTiff files, and compute the area mean
-for each band for each file.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>filelist</strong> &#8211; List of file names to read</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Array of reflectances, dimensions nbands x nfiles</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="staticmethod">
 <dt id="tools.libbrdf_roujean.RoujeanBRDF.plot_timeseries">
 <em class="property">static </em><tt class="descname">plot_timeseries</tt><big>(</big><em>times</em>, <em>ydata</em>, <em>line_labels</em>, <em>title=None</em>, <em>xlabel=None</em>, <em>ylabel=None</em>, <em>savename=None</em><big>)</big><a class="headerlink" href="#tools.libbrdf_roujean.RoujeanBRDF.plot_timeseries" title="Permalink to this definition">¶</a></dt>
 <dd><p>Line plot of the input data, with separate line per band</p>
@@ -388,6 +547,121 @@ and the arrays should have dimensions len(date_list)x len(bands)</li>
 </dd></dl>
 
 </div>
+<div class="section" id="radiometric-drift-library">
+<h2>Radiometric Drift library<a class="headerlink" href="#radiometric-drift-library" title="Permalink to this headline">¶</a></h2>
+<span class="target" id="module-tools.librad_drift"></span><dl class="class">
+<dt id="tools.librad_drift.RadiometricDrift">
+<em class="property">class </em><tt class="descclassname">tools.librad_drift.</tt><tt class="descname">RadiometricDrift</tt><a class="headerlink" href="#tools.librad_drift.RadiometricDrift" title="Permalink to this definition">¶</a></dt>
+<dd><p>Class for computing radiometric drift</p>
+<dl class="staticmethod">
+<dt id="tools.librad_drift.RadiometricDrift.check_fields">
+<em class="property">static </em><tt class="descname">check_fields</tt><big>(</big><em>reference</em>, <em>target</em><big>)</big><a class="headerlink" href="#tools.librad_drift.RadiometricDrift.check_fields" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check that target and reference regions match</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>reference</strong> &#8211; Dictionary with reference sensor data</li>
+<li><strong>target</strong> &#8211; Dictionary with target sensor data</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises IOError:</th><td class="field-body"><p class="first last">if the regions don&#8217;t match</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="tools.librad_drift.RadiometricDrift.extract_fields">
+<em class="property">static </em><tt class="descname">extract_fields</tt><big>(</big><em>jsonresults</em><big>)</big><a class="headerlink" href="#tools.librad_drift.RadiometricDrift.extract_fields" title="Permalink to this definition">¶</a></dt>
+<dd><p>Extract fields that we need from the JSON object
+and return as a dictionary</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>jsonresults</strong> &#8211; The results from a database query, as JSON format</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Dictionary containing all the data</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="tools.librad_drift.RadiometricDrift.get_drift_timeseries">
+<em class="property">static </em><tt class="descname">get_drift_timeseries</tt><big>(</big><em>data</em>, <em>doublets</em><big>)</big><a class="headerlink" href="#tools.librad_drift.RadiometricDrift.get_drift_timeseries" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the ratio of target/reference reflectance, given a list of doublets. The area mean
+reflectance values are used.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>data</strong> &#8211; Dictionary containing the image data</li>
+<li><strong>doublets</strong> &#8211; A list of tuples, each holding the index of the target and reference sensor for that doublet pair</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">Timeseries of reflectance ratio</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="tools.librad_drift.RadiometricDrift.plot_radiometric_drift">
+<em class="property">static </em><tt class="descname">plot_radiometric_drift</tt><big>(</big><em>times</em>, <em>ref_ratio</em>, <em>target</em>, <em>reference</em>, <em>band</em>, <em>savename=None</em>, <em>doplot=True</em><big>)</big><a class="headerlink" href="#tools.librad_drift.RadiometricDrift.plot_radiometric_drift" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plot the ratio of target and reference reflectance, and over lay regression line.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>times</strong> &#8211; List of datetime objects, for x axis</li>
+<li><strong>ref_ratio</strong> &#8211; The reflectance ratio timeseries to plot</li>
+<li><strong>target</strong> &#8211; String name of target sensor</li>
+<li><strong>reference</strong> &#8211; String name of reference sensor</li>
+<li><strong>band</strong> &#8211; The wavelength of this timeseries</li>
+<li><strong>savename</strong> &#8211; [optional] Filename to save to</li>
+<li><strong>doplot</strong> &#8211; [optional] Set this to False to prevent the plotting commands being executed
+(for running without a matplotlib backend defined)</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">The drift (per year)</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="tools.librad_drift.RadiometricDrift.save_as_text">
+<em class="property">static </em><tt class="descname">save_as_text</tt><big>(</big><em>bands</em>, <em>drift</em>, <em>filename</em><big>)</big><a class="headerlink" href="#tools.librad_drift.RadiometricDrift.save_as_text" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save the drift information to a csv text file</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>bands</strong> &#8211; List of the wavelengths</li>
+<li><strong>drift</strong> &#8211; List of the drift values that were calculated</li>
+<li><strong>filename</strong> &#8211; The file to write to</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
 </div>
 
 
@@ -403,7 +677,9 @@ and the arrays should have dimensions len(date_list)x len(bands)</li>
   <ul>
 <li><a class="reference internal" href="#">TOUCAN Toolbox Documentation</a><ul>
 <li><a class="reference internal" href="#module-tools.libquerydb">TOUCAN database query library</a></li>
+<li><a class="reference internal" href="#module-tools.libtools">TOUCAN general tools library</a></li>
 <li><a class="reference internal" href="#module-tools.libbrdf_roujean">Roujean BRDF library</a></li>
+<li><a class="reference internal" href="#radiometric-drift-library">Radiometric Drift library</a></li>
 </ul>
 </li>
 </ul>
