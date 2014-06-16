@@ -87,7 +87,7 @@ class RadiometricDrift(ToolBase):
                 # -------------------------------
                 # Doublets are found using angular matching criteria
                 # -------------------------------
-                doublets, doublet_times = libtools.get_doublets(data['reference'], data['target'], amc_threshold=45)
+                doublets, doublet_times = libtools.get_doublets(data['reference'], data['target'], amc_threshold=15)
 
                 # -------------------------------
                 # Timeseries of drift is calculated

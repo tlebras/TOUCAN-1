@@ -9,7 +9,6 @@ from ingest_images_file_readers import DataReaders
 from ingest_images_geo_tools import GeoTools
 from ingest import units_and_name
 
-
 class IngestImages():
     """
     Image ingestion class, with methods to do everything needed to ingest images
@@ -71,8 +70,9 @@ class IngestImages():
                 self.save_geotiff()
                 self.make_quicklook()
                 self.add_to_database()
-                # Clear varnames before we go on to the next direction
-                self.metadata.pop('variables')
+                # Clear keys before we go on to the next direction
+                keys_to_clear = ('variables', 'angle_names', 'flag_name', 'direction')
+                [self.metadata.pop(key) for key in keys_to_clear if key in self.metadata.keys()]
             # ------------------------------------------------
             # Tidy up completed image
             # Also tidies metafile if this was the last image
@@ -114,7 +114,7 @@ class IngestImages():
             data = reader.read_viirs(self)
         else:
             raise IOError("That instrument is not coded")
-
+        
         self.data = data
     
     def save_geotiff(self):
@@ -182,6 +182,7 @@ class IngestImages():
                    extent=[self.data['longitude'].min(), self.data['longitude'].max(),
                            self.data['latitude'].min(), self.data['latitude'].max()])
         plt.savefig(outfile)
+        plt.close()
 
     def add_to_database(self):
         """
