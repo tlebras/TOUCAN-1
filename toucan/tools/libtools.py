@@ -1,10 +1,12 @@
 """
 A central library for functions/tools that are used across several of the other tools
 """
+import datetime
+import os
+
 import numpy as np
 import scipy
 from osgeo import gdal
-import datetime
 
 
 def slice_dictionary(dic_in, idx):
@@ -73,7 +75,7 @@ def get_mean_reflectance(filelist):
         Function to open Geotiff and read data as array
         Returns area mean
         """
-        image = gdal.Open(thisfile)
+        image = gdal.Open(os.path.realpath(thisfile))
         data = image.ReadAsArray()
         arr = np.nanmean(np.nanmean(data, axis=1), axis=1)
         image = None
@@ -115,6 +117,33 @@ def get_reflectance_band(filelist, band_idx):
     for thisfile in filelist:
         dat = read_file(thisfile)
         reflectance_list.append(dat)
+
+    return reflectance_list
+
+def get_reflectance_all(filelist):
+    """
+    Read in reflectance data and return as a 3D reflectance array
+
+    :param filelist: List of file names to read
+    :return: List (nfiles long) of 3d reflectance arrays
+    """
+
+    reflectance_list = []
+
+    for file in filelist:
+        image = gdal.Open(file)
+        num_bands = image.RasterCount
+        num_x = image.RasterXSize
+        num_y = image.RasterYSize
+
+        ref_array = scipy.zeros((num_y, num_x, 1))  # rows, columns, bands
+        ref_array[:, :, 0] = image.GetRasterBand(1).ReadAsArray()
+
+        for i_iter in range(1, num_bands): # fillout the rest
+            ref_array = scipy.dstack((ref_array, image.GetRasterBand(i_iter).ReadAsArray()))
+
+        reflectance_list.append(ref_array)
+        del ref_array
 
     return reflectance_list
 
