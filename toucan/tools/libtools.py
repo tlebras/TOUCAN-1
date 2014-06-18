@@ -219,3 +219,20 @@ def calc_amc_threshold(dsza, dvza, draa):
     """
     amc = np.sqrt(dsza**2 + dvza**2 + 0.25*draa**2)
     return amc
+
+
+def get_sensor_bias(reference, target, doublets):
+    """
+    Compute the ratio of target/reference sensor reflectance, given a list of doublets. The area mean
+    reflectance values are used.
+
+    :param reference: List of arrays of reflectance data for the reference sensor
+    :param target: List of arrays of reflectance data for the target sensor
+    :param doublets: A list of tuples, each holding the index of the target and reference sensor for that doublet pair
+    :returns: Timeseries of sensor bias (target-reference)/reference
+    """
+    # Get reflectance ratio
+    nm = np.nanmean  # Just some syntactic sugar to make the next line shorter
+    bias = [(nm(target[tidx]) - nm(reference[ridx]))/nm(reference[ridx]) for tidx, ridx in doublets]
+
+    return bias

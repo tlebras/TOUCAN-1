@@ -92,7 +92,8 @@ class RadiometricDrift(ToolBase):
                 # -------------------------------
                 # Timeseries of drift is calculated
                 # -------------------------------
-                ref_ratio = self.get_drift_timeseries(data, doublets)
+                ref_ratio = libtools.get_sensor_bias(data['reference']['reflectance'], data['target']['reflectance'],
+                                                     doublets)
                 ref_ratio_all.append(ref_ratio)
 
                 # -------------------------------
@@ -151,26 +152,6 @@ class RadiometricDrift(ToolBase):
             raise IOError("ERROR: Target and reference sensor regions do not match")
 
     @staticmethod
-    def get_drift_timeseries(data, doublets):
-        """
-        Compute the ratio of target/reference reflectance, given a list of doublets. The area mean
-        reflectance values are used.
-
-        :param data: Dictionary containing the image data
-        :param doublets: A list of tuples, each holding the index of the target and reference sensor for that doublet pair
-        :returns: Timeseries of reflectance ratio
-        """
-        # Get reflectance ratio
-        refratio = []
-        for d in doublets:
-            t_idx = d[0]
-            r_idx = d[1]
-            refratio.append(np.nanmean(data['target']['reflectance'][t_idx]) /
-                            np.nanmean(data['reference']['reflectance'][r_idx]))
-
-        return refratio
-
-    @staticmethod
     def plot_radiometric_drift(times, ref_ratio, target, reference, band, savename=None, doplot=True):
         """
         Plot the ratio of target and reference reflectance, and over lay regression line.
@@ -199,7 +180,8 @@ class RadiometricDrift(ToolBase):
             fig = plt.figure(figsize=(16, 10))
             plt.rcParams.update({'font.size': 18})
             plt.plot(times, ref_ratio, 'bo', times, fit_fn(timestamps), '--k')
-            plt.ylabel('%s / %s reflectance at band %03i nm' %(target.upper(), reference.upper(), band))
+            plt.ylabel('(%s-%s) / %s reflectance at band %03i nm' % 
+                       (target.upper(), reference.upper(), reference.upper(), band))
             plt.title('Drift: %0.2f per year' % drift)
             fig.autofmt_xdate()  # For better auto placement of xaxis date ticks
             if savename:

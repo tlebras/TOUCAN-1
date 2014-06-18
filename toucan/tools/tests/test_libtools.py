@@ -115,3 +115,14 @@ class ToolsTests(TestCase):
         dum = 0
         amc = libtools.calc_amc_threshold(dum, dum, dum)
         self.assertEquals(amc, 0)
+
+    def test_get_sensor_bias(self):
+        """
+        Check that expected reflectance ratio timeseries is returned
+        """
+        # NB inputs need to be to be lists
+        ref1 = 1.0
+        ref2 = 2.0
+        doublet = ([0, 0], )
+        result = libtools.get_sensor_bias([ref1, ], [ref2, ], doublet)
+        self.assertEquals(result, [(ref2 - ref1)/ref1, ])  # Output will be a list

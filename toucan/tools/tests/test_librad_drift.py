@@ -50,20 +50,6 @@ class RadiometricDriftTests(TestCase):
         # Check no error raised if regions match
         librad_drift.RadiometricDrift.check_fields(reference, reference)
 
-    def test_get_drift_timeseries(self):
-        """
-        Check that expected reflectance ratio timeseries is returned
-        """
-        # NB inputs need to be to be lists
-        ref1 = 1.0
-        ref2 = 2.0
-        data = {'target': {'reflectance': [ref1,]},
-                'reference': {'reflectance': [ref2,]}
-                }
-        doublet = ([0, 0], )
-        result = librad_drift.RadiometricDrift.get_drift_timeseries(data, doublet)
-        self.assertEquals(result, [ref1/ref2, ])  # Output will be a list
-
     def test_plot_drift(self):
         """
         Test the radiometric drift plot
