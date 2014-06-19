@@ -50,8 +50,26 @@ class SuperSensorTests(TestCase):
 
         with patch('tools.libtools.get_sensor_bias', create=True) as mock:
             supersensor = libsupersensor.SuperSensor()
-            supersensor.data = {'reference': {'reflectance': None}, 'calibration': {'reflectance': None},}
+            supersensor.data = {'reference': {'reflectance': None}, 'target': {'reflectance': None},}
             mock.return_value = y
             poly = supersensor.fit_polynomial(None, x, 2)
             # Use numpy allclose, as we don't get exactly zero for the 0th and 1st power coeffs
         self.assertTrue(np.allclose(poly, [1, 0, 0]))
+
+    def test_recalibrate_band(self):
+        """
+        Check recalibration returns expected result
+        """
+        # Pretend our target sensor is always 10x the reference sensor
+        # Recalibrated result should then be an array equal to the reference sensor
+        dates = [datetime.datetime.fromtimestamp(d) for d in xrange(10)]
+        poly = (0, 0, 9.0)  # (target - reference)/reference == always 9
+        reference = np.arange(1.0, 11.0)
+        target = reference * 10.0
+
+        supersensor = libsupersensor.SuperSensor()
+        supersensor.data = {'target': {'dates': dates,
+                                       'reflectance': target}
+                            }
+        result = supersensor.recalibrate_band(poly)
+        self.assertTrue(np.allclose(result, reference))

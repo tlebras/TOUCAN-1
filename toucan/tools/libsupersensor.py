@@ -20,13 +20,13 @@ def main():
               }
     reference = Q.get_images(search)
 
-    calibration_list = []
+    target_list = []
     for sensor in ('aatsr',):
         search['sensor'] = sensor
-        calibration_list.append(Q.get_images(search))
+        target_list.append(Q.get_images(search))
 
     super = SuperSensor()
-    super.run(reference, calibration_list)
+    super.run(reference, target_list)
 
 
 class SuperSensor(ToolBase):
@@ -36,48 +36,52 @@ class SuperSensor(ToolBase):
     def __init__(self):
         pass
 
-    def run(self, reference, calibration_list):
+    def run(self, reference, target_list):
 
         #-----------------------------------
         # Loop over the sensors that are to be calibrated to the reference sensor
         #-----------------------------------
-        for calibration in calibration_list:
+        for target in target_list:
             # Get the metadata
-            self.get_metadata(reference, calibration)
+            self.get_metadata(reference, target)
 
             #-----------------------------------
             # Loop over the reference sensor's bands
             #-----------------------------------
+            recalibrated = {}
             for ref_idx, ref_band in enumerate(self.wavelengths['reference']):
 
                 # Does the recalibration sensor have a band close to this one?
-                cal_idx = np.argmin(np.abs(np.array(self.wavelengths['calibration'] - ref_band)))
-                cal_band = self.wavelengths['calibration'][cal_idx]
+                tgt_idx = np.argmin(np.abs(np.array(self.wavelengths['target'] - ref_band)))
+                tgt_band = self.wavelengths['target'][tgt_idx]
 
-                if np.abs(ref_band - cal_band) > 10:
+                if np.abs(ref_band - tgt_band) > 10:
                     pass
                 else:
-                    band_idx = {'reference': ref_idx, 'calibration': cal_idx}
+                    band_idx = {'reference': ref_idx, 'target': tgt_idx}
 
                     # -------------------------------
                     # Read reflectance from geotiffs
                     # -------------------------------
-                    for sensor in ('reference', 'calibration'):
+                    for sensor in ('reference', 'target'):
                         self.data[sensor]['reflectance'] = libtools.get_reflectance_band(self.data[sensor]['files'],
                                                                                          band_idx[sensor])
                     # -------------------------------
                     # Get doublets
                     # -------------------------------
-                    doublets, doublet_times = libtools.get_doublets(self.data['reference'], self.data['calibration'])
+                    doublets, doublet_times = libtools.get_doublets(self.data['reference'], self.data['target'])
 
                     # -------------------------------
                     # Fit polynomial to the doublets data
                     # -------------------------------
-                    poly = self.fit_polynomial(doublets, doublet_times)
+                    poly = self.fit_polynomial(doublets, doublet_times, order=4)
 
-            # Use polynomial to recalibrate all the calibration sensor data (ie not just the doublets)
+                    # -------------------------------
+                    # Use polynomial to recalibrate all the target sensor data (ie not just the doublets)
+                    # -------------------------------
+                    recalibrated[tgt_band] = self.recalibrate_band(poly)
 
-    def get_metadata(self, reference, calibration):
+    def get_metadata(self, reference, target):
             """
             Read in the metadata
 
@@ -88,16 +92,16 @@ class SuperSensor(ToolBase):
             # Get metadata
             #-----------------------------------
             self.data = {'reference': self.extract_fields(reference),
-                         'calibration': self.extract_fields(calibration)}
+                         'target': self.extract_fields(target)}
 
             # Pick out instrument names
             instrument = {'reference': self.data['reference']['instrument'][0],
-                          'calibration': self.data['calibration']['instrument'][0]}
+                          'target': self.data['target']['instrument'][0]}
 
             # Get lists of wavelengths
             Q = Querydb()
-            self.wavelengths = {'calibration': np.array(Q.get_wavelengths(instrument['calibration'])),
-                                'reference': np.array(Q.get_wavelengths(instrument['reference']))}
+            self.wavelengths = {'reference': np.array(Q.get_wavelengths(instrument['reference'])),
+                                'target': np.array(Q.get_wavelengths(instrument['target']))}
 
     @staticmethod
     def extract_fields(jsonresults):
@@ -137,7 +141,7 @@ class SuperSensor(ToolBase):
         """
 
         # Get timeseries of the sensor bias
-        bias = libtools.get_sensor_bias(self.data['reference']['reflectance'], self.data['calibration']['reflectance'],
+        bias = libtools.get_sensor_bias(self.data['reference']['reflectance'], self.data['target']['reflectance'],
                                         doublets)
 
         # Fit polynomial to the data
@@ -146,6 +150,33 @@ class SuperSensor(ToolBase):
         poly = np.polyfit(timestamps, bias, order)
 
         return poly
+
+    def recalibrate_band(self, poly):
+        """
+        Recalibrate TOA reflectance using previously calculated polynomial fit to reference sensor's data.
+        In effect we are saying "given this target sensor measurement, what measurement would we have got from the
+         reference sensor?"
+
+        :param poly: Polynomial coefficients, returned by :py:meth:`SuperSensor.fit_polynomial`
+        :param dates: List of datetime objects from the target sensor
+        :param data: List (length is number of dates) of reflectance data to recalibrate. The list items can be 1d or 2d
+        :return: List of arrays of recalibrated reflectance at the target dates
+        """
+        dates = self.data['target']['dates']
+        target = self.data['target']['reflectance']
+
+        # Calculate the value of the bias at each target date,
+        # using the polynomial coefficients
+        recal = np.poly1d(poly)
+        timestamps = [float(d.strftime('%s')) for d in dates]
+        bias = recal(timestamps)
+
+        # Bias was calculated as bias = (target - reference)/reference
+        # Now we effectively want to solve for "reference" when we know
+        # "bias" and "target" --> reference = target / (1 + bias)
+        recalibrated = [target[i] / (1 + bias[i]) for i in xrange(len(dates))]
+
+        return recalibrated
 
 if __name__ == '__main__':
    main()
