@@ -48,12 +48,32 @@ class SuperSensor(ToolBase):
             #-----------------------------------
             # Loop over the reference sensor's bands
             #-----------------------------------
+            for ref_idx, ref_band in enumerate(self.wavelengths['reference']):
 
-                # Get the reflectance for this band (if we have it for this calibration sensor)
+                # Does the recalibration sensor have a band close to this one?
+                cal_idx = np.argmin(np.abs(np.array(self.wavelengths['calibration'] - ref_band)))
+                cal_band = self.wavelengths['calibration'][cal_idx]
 
-                # Get doublets for each reference-calibration sensor pair
+                if np.abs(ref_band - cal_band) > 10:
+                    pass
+                else:
+                    band_idx = {'reference': ref_idx, 'calibration': cal_idx}
 
-                # Fit polynomial to the doublets data
+                    # -------------------------------
+                    # Read reflectance from geotiffs
+                    # -------------------------------
+                    for sensor in ('reference', 'calibration'):
+                        self.data[sensor]['reflectance'] = libtools.get_reflectance_band(self.data[sensor]['files'],
+                                                                                         band_idx[sensor])
+                    # -------------------------------
+                    # Get doublets
+                    # -------------------------------
+                    doublets, doublet_times = libtools.get_doublets(self.data['reference'], self.data['calibration'])
+
+                    # -------------------------------
+                    # Fit polynomial to the doublets data
+                    # -------------------------------
+                    poly = self.fit_polynomial(doublets, doublet_times)
 
             # Use polynomial to recalibrate all the calibration sensor data (ie not just the doublets)
 
@@ -106,6 +126,26 @@ class SuperSensor(ToolBase):
                 'region': region,
                 }
         return data
+
+    def fit_polynomial(self, doublets, doublet_times, order=2):
+        """
+        Fit a polynomial to the reference-calibration sensor data
+
+        :param doublets: List of tuples giving the indices of the doublet pairs
+        :param order: [Optional] Order of polynomial to use. Default is 2 (ie quadratic).
+        :returns: Polynomial coefficients
+        """
+
+        # Get timeseries of the sensor bias
+        bias = libtools.get_sensor_bias(self.data['reference']['reflectance'], self.data['calibration']['reflectance'],
+                                        doublets)
+
+        # Fit polynomial to the data
+        # NB polyfit doesn't understand datetime objects so convert to timestamps (seconds)
+        timestamps = [float(d.strftime('%s')) for d in doublet_times]
+        poly = np.polyfit(timestamps, bias, order)
+
+        return poly
 
 if __name__ == '__main__':
    main()
