@@ -1,0 +1,61 @@
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link href="bootstrap/css/bootstrap.css" rel="stylesheet">
+<link rel="stylesheet" type="text/css" href="css/styleingestion.css" />
+<script type="text/javascript" src="js/swfobject.js"></script>
+		<script type="text/javascript" src="js/downloadify.min.js"></script>
+</head>
+<body onload="load();">
+<title>TOUCAN - Metadata</title>
+<div class="sendtitle">Send your metadata</div>
+<form>
+</br>
+			<p>
+				<label class="col-xs-4 col-sm-3 col-md-3 col-lg-2 col-xs-offset-1 col-sm-offset-2 col-md-offset-2 col-lg-offset-4" id='jsonlabel' for="jsonfilename">Json name :</label>
+				<input  "col-xs-5 col-sm-4 col-md-4 col-lg-4 col-sm-offset-0 col-md-offset-0 col-lg-offset-0" type="text" id="jsonfilename" name="jsonfilename" placeholder="Enter name" id="filename" /></br>
+			</p>
+			<p>
+			<label class="col-xs-3 col-sm-2 col-md-1 col-lg-1 col-xs-offset-1 col-sm-offset-2 col-md-offset-2 col-lg-offset-4" id="instrumentlabel">Sensor:</label>
+<SELECT class="col-xs-5 col-sm-4 col-md-4 col-lg-4 col-sm-offset-0 col-md-offset-0 col-lg-offset-0" id ="instrument" name="instrument" class="form-control">
+	<OPTION VALUE="Selection" selected="selected">Selection...</OPTION>
+	</SELECT></br></br>
+			</p>
+			<p>
+<label class="col-xs-3 col-sm-2 col-md-1 col-lg-1 col-xs-offset-1 col-sm-offset-2 col-md-offset-2 col-lg-offset-4" id="sitelabel">Site:</label>
+<SELECT class="col-xs-5 col-sm-4 col-md-4 col-lg-4 col-sm-offset-0 col-md-offset-0 col-lg-offset-0" id ="site" name="site" class="form-control">
+		<OPTION VALUE="Selection" selected="selected">Selection...</OPTION>
+		<OPTION VALUE="Uyuni">Uyuni</OPTION>
+		<OPTION VALUE="Libya4">Libya4</OPTION>
+		<OPTION VALUE="DomeC">DomeC</OPTION>
+		<OPTION VALUE="TuzGolo">TuzGolo</OPTION>
+		<OPTION VALUE="BOUSSOLE">BOUSSOLE</OPTION>
+		<OPTION VALUE="Amazon">Amazon</OPTION>
+		<OPTION VALUE="SPG">SPG</OPTION>
+		<OPTION VALUE="SIO">SIO</OPTION>
+	</SELECT></br></br> 
+			</p>
+			<p>
+<label class="col-xs-3 col-sm-2 col-md-1 col-lg-1 col-xs-offset-1 col-sm-offset-2 col-md-offset-2 col-lg-offset-4" id="namelabel">Filename:</label>
+<input type="hidden" name="MAX_FILE_SIZE2" value="2097152">     
+<input class="col-xs-5 col-sm-4 col-md-4 col-lg-4 col-sm-offset-0 col-md-offset-0 col-lg-offset-0" type="file" id="name_file" name="name_file" multiple>   </br> </br> </br> 
+
+			</p>			
+
+
+			<p id="downloadify">
+				You must have Flash 10 installed to download this file.
+			</p>
+<div class="center"><input type="button" id="cancel"  class="btn btn-danger cancel" value="Cancel" onclick="self.location.href='menu.html'"> </div>
+		</form>
+
+    </br>
+<label class="col-xs-3 col-sm-2 col-md-1 col-lg-1 col-xs-offset-1 col-sm-offset-2 col-md-offset-2 col-lg-offset-4" id="uplabel">Upload:</label>
+<input class="col-xs-5 col-sm-4 col-md-4 col-lg-4 col-sm-offset-0 col-md-offset-0 col-lg-offset-0" type="file" id="name_ingfile" name="name_ingfile">   </br> </br> </br> 
+<div class="center"><input type="button" id="submit"  class="btn btn-primary submit " value="Submit" onClick="submit()"> 
+<div id ='message' class="message"></div>
+<script src="https://code.jquery.com/jquery.js"></script>
+ <script src="bootstrap/js/bootstrap.min.js"></script>
+  <script src="js/creationandupload.js"></script>
+</body>
+</html>

@@ -1,0 +1,21 @@
+.center,#deployment,#instrument,#time,#measuretype,#type,#PI,#wavelength,#theta,#mqc,#value
+{
+    text-align:center;
+}
+
+#titleinfo{
+
+text-align:center;
+font-size : 18;
+font-weight :bold;
+}
+
+.cancel{
+  display:inline;
+
+}
+
+#value{
+
+text-decoration:underline;
+}

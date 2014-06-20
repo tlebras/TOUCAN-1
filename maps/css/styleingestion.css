@@ -1,0 +1,46 @@
+#namelabel,#sitelabel,#regioncoordslabel,#instrumentlabel,#imagelabel,#uplabel{
+
+text-align:left;
+font-weight: bold;
+
+
+
+}
+.addlabel,.info{
+
+text-align:center;
+}
+.message{
+font-weight: bold;
+color:red;
+text-align: center; 
+visibility: hidden; 
+}
+
+.sendtitle{
+
+text-align: center; 
+font-weight: bold;
+font-size:25px;
+}
+
+#name_file,#name_ingfile{
+
+  display:block;
+  margin : 0 auto;
+}
+
+.submit,.cancel{
+  display:inline;
+
+}
+
+.center
+{
+    text-align:center;
+}
+#downloadify{
+
+text-align:center;
+
+}

@@ -1,0 +1,45 @@
+html{
+font-family: Arial;
+}
+
+#image_toucan{
+display:block;
+margin-left: auto;
+margin-right: auto;
+
+}
+
+.toucantitle{
+
+text-align: center; 
+font-weight: bold;
+}
+
+.uploadlabel{
+ display: inline-block;
+margin-left: 85px;
+font-weight: bold;
+}
+
+.searchmeasurelabel{
+ display: inline-block;
+float: right;  
+margin-right:110px; 
+font-weight: bold;
+}
+
+#upload{
+ display: inline-block;
+margin-left: 100px;
+
+}
+
+
+#searchmeasure{
+ display: inline-block;
+float: right;  
+margin-right:100px; 
+
+}
+
+

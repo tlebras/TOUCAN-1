@@ -1,0 +1,36 @@
+.submit,.cancel{
+  display:inline;
+
+}
+
+.center
+{
+    text-align:center;
+}
+.searchmtitle{
+
+text-align: center; 
+font-weight: bold;
+font-size:25px;
+}
+
+#deploymentlabel,#typelabel,#wavelabel{
+
+text-align:right;
+font-weight: bold;
+
+}
+
+
+.message{
+font-weight: bold;
+color:red;
+text-align: center; 
+visibility: hidden; 
+}
+
+
+#tableau{
+margin-left:auto;
+margin-right:auto;
+}
