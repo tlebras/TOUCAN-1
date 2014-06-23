@@ -86,7 +86,7 @@ class SuperSensor(ToolBase):
             Read in the metadata
 
             :param reference: Results from a database query, as JSON format, for the reference sensor
-            :param calibration: A list of JSON format database query results, for the recalibration sensor(s) 
+            :param target: A list of JSON format database query results, for the recalibration sensor(s)
             """
             #-----------------------------------
             # Get metadata
@@ -158,8 +158,6 @@ class SuperSensor(ToolBase):
          reference sensor?"
 
         :param poly: Polynomial coefficients, returned by :py:meth:`SuperSensor.fit_polynomial`
-        :param dates: List of datetime objects from the target sensor
-        :param data: List (length is number of dates) of reflectance data to recalibrate. The list items can be 1d or 2d
         :return: List of arrays of recalibrated reflectance at the target dates
         """
         dates = self.data['target']['dates']
