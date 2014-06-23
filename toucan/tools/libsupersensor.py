@@ -21,12 +21,12 @@ def main():
     reference = Q.get_images(search)
 
     target_list = []
-    for sensor in ('aatsr',):
+    for sensor in ('aatsr', 'meris'):  # Just for testing
         search['sensor'] = sensor
         target_list.append(Q.get_images(search))
 
-    super = SuperSensor()
-    super.run(reference, target_list)
+    supersensor = SuperSensor()
+    supersensor.run(reference, target_list)
 
 
 class SuperSensor(ToolBase):
@@ -41,6 +41,8 @@ class SuperSensor(ToolBase):
         #-----------------------------------
         # Loop over the sensors that are to be calibrated to the reference sensor
         #-----------------------------------
+        band_list = {}
+        recalibrated = {}
         for target in target_list:
             # Get the metadata
             self.get_metadata(reference, target)
@@ -48,7 +50,8 @@ class SuperSensor(ToolBase):
             #-----------------------------------
             # Loop over the reference sensor's bands
             #-----------------------------------
-            recalibrated = {}
+            band_list[self.instrument['target']] = []
+            recalibrated[self.instrument['target']] = {}
             for ref_idx, ref_band in enumerate(self.wavelengths['reference']):
 
                 # Does the recalibration sensor have a band close to this one?
@@ -59,6 +62,7 @@ class SuperSensor(ToolBase):
                     pass
                 else:
                     band_idx = {'reference': ref_idx, 'target': tgt_idx}
+                    band_list[self.instrument['target']].append(ref_band)  # Store list of bands processed
 
                     # -------------------------------
                     # Read reflectance from geotiffs
@@ -78,8 +82,14 @@ class SuperSensor(ToolBase):
 
                     # -------------------------------
                     # Use polynomial to recalibrate all the target sensor data (ie not just the doublets)
+                    # Store as a list of arrays
                     # -------------------------------
-                    recalibrated[tgt_band] = self.recalibrate_band(poly)
+                    recalibrated[self.instrument['target']][ref_band] = self.recalibrate_band(poly)
+
+        # -------------------------------
+        # Combine all target sensor data
+        # -------------------------------
+        bands_found, combined = self.combine_recalibrated(band_list, recalibrated)
 
     def get_metadata(self, reference, target):
             """
@@ -95,13 +105,13 @@ class SuperSensor(ToolBase):
                          'target': self.extract_fields(target)}
 
             # Pick out instrument names
-            instrument = {'reference': self.data['reference']['instrument'][0],
-                          'target': self.data['target']['instrument'][0]}
+            self.instrument = {'reference': self.data['reference']['instrument'][0],
+                               'target': self.data['target']['instrument'][0]}
 
             # Get lists of wavelengths
             Q = Querydb()
-            self.wavelengths = {'reference': np.array(Q.get_wavelengths(instrument['reference'])),
-                                'target': np.array(Q.get_wavelengths(instrument['target']))}
+            self.wavelengths = {'reference': np.array(Q.get_wavelengths(self.instrument['reference'])),
+                                'target': np.array(Q.get_wavelengths(self.instrument['target']))}
 
     @staticmethod
     def extract_fields(jsonresults):
@@ -175,6 +185,37 @@ class SuperSensor(ToolBase):
         recalibrated = [target[i] / (1 + bias[i]) for i in xrange(len(dates))]
 
         return recalibrated
+
+    @staticmethod
+    def combine_recalibrated(band_list, recalibrated):
+        """
+        Combine the recalibrated data from all the target sensors, padding out any
+        bands that weren't included (so that each sensor has the same number of bands)
+
+        :param band_list: List of which bands were found for any target sensor
+        :param recalibrated: Dictionary containing lists of arrays for each target sensor
+        :returns: List of all the bands that were found across all target sensors
+        :returns: New dictionary such that each target sensor has the same number of bands in the
+         list (with None objects for bands that weren't present)
+        """
+        # Empty list to store the final arrays
+        combined = {}
+
+        # Get list of wavelengths that were found across the target sensors
+        bands_found = sorted({x for bands in band_list.itervalues() for x in bands})
+
+        # Make a new dictionary, looping over each band so that each target sensor has a list
+        # containing either the recalibrated data array or "None" if that band wasn't processed
+        # for this sensor
+        for instrument in band_list.keys():
+            combined[instrument] = []
+            for band in bands_found:
+                if band in band_list[instrument]:
+                    combined[instrument].append(recalibrated[instrument][band])
+                else:
+                    combined[instrument].append(None)
+
+        return bands_found, combined
 
 if __name__ == '__main__':
    main()

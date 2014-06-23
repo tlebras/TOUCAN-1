@@ -73,3 +73,25 @@ class SuperSensorTests(TestCase):
                             }
         result = supersensor.recalibrate_band(poly)
         self.assertTrue(np.allclose(result, reference))
+
+    def test_combine(self):
+        """
+        Check that recalibrated data are correctly combined
+        """
+        band_list = {'a': [100.0, 200.0, 300.0],
+                     'b': [150.0, 250.0, 350.0]}
+
+        recalibrated = {}
+        for sensor in band_list.keys():
+            recalibrated[sensor] = {}
+            for band in band_list[sensor]:
+                recalibrated[sensor][band] = 999
+
+        # Output should expand the band lists for each sensor, replacing missing bands with None
+        expected_bands  = sorted(band_list['a'] + band_list['b'])
+        expected_combined = {'a': [999, None, 999, None, 999, None],
+                    'b': [None, 999, None, 999, None, 999]}
+
+        bands, combined = libsupersensor.SuperSensor.combine_recalibrated(band_list, recalibrated)
+        self.assertEqual(expected_bands, bands)
+        self.assertEqual(expected_combined, combined)
