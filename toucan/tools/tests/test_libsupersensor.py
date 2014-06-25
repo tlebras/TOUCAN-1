@@ -95,3 +95,37 @@ class SuperSensorTests(TestCase):
         self.assertEqual(expected_bands, bands)
         np.testing.assert_equal(expected_combined, combined)
 
+    def test_make_geotiff(self):
+        """
+        Check that correct arguments are passed to array2raster to create the geotiff
+        """
+        # Set up all the fields that make_geotiffs expects
+        supersensor = libsupersensor.SuperSensor()
+        supersensor.instrument = {'reference': 'reference'}
+        supersensor.all_metadata = {'top_left_point': (0, 1),
+                                    'bot_right_point': (1, 0),
+                                    'region': 'region',
+                                    'sensor': {'files': ('old_nadir.tif',),
+                                               'dates': (datetime.datetime(2000, 1, 1),),
+                                               },
+                                    }
+        bands = (1,)
+        dum = np.zeros((2, 2))
+        data_all = {'sensor': {1: (dum,)}}
+
+        with patch('ingest_images_geo_tools.GeoTools.array2raster') as mock:
+            with patch('os.mkdir') as _:  # Avoid creating a directory
+
+                supersensor.make_geotiffs(data_all, bands)
+
+                # Arguments that we expect array2raster to be called with
+                direct = '/home/TOUCAN/toucan/tools/images/output/'
+                new_file = direct + 'REGION/SUPER_REF_REFERENCE/2000/super_sensor_ref_reference_2000-01-01_nadir.tif'
+                origin = (0, 0)
+                dx, dy = 1, 1
+                data = {'longitude': [0, 1],
+                        'latitude': [0, 1],
+                        1: dum}
+
+                # Check they are the same
+                mock.assert_called_with(new_file, origin, dx, dy, data, bands)
