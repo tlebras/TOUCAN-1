@@ -1,12 +1,14 @@
 import sys
 import numpy as np
 import datetime
-
+import os
 
 sys.path.append(".")
+sys.path.append("../ingest_data")
 from libbase import ToolBase
 from libquerydb import Querydb
 import libtools
+from ingest_images_geo_tools import GeoTools
 
 
 def main():
@@ -43,6 +45,7 @@ class SuperSensor(ToolBase):
         #-----------------------------------
         band_list = {}
         recalibrated = {}
+        self.all_metadata = {}
         for target in target_list:
             # Get the metadata
             self.get_metadata(reference, target)
@@ -112,6 +115,19 @@ class SuperSensor(ToolBase):
             Q = Querydb()
             self.wavelengths = {'reference': np.array(Q.get_wavelengths(self.instrument['reference'])),
                                 'target': np.array(Q.get_wavelengths(self.instrument['target']))}
+
+            #-----------------------------------
+            # Store data we need for creating geotiffs/making database entry later on
+            #-----------------------------------
+            self.all_metadata[self.instrument['target']] = {}
+            for param in ('dates', 'files', 'SZA', 'VZA', 'RAA'):
+                self.all_metadata[self.instrument['target']][param] = self.data['target'][param]
+
+            # Only need to do these once, as they are same for all our target sensors
+            if 'region' not in self.all_metadata.keys():
+                self.all_metadata['region'] = self.data['reference']['region'][0]
+                for point in ('bot_right_point', 'top_left_point'):
+                    self.all_metadata[point] = [float(c.strip('()')) for c in reference[0][point].split()[1:]]
 
     @staticmethod
     def extract_fields(jsonresults):
@@ -205,15 +221,21 @@ class SuperSensor(ToolBase):
         bands_found = sorted({x for bands in band_list.itervalues() for x in bands})
 
         # Make a new dictionary, looping over each band so that each target sensor has a list
-        # containing either the recalibrated data array or "None" if that band wasn't processed
+        # containing either the recalibrated data array or and array of nans if that band wasn't processed
         # for this sensor
         for instrument in band_list.keys():
-            combined[instrument] = []
+            combined[instrument] = {}
+            # Get size of the data arrays. Note that this returns an arbitrary key (ie band)
+            # from the dictionary, but they should all be the same size so we don't care about that
+            ntimes = len(recalibrated[instrument].values()[0])
+            (nx, ny) = recalibrated[instrument].values()[0][0].shape
+
             for band in bands_found:
                 if band in band_list[instrument]:
-                    combined[instrument].append(recalibrated[instrument][band])
+                    combined[instrument][band] = recalibrated[instrument][band]
                 else:
-                    combined[instrument].append(None)
+                    # Make a list same length as the bands that were processed
+                    combined[instrument][band] = [np.zeros((nx, ny)) * np.nan] * ntimes
 
         return bands_found, combined
 
