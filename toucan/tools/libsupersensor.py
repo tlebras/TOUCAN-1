@@ -4,7 +4,7 @@ import datetime
 import os
 
 sys.path.append(".")
-sys.path.append("../ingest_data")
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__),'../ingest_data')))
 from libbase import ToolBase
 from libquerydb import Querydb
 import libtools
@@ -93,6 +93,15 @@ class SuperSensor(ToolBase):
         # Combine all target sensor data
         # -------------------------------
         bands_found, combined = self.combine_recalibrated(band_list, recalibrated)
+
+        # -------------------------------
+        # Convert to geotiffs
+        # -------------------------------
+        self.make_geotiffs(combined, bands_found)
+
+        # -------------------------------
+        # Add to database
+        # -------------------------------
 
     def get_metadata(self, reference, target):
             """
@@ -238,6 +247,83 @@ class SuperSensor(ToolBase):
                     combined[instrument][band] = [np.zeros((nx, ny)) * np.nan] * ntimes
 
         return bands_found, combined
+
+    def make_geotiffs(self, data_all, bands):
+        """
+
+        :return:
+        """
+        #-----------------------------------
+        # Set up the region coordinates. These are the same for all images
+        # We give the origin as bottom left corner, then treat both dx and dy as +ve.
+        #-----------------------------------
+        lon0, lon1 = self.all_metadata['top_left_point'][0], self.all_metadata['bot_right_point'][0]
+        lat0, lat1 = self.all_metadata['bot_right_point'][1], self.all_metadata['top_left_point'][1]
+        origin = (lon0, lat0)
+
+        #-----------------------------------
+        # Loop through target sensors
+        #-----------------------------------
+        for sensor in data_all.keys():
+            data = data_all[sensor]
+
+            # Set up the grid size
+            ny, nx = data.values()[0][0].shape
+            dx = (lon1 - lon0) / (nx-1)
+            dy = (lat1 - lat0) / (ny-1)
+
+            #-----------------------------------
+            # Loop through each image (ie different times)
+            #-----------------------------------
+            self.all_metadata[sensor]['new_filename'] = []  # We will store the new filenames here
+
+            for idx in range(len(data.values()[0])):
+                # Extract this image from the lists
+                image = libtools.slice_dictionary(data, idx)
+
+                # array2raster expects that the data dictionary to have keys 'longitude' and 'latitude'.
+                # It only uses these to work out the size of the array, so the values don't matter.
+                image['longitude'] = range(nx)
+                image['latitude'] = range(ny)
+
+                #-----------------------------------
+                # Set filename - super_TARGET_ref_REFERENCE_DATE[_direction].tif
+                #-----------------------------------
+                old_filename = self.all_metadata[sensor]['files'][idx]
+
+                # Check if old filename had a direction
+                file_direction = ''
+                for direction in ('fward', 'nadir'):
+                    if direction in old_filename:
+                        file_direction = '_' + direction
+
+                date = self.all_metadata[sensor]['dates'][idx]
+                new_filename = 'super_%s_ref_%s_%s%s.tif' % (sensor, self.instrument['reference'],
+                                                             date.strftime('%Y-%m-%d'), file_direction)
+
+                #-----------------------------------
+                # Make output directory if necessary
+                # Do this in the loop, as the directory
+                # depends on the year
+                #-----------------------------------
+                # TODO how to pass directory though instead of hardcoding it here?
+                dir_stem = '/home/TOUCAN/toucan/tools/images/output'
+                savedir = os.path.join(dir_stem, self.all_metadata['region'].upper(),
+                                       'SUPER_REF_'+self.instrument['reference'].upper(),
+                                       str(date.year))
+
+                if not os.path.exists(savedir):
+                    os.makedirs(savedir)
+
+                savefile = os.path.join(savedir, new_filename)
+
+                #-----------------------------------
+                # Save the geotiff
+                #-----------------------------------
+                GeoTools.array2raster(savefile, origin, dx, dy, image, bands)
+
+                # Store a list of the filenames, as we will need them to create the database entries
+                self.all_metadata[sensor]['new_filename'].append(savefile)
 
 if __name__ == '__main__':
    main()
