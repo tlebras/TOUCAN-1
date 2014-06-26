@@ -1,0 +1,162 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+ <style>
+      	#mess{
+	font-weight: bold;
+
+	text-align: center; 
+
+	}
+
+#files,#wavelength{
+
+  display:block;
+  margin : 0 auto;
+}
+.submit{
+  display:block;
+margin : 0 auto;
+
+}
+#placeholder,.demo-container{
+visibility:hidden
+
+}
+    </style>
+    <title>Display plot</title>
+    <link href="examples.css" rel="stylesheet" type="text/css">
+    <!--[if lte IE 8]><script language="javascript" type="text/javascript" src="../../excanvas.min.js"></script><![endif]-->
+    <script language="javascript" type="text/javascript" src="jquery.js"></script>
+    <script language="javascript" type="text/javascript" src="jquery.flot.js"></script>
+<script language="javascript" type="text/javascript" src="jquery.flot.time.js"></script>
+</head>
+<body>
+<div  id="mess" name="mess" />Insert your data file to display the plot</div>
+<input type="file" id="files" name="file" /></br>
+<SELECT class="col-xs-5 col-sm-4 col-md-4 col-lg-4 col-sm-offset-0 col-md-offset-0 col-lg-offset-0" id ="wavelength" name="wavelength" class="form-control">
+<OPTION VALUE="Selection" selected="selected">Selection...</OPTION>
+</SELECT></br></br> 
+<div class="center"><input type="button" id="submit"  class="btn btn-primary submit " value="Submit" onClick="submit()">
+    <div id="content">
+
+        <div class="demo-container">
+            <div id="placeholder" class="demo-placeholder"></div>
+        </div>
+
+
+    </div>
+
+
+    <script type="text/javascript">
+var brdf=[];
+var legend;
+function handleFileSelect(evt)
+{
+    var files = evt.target.files; // FileList object "%Y-%m-%dT%H:%M:%S"
+
+    // Loop through the FileList and render image files as thumbnails.
+    for (var i = 0, f; f = files[i]; i++)
+    {
+
+        var reader = new FileReader(); //read the file 
+        reader.onload = function(event)
+        {
+	var filename= files[0].name; //got the name of the file
+	var filetest=filename.split('.');
+	if (filetest[(filetest.length)-1]!=('csv'||'xls'||'xlsx')){//this can be changed this is just for ex
+	alert("Error : this is not a data file");
+	
+	}
+	else{
+            // NOTE: event.target point to FileReader
+        var content = event.target.result; //content of the file
+	var linecont=[];
+	linecont=content.split('\n'); //split the lines
+	//console.log(linecont.length, linecont[60]);
+ 	// for my test the number of line found here = number of line in the file +1, but the last line is empty
+	var linecontsplitted=[];
+	var cpt=0;
+
+	for(var i=0;i<linecont.length;i++){
+	linecontsplitted[i]=linecont[i].split(','); //separate the data
+		if(i==0){
+		legend=linecontsplitted[0];} //take the first line a part from the rest
+		if(linecontsplitted[i][0]=='BRDF'){
+		brdf[cpt]=linecontsplitted[i]; //if the first column of the line contains 'BRDF' then take the line apart to treat it
+		cpt++;} //since brdf is a table we have to change the counter each time we find a line 
+	}
+	for(var t=0;t<brdf.length;t++){
+ 		$("#wavelength").append($("<option>").val(brdf[t][1]).html(brdf[t][1])); // take the wavelengths from the brdf table and put them into the select
+
+	}
+ 	} 
+	};
+
+        reader.readAsText(f); //read the file as a text. This can be problematic, but excel file seems to be done like that : data,data\n etc. so it might be ok
+    }
+
+}
+  document.getElementById('files').addEventListener('change', handleFileSelect, false); // making the function handleFileSelect an event when the file object got a changement
+
+  $(function ($){
+	submit=function(){ 
+	var wave=document.getElementById("wavelength").value; //check the value selcted by the user
+	var chosen; 
+	for( var a=0;a<brdf.length;a++){
+	if( wave==brdf[a][1]){ //check into the file which line has been selected : which wavelength
+	chosen=a;}
+}
+/* this was supposed to format the date , useless
+function returndate(year,month,day,hour,mins,sec){
+var aaa=new Date(year,month,day,hour,mins,sec).getTime();
+var d=new Date;
+ d.setTime(aaa);
+return d;
+}
+var timed=[];
+var timer=[];
+var timemin=[];
+var millisec=[];
+for(var b=2;b<legend.length;b++){
+timed[b-2]=legend[b].split('T');
+timer[b-2]=timed[b-2][0].split('-');
+timemin[b-2]=timed[b-2][1].split(':');
+
+var nbleapyear=floor(timer[b-2][0]-1972)/4; //1972 is the first leap year for js, since the timer begins in 1970
+var nbyear=(timer[b-2][0]-1970)-nbleapyear;
+millisec[b-2]=(nbyear)*31536000000+(nbleapyear)*31622400000+(timer[b-2][1]-1)*2629800000*/
+//}
+
+
+function dateformatted(string){ //creation of a function in purpose to put the string containg the date in a "Date" format
+var date= new Date(string)
+return date;
+}
+
+
+        var d1 = []; //creation if a empty table, this one will be the one displayed
+        for (var i =2; i < brdf[chosen].length; i ++) { // the two first column contains the type and the wavelength
+		
+            d1.push([dateformatted(legend[i]), brdf[chosen][i] ] ) ; // d1 contains data in this format  [ [data1,data2],[data3,data4] ] to make the axis
+				
+        }
+
+var options ={    //options for the plot
+ xaxis: {
+        mode: "time", // time mode
+	timeformat: "%Y/%m/%d", // the format displayed for the data Year/Month/day. if this is not informed, it is displayed in microseconds		
+      }   
+};
+        // A null signifies separate line segments
+        $.plot("#placeholder", [d1],options);
+	document.getElementById("placeholder").style.visibility='visible';
+        // Add the Flot version string to the footer
+        $("#footer").prepend("Flot " + $.plot.version + " &ndash; ");
+   }
+ });
+
+    </script>
+</body>
+</html>

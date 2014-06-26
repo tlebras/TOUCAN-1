@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Simple Map</title>
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no">
+    <meta charset="utf-8">
+    <style>
+       #map-canvas {
+        height : 600px; /* IMPERATIF */
+	width : 600px; 
+        margin: 0px;
+        padding: 0px;
+	visibility: hidden;
+      }
+	
+	#mess{
+	font-weight: bold;
+
+	text-align: center; 
+
+	}
+
+#files,#container,#map-canvas{
+
+  display:block;
+  margin : 0 auto;
+}
+    </style>
+    <script src="https://maps.googleapis.com/maps/api/js?v=3.exp"></script>
+   
+<div  id="mess" name="mess" />Insert your json file to display the coords</div>
+<input type="file" id="files" name="file" />
+
+<div id="container" style="height: 50px; min-width: 50px"></div>
+
+<script>
+
+function handleFileSelect(evt)
+{
+    var files = evt.target.files; // FileList object
+
+    // Loop through the FileList and render image files as thumbnails.
+    for (var i = 0, f; f = files[i]; i++)
+    {
+
+        var reader = new FileReader(); //read the file
+        reader.onload = function(event)
+        {
+var filename= files[0].name; //got the name of the file
+console.log(filename);
+var filetest=filename.split('.');
+
+		if (filetest[(filetest.length)-1]!='json'){
+alert("Error : this is not a json file");
+	
+	}
+else{
+            // NOTE: event.target point to FileReader
+            var content = event.target.result; //content of the file
+		var a = RegExp('"','g'); //this regex is done to eliminate the quotes
+            	content=content.replace("[","");//take away [ ] { }
+	   	content=content.replace("]","");
+		content=content.replace("{","");
+		content=content.replace("}","");
+		content=content.replace(a,'');
+		content=content.replace(",",";"); // there is a problem, since we use colons to separate the datas, the coords, AND  differents files if the json got more than one file.
+// this is ok for one file, but if we put more than one, it may bug.
+		content=content.replace(",",";");
+		content=content.replace(",",";");
+		var contentsplitted = content.split(';');
+		var contentsplit=[];
+		var result=[];
+	
+		var j=0;
+	for(var i=0;i<contentsplitted.length;i++){
+	contentsplit[i]=contentsplitted[i].split(":");
+	if(contentsplit[i][0]=="region_coords"){ // if the title of the data is "region_coords"
+	contentsplit[i][1]=contentsplit[i][1].replace('[','');// then deleting [ and ] from the coords
+	contentsplit[i][1]=contentsplit[i][1].replace(']','');
+	result[j] =contentsplit[i][1].split(","); // and splitting using ,
+
+	j++;}
+	}
+            //////
+            console.log(result[0][1]);
+var myLatlng = [ new google.maps.LatLng(result[0][0], result[0][2]), //creating a group of points to make the polygon
+		new google.maps.LatLng(result[0][0], result[0][3]),
+		new google.maps.LatLng(result[0][1], result[0][3]),
+		new google.maps.LatLng(result[0][1], result[0][2])
+];
+
+ var mapOptions = {
+    zoom: 8,
+    center:  new google.maps.LatLng(result[0][0], result[0][2]) //centering the map to this position
+	
+  };
+console.log(result[0][0], result[0][2],contentsplit[2][1]);
+  map = new google.maps.Map(document.getElementById('map-canvas'), //creating the map
+      mapOptions);
+ /*var marker = new google.maps.Marker({
+      position:myLatlng,
+      map: map,
+      title: contentsplit[2][1],
+  });*/
+var Area;
+Area = new google.maps.Polygon({ //creation of the polygon and its properties
+    paths: myLatlng,
+    strokeColor: '#FF0000',
+    strokeOpacity: 0.8,
+    strokeWeight: 3,
+    fillColor: '#FF0000',
+    fillOpacity: 0.35
+  });
+Area.setMap(map);
+
+document.getElementById('map-canvas').style.visibility='visible';  // making the map visible
+
+
+      }  };
+
+        reader.readAsText(f);
+    }
+
+}
+  document.getElementById('files').addEventListener('change', handleFileSelect, false);// adding a listener on the file object,putting the function handleFile Select as a triggered function
+
+
+</script>
+<div id="map-canvas"></div>
+</html>
