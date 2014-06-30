@@ -43,21 +43,25 @@ $("#submit").click(function() {
 			success:function(data){console.log('test',data);
 			
 			for(var i=data.objects.length-1; i>-1; i--){
-			tableau.push(data.objects[i].point.matchup_id);
+			tableau.push(data.objects[i].point.matchup_id+"|"+data.objects[i].point.deployment.site+"|"+data.objects[i].measurementtype.long_name+'|'+data.objects[i].wavelength.wavelength);
 			}
-			if(tableau.length==0){
+if(tableau.length==0){
 document.getElementById('message').innerHTML="No results found";	
 document.getElementById('message').style.visibility="visible";
 	document.getElementById('deployment').value="Selection";
 		document.getElementById('type').value="Selection";
-
 		document.getElementById('wavelengths').value="Selection";
 
 }else{
 document.getElementById('message').innerHTML="Result found :";	
 var links=[];
+var tablesplit=[];
 for(var d=0;d<tableau.length;d++){
-links.push("file:///home/test/mermaid2/maps/info.html?"+tableau[d]+'&'+endrequest);
+tablesplit[d]=tableau[d].split('|');
+
+endrequest='point__deployment__site__in='+tablesplit[d][1]+'&'+'measurementtype__long_name__in='+tablesplit[d][2]+'&'+'wavelength__wavelength__in='+tablesplit[d][3]+'.0&';
+
+links.push("file:///home/test/mermaid2/maps/info.html?"+tablesplit[d][0]+'&'+endrequest);
 
 $('#tableau>tbody:last').append('<tr><td><a href="'+links[d]+'">'+tableau[d]+'</a></td></tr>');
 }
